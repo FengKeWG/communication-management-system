@@ -1,0 +1,34 @@
+communication_management_system/
+│── backend/                 # 后端代码
+│   ├── src/                 # 源代码
+│   │   ├── main.c           # 程序入口
+│   │   ├── client_manager.c # 客户管理功能
+│   │   ├── contact_manager.c # 客户联络员管理功能
+│   │   ├── employee_manager.c # 业务员管理功能
+│   │   ├── communication_manager.c # 通信记录管理功能
+│   │   ├── group_manager.c  # 客户分组管理功能
+│   │   ├── utils.c          # 辅助功能
+│   │   ├── file_manager.c   # 负责文件读写
+│   ├── include/             # 头文件
+│   │   ├── client.h
+│   │   ├── contact.h
+│   │   ├── employee.h
+│   │   ├── communication.h
+│   │   ├── group.h
+│   │   ├── utils.h
+│   │   ├── file_manager.h   # 负责文件存储
+│   ├── data/                # 数据存储
+│   │   ├── client.txt       # 客户数据文件
+│   │   ├── contact.txt      # 客户联络员数据文件
+│   │   ├── employee.txt     # 业务员数据文件
+│   │   ├── communication.txt # 通信记录数据文件
+│   │   ├── group.txt        # 客户分组数据文件
+│   ├── Makefile             # 编译文件
+│── frontend/                # 前端代码 （如果只写后端可以暂时不管）
+│   ├── index.html
+│   ├── css/
+│   │   ├── styles.css
+│   ├── js/
+│   │   ├── app.js
+│── README.md # 项目说明文档
+│── LICENSE   # 许可证信息
