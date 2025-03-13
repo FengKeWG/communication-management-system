@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "group.h"
+#include "../include/group.h"
 
 // 添加客户分组
 Group *addGroup(Group *head)

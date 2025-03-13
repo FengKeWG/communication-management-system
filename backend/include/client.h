@@ -1,7 +1,8 @@
 // 客户公司
 #ifndef CLIENT_H
 #define CLIENT_H
-typedef struct
+
+typedef struct Client
 {
     int id;
     int contact_count;
@@ -17,4 +18,5 @@ typedef struct
     char phones[100][100];
     struct Client *next;
 } Client;
+
 #endif

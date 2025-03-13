@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "contact_manager.h"
-#include "contact.h"
+#include "..\include\contact_manager.h"
+#include "..\include\contact.h"
 
 // 添加联络员
 Contact *addContact(Contact *head)

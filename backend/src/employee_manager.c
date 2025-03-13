@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "employee_manager.h"
-#include "employee.h"
+#include "..\include\employee_manager.h"
+#include "..\include\employee.h"
 
 // 添加业务员
 Employee *addEmployee(Employee *head)
