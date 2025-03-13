@@ -1,11 +1,25 @@
-typedef struct Communication
+#ifndef COMMUNICATION_H
+#define COMMUNICATION_H
+
+#include "client.h"   // 需要用到 Client 结构体
+#include "contact.h"  // 需要用到 Contact 结构体
+#include "employee.h" // 需要用到 Employee 结构体
+
+typedef struct CommunicationRecord
 {
     int id;
-    int client_id;
-    int contact_id;
-    int employee_id;
-    char time[25]; // 2024-12-15-17-56-19
-    int duration;  // 分钟数
-    char content[1000];
-    struct Communication *next;
-} Communication;
+    int client_id;   // 关联客户ID
+    int contact_id;  // 关联联络员ID
+    int employee_id; // 关联业务员ID
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    int duration;      // 通信时长，分钟
+    char content[500]; // 通信内容
+    struct CommunicationRecord *next;
+} CommunicationRecord;
+
+#endif
