@@ -28,12 +28,13 @@ communication_management_system/
 │   │   ├── employee.txt     # 业务员数据文件
 │   │   ├── communication.txt # 通信记录数据文件
 │   │   ├── group.txt        # 客户分组数据文件
-│   ├── Makefile             # 编译文件
-│── frontend/                # 前端代码 （如果只写后端可以暂时不管）
+│   ├── server.py
+│   ├── main                 # C语言编译文件
+│── frontend/                # 前端代码
 │   ├── index.html
 │   ├── css/
 │   │   ├── styles.css
 │   ├── js/
 │   │   ├── app.js
-│── README.md # 项目说明文档
-│── LICENSE   # 许可证信息
+│── README.md
+│── LICENSE
