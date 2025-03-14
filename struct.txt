@@ -15,6 +15,11 @@ communication_management_system/
 │   │   ├── employee.h
 │   │   ├── communication.h
 │   │   ├── group.h
+│   │   ├── client_manager.h
+│   │   ├── contact_manager.h
+│   │   ├── employee_manager.h
+│   │   ├── communication_manager.h
+│   │   ├── group_manager.h
 │   │   ├── utils.h
 │   │   ├── file_manager.h   # 负责文件存储
 │   ├── data/                # 数据存储
