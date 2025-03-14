@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>客户通讯录管理系统</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <h1>客户通讯录管理系统</h1>
+    <button onclick="showAddClient()">添加客户</button>
+    <button onclick="showClientList()">显示客户列表</button>
+
+    <div id="add-client" class="section">
+        <h2>添加客户</h2>
+        <form id="client-form">
+            <label>客户ID: <input type="number" name="id" required></label><br>
+            <label>客户名称: <input type="text" name="name" required></label><br>
+            <label>客户区域: <input type="text" name="region" required></label><br>
+            <label>客户地址: <input type="text" name="address" required></label><br>
+            <label>客户法人: <input type="text" name="legal_person" required></label><br>
+            <label>客户规模 (1-大, 2-中, 3-小): <input type="number" name="size" required></label><br>
+            <label>业务联系程度 (1-高, 2-中, 3-低): <input type="number" name="contact_level" required></label><br>
+            <label>客户邮箱: <input type="email" name="email" required></label><br>
+            <label>电话号码: <input type="text" name="phones" placeholder="用;分隔多个号码" required></label><br>
+            <button type="submit">提交</button>
+        </form>
+        <div id="add-result"></div>
+    </div>
+
+    <div id="client-list" class="section">
+        <h2>客户列表</h2>
+        <pre id="list-result"></pre>
+    </div>
+
+    <script src="/js/scripts.js"></script>
+</body>
+
+</html>
