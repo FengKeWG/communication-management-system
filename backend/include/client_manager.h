@@ -4,7 +4,7 @@
 #include "client.h"
 
 // 函数声明
-Client *addClient(Client *head); //  <- 确保有这个声明
+Client *addClient(Client *head);
 Client *deleteClient(Client *head, int id);
 Client *modifyClient(Client *head, int id);
 void queryClient(Client *head, int id);
