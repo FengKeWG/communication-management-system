@@ -83,7 +83,7 @@
 
 - **目录结构**：
     ```
-    项目根目录/
+    Communication-Management-System/
     ├── LICENSE
     ├── README.md
     ├── run.bat
