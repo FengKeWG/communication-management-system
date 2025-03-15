@@ -83,56 +83,56 @@
 
 - **目录结构**：
     ```
-项目根目录/
-├── LICENSE
-├── README.md
-├── run.bat
-├── run.sh
-├── backend/
-│   ├── main.exe
-│   ├── server.py
-│   ├── data/
-│   │   ├── client.txt
-│   │   ├── contact.txt
-│   │   ├── employee.txt
-│   │   └── communication.txt
-│   ├── include/
-│   │   ├── client.h
-│   │   ├── client_manager.h
-│   │   ├── communication.h
-│   │   ├── communication_manager.h
-│   │   ├── contact.h
-│   │   ├── contact_manager.h
-│   │   ├── file_manager.h
-│   │   ├── group.h
-│   │   ├── group_manager.h
-│   │   ├── sales.h
-│   │   ├── sales_manager.h
-│   │   ├── user.h
-│   │   ├── user_manager.h
-│   │   └── utils.h
-│   └── src/
-│       ├── client_manager.c
-│       ├── communication_manager.c
-│       ├── contact_manager.c
-│       ├── file_manager.c
-│       ├── group_manager.c
-│       ├── main.c
-│       ├── sales_manager.c
-│       ├── user_manager.c
-│       └── utils.c
-└── frontend/
-    ├── index.html
-    ├── styles.css
-    ├── scripts.js
-    ├── js/
-    │   ├── admin.js
-    │   ├── client.js
-    │   └── login.js
-    └── pages/
-        ├── admin.html
-        ├── manager.html
-        └── sales.html
+    项目根目录/
+    ├── LICENSE
+    ├── README.md
+    ├── run.bat
+    ├── run.sh
+    ├── backend/
+    │   ├── main.exe
+    │   ├── server.py
+    │   ├── data/
+    │   │   ├── client.txt
+    │   │   ├── contact.txt
+    │   │   ├── employee.txt
+    │   │   └── communication.txt
+    │   ├── include/
+    │   │   ├── client.h
+    │   │   ├── client_manager.h
+    │   │   ├── communication.h
+    │   │   ├── communication_manager.h
+    │   │   ├── contact.h
+    │   │   ├── contact_manager.h
+    │   │   ├── file_manager.h
+    │   │   ├── group.h
+    │   │   ├── group_manager.h
+    │   │   ├── sales.h
+    │   │   ├── sales_manager.h
+    │   │   ├── user.h
+    │   │   ├── user_manager.h
+    │   │   └── utils.h
+    │   └── src/
+    │       ├── client_manager.c
+    │       ├── communication_manager.c
+    │       ├── contact_manager.c
+    │       ├── file_manager.c
+    │       ├── group_manager.c
+    │       ├── main.c
+    │       ├── sales_manager.c
+    │       ├── user_manager.c
+    │       └── utils.c
+    └── frontend/
+        ├── index.html
+        ├── styles.css
+        ├── scripts.js
+        ├── js/
+        │   ├── admin.js
+        │   ├── client.js
+        │   └── login.js
+        └── pages/
+            ├── admin.html
+            ├── manager.html
+            └── sales.html
     ```
 
 ### **3. 运行项目**
