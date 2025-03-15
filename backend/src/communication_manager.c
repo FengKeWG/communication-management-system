@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "..\include\communication.h"
-#include "..\include\communication_manager.h"
+#include "../include/communication.h"
+#include "../include/communication_manager.h"
 
 // 添加通信记录
 CommunicationRecord *addCommunicationRecord(CommunicationRecord *head)

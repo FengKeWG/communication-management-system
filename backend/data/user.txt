@@ -1,0 +1,2 @@
+admin,7dd1705a,admin
+WindGuest,5811cdc2,manager

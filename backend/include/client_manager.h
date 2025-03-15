@@ -3,8 +3,8 @@
 
 #include "client.h"
 
-// 函数声明
-Client *addClient(Client *head);
+Client *parseClientFromArgs(int argc, char *argv[]);
+Client *addClient(Client *head, Client *newClient);
 Client *deleteClient(Client *head, int id);
 Client *modifyClient(Client *head, int id);
 void queryClient(Client *head, int id);

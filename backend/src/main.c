@@ -1,83 +1,70 @@
-// backend/src/main.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/file_manager.h"
-#include "../include/client_manager.h"
-#include "../include/contact_manager.h"
-#include "../include/employee_manager.h"
-#include "../include/communication_manager.h"
-#include "../include/group_manager.h"
+#include "file_manager.h"
+#include "client_manager.h"
+#include "contact_manager.h"
+#include "sales_manager.h"
+#include "communication_manager.h"
+#include "group_manager.h"
+#include "user_manager.h"
 
 int main(int argc, char *argv[])
 {
-    printf("客户通讯录管理系统启动...\n");
+    const char *userFilePath = "./data/user.txt";
+    const char *clientFilePath = "./data/client.txt";
+    const char *salesFilePath = "./data/sales.txt";
+    const char *contactFilePath = "./data/contact.txt";
+    const char *communicationFilePath = "./data/communication.txt";
+    const char *groupFilePath = "./data/group.txt";
 
-    // 初始化数据（从文件加载）
-    Client *clientList = loadClientsFromFile("./data/client.txt");
-    Contact *contactList = loadContactsFromFile("./data/contact.txt");
-    Employee *employeeList = loadEmployeesFromFile("./data/employee.txt");
-    CommunicationRecord *communicationList = loadCommunicationsFromFile("./data/communication.txt");
-    Group *groupList = loadGroupsFromFile("./data/group.txt");
+    User *userList = loadUsersFromFile(userFilePath);
+    Client *clientList = loadClientsFromFile(clientFilePath);
+    Contact *contactList = loadContactsFromFile(contactFilePath);
+    Sales *salesList = loadSalesFromFile(salesFilePath);
+    CommunicationRecord *communicationList = loadCommunicationsFromFile(communicationFilePath);
+    Group *groupList = loadGroupsFromFile(groupFilePath);
 
-    // 如果没有命令行参数，进入原有交互模式
-    if (argc < 2)
+    if (argc > 1)
     {
-        int choice;
-        do
+        if (strcmp(argv[1], "login") == 0)
         {
-            printf("\n请选择操作:\n");
-            printf("1. 添加客户\n");
-            printf("2. 显示所有客户\n");
-            printf("3. 保存并退出\n");
-            printf("0. 退出\n");
-            printf("请选择: ");
-            scanf("%d", &choice);
-            getchar();
-            switch (choice)
+            const char *username = argv[2];
+            const char *password = argv[3];
+            User *user = authenticateUser(userList, username, password);
+            if (user)
             {
-            case 1:
-                clientList = addClient(clientList);
-                break;
-            case 2:
-                displayAllClients(clientList); // 调用新增的显示函数
-                break;
-            case 3:
-                printf("保存数据并退出...\n");
-                saveClientsToFile("./data/client.txt", clientList);
-                saveContactsToFile("./data/contact.txt", contactList);
-                saveEmployeesToFile("./data/employee.txt", employeeList);
-                saveCommunicationsToFile("./data/communication.txt", communicationList);
-                saveGroupsToFile("./data/group.txt", groupList);
-                break;
-            case 0:
-                printf("退出系统。\n");
-                break;
-            default:
-                printf("无效的选择，请重新输入。\n");
+                printf("%s %s\n", user->username, user->role);
+                fflush(stdout);
+                return 0;
             }
-        } while (choice != 0);
-    }
-    // 处理命令行参数模式
-    else
-    {
-        if (strcmp(argv[1], "add") == 0)
-        {
-            clientList = addClient(clientList);
-            saveClientsToFile("./data/client.txt", clientList); // 添加后自动保存
-            printf("[SUCCESS] 客户添加成功\n");
+            else
+            {
+                fprintf(stderr, "认证失败: 用户名或密码错误\n");
+                return 1;
+            }
         }
-        else if (strcmp(argv[1], "list") == 0)
+        else if (strcmp(argv[1], "add_user") == 0)
+        {
+            User *newUser = parseUserFromArgs(argc, argv);
+            userList = addUser(userList, newUser);
+            saveUsersToFile(userFilePath, userList);
+        }
+        else if (strcmp(argv[1], "add_client") == 0)
+        {
+            Client *newClient = parseClientFromArgs(argc, argv);
+            clientList = addClient(clientList, newClient);
+            saveClientsToFile(clientFilePath, clientList);
+        }
+        else if (strcmp(argv[1], "list_client") == 0)
         {
             displayAllClients(clientList);
         }
         else
         {
-            printf("[ERROR] 未知命令: %s\n", argv[1]);
+            printf("未知命令: %s\n", argv[1]);
             return 1;
         }
     }
-
-    printf("客户通讯录管理系统结束。\n");
     return 0;
 }

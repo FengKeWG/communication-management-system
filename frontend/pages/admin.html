@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>超级管理员</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <h1>超级管理员控制台</h1>
+    <p>你可以管理所有用户。</p>
+    <button onclick="logout()">退出</button>
+
+    <button onclick="showAddUser()">添加用户</button>
+    <button onclick="showUserList()">显示用户列表</button>
+
+    <div id="add-user" class="section">
+        <h2>添加客户</h2>
+        <form id="user-form">
+            <label>账号: <input type="text" name="username" required></label><br>
+            <label>密码: <input type="password" name="password" required></label><br>
+            <label>角色:
+                <select name="role" required>
+                    <option value="admin">超级管理员</option>
+                    <option value="manager">经理</option>
+                    <option value="sales">业务员</option>
+                </select>
+            </label><br>
+            <button type="button" onclick="submitUser()">提交</button>
+        </form>
+        <div id="add-result"></div>
+    </div>
+
+    <div id="user-list" class="section">
+        <h2>用户列表</h2>
+        <pre id="list-result"></pre>
+    </div>
+
+    <script src="/js/scripts.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+
+</html>
