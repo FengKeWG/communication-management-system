@@ -165,7 +165,8 @@
 	│   ├── css/
 	│   │   ├── styles.css
 	│   ├── js/
-	│   │   ├── app.js
+	│   │   ├── scripts.js
+	│   │   ├── client.js
 	│── README.md
 	│── LICENSE
     ```
