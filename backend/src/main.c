@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "file_manager.h"
@@ -8,6 +9,7 @@
 #include "communication_manager.h"
 #include "group_manager.h"
 #include "user_manager.h"
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +33,8 @@ int main(int argc, char *argv[])
         {
             const char *username = argv[2];
             const char *password = argv[3];
+            if (debug)
+                fprintf(stderr, "调试信息: 接收到用户名 '%s', 密码 '%s'\n", username, password);
             User *user = authenticateUser(userList, username, password);
             if (user)
             {
@@ -52,7 +56,7 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(argv[1], "add_client") == 0)
         {
-            Client *newClient = parseClientFromArgs(argc, argv);
+            Client *newClient = parseClientFromArgs(argc, argv, true);
             clientList = addClient(clientList, newClient);
             saveClientsToFile(clientFilePath, clientList);
         }

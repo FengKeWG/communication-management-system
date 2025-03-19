@@ -3,6 +3,11 @@ function showAddUser() {
     document.getElementById('user-list').classList.remove('active');
 }
 
+function showUserList() {
+    document.getElementById('user-list').classList.add('active');
+    document.getElementById('add-user').classList.remove('active');
+}
+
 function submitUser() {
     const username = document.querySelector('input[name="username"]').value;
     const password = document.querySelector('input[name="password"]').value;

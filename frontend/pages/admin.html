@@ -3,40 +3,65 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>超级管理员</title>
+    <title>用户管理</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        .section.active {
+            display: block;
+        }
+
+        .section {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>超级管理员控制台</h1>
-    <p>你可以管理所有用户。</p>
-    <button onclick="logout()">退出</button>
-
-    <button onclick="showAddUser()">添加用户</button>
-    <button onclick="showUserList()">显示用户列表</button>
-
-    <div id="add-user" class="section">
-        <h2>添加客户</h2>
-        <form id="user-form">
-            <label>账号: <input type="text" name="username" required></label><br>
-            <label>密码: <input type="password" name="password" required></label><br>
-            <label>角色:
-                <select name="role" required>
-                    <option value="admin">超级管理员</option>
-                    <option value="manager">经理</option>
-                    <option value="sales">业务员</option>
-                </select>
-            </label><br>
-            <button type="button" onclick="submitUser()">提交</button>
-        </form>
-        <div id="add-result"></div>
+    <div class="wrapper">
+        <nav class="top-nav">
+            <div class="nav-title">用户管理系统</div>
+            <div class="nav-menu">
+                <a href="#" class="nav-item" onclick="showAddUser()">
+                    <span class="material-icons">person_add</span>
+                    添加用户
+                </a>
+                <a href="#" class="nav-item" onclick="showUserList()">
+                    <span class="material-icons">list</span>
+                    展示所有用户
+                </a>
+                <a href="#" class="nav-item logout-btn" data-action="logout">
+                    <span class="material-icons">logout</span>
+                    退出
+                </a>
+            </div>
+        </nav>
+        <div class="content-wrapper">
+            <div id="add-user" class="section">
+                <div class="form-card">
+                    <h2 class="title">添加用户</h2>
+                    <form id="user-form" class="section-form">
+                        <input type="text" name="username" class="section-input" placeholder="账号" required>
+                        <input type="password" name="password" class="section-input" placeholder="密码" required>
+                        <select name="role" class="section-input" required>
+                            <option value="">请选择角色</option>
+                            <option value="admin">超级管理员</option>
+                            <option value="manager">经理</option>
+                            <option value="sales">业务员</option>
+                        </select>
+                        <button type="button" class="section-btn" onclick="submitUser()">提交</button>
+                    </form>
+                    <div id="add-result" class="result-message"></div>
+                </div>
+            </div>
+            <div id="user-list" class="section active">
+                <div class="list-card">
+                    <h2 class="title">用户列表</h2>
+                    <pre id="list-result" class="list-content"></pre>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div id="user-list" class="section">
-        <h2>用户列表</h2>
-        <pre id="list-result"></pre>
-    </div>
-
     <script src="/js/scripts.js"></script>
     <script src="/js/admin.js"></script>
 </body>

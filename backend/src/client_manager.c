@@ -1,25 +1,24 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../include/client_manager.h"
+#include "utils.h"
 
-Client *parseClientFromArgs(int argc, char *argv[])
+Client *parseClientFromArgs(int argc, char *argv[], bool newID)
 {
     if (argc < 11)
-    {
-        fprintf(stderr, "参数数量不足。\n");
         return NULL;
-    }
 
     Client *newClient = (Client *)malloc(sizeof(Client));
     if (!newClient)
-    {
-        perror("内存分配失败！");
         return NULL;
-    }
     memset(newClient, 0, sizeof(Client));
 
-    newClient->id = atoi(argv[2]);
+    if (newID)
+        newClient->id = uidGenerate();
+    else
+        newClient->id = atoi(argv[2]);
     strncpy(newClient->name, argv[3], sizeof(newClient->name) - 1);
     strncpy(newClient->region, argv[4], sizeof(newClient->region) - 1);
     strncpy(newClient->address, argv[5], sizeof(newClient->address) - 1);
@@ -44,23 +43,16 @@ Client *parseClientFromArgs(int argc, char *argv[])
 Client *addClient(Client *head, Client *newClient)
 {
     if (!newClient)
-    {
-        perror("无效");
         return head;
-    }
     if (head)
     {
         Client *current = head;
         while (current->next)
-        {
             current = current->next;
-        }
         current->next = newClient;
     }
     else
-    {
         head = newClient;
-    }
 
     printf("客户 '%s' 添加成功！\n", newClient->name);
     return head;
@@ -68,13 +60,57 @@ Client *addClient(Client *head, Client *newClient)
 
 Client *deleteClient(Client *head, int id)
 {
-    printf("client_manager: deleteClient - 功能待实现\n");
+    Client *p1, *p2;
+    p1 = head;
+    if (p1->id == id)
+    {
+        head = p1->next;
+        free(p1);
+    }
+    return head;
+    while (p1 != NULL)
+    {
+        p2 = p1;
+        p1 = p1->next;
+        if (p1->id == id)
+        {
+            p2->next = p1->next;
+            free(p1);
+            break;
+        }
+    }
     return head;
 }
 
-Client *modifyClient(Client *head, int id)
+Client *modifyClient(Client *head, Client *newClient)
 {
-    printf("client_manager: modifyClient - 功能待实现\n");
+    if (head == NULL)
+        return newClient;
+
+    Client *current = head;
+    Client *prev = NULL;
+
+    while (current != NULL)
+    {
+        if (current->id == newClient->id)
+        {
+            if (current == head)
+            {
+                newClient->next = current->next;
+                free(current);
+                return newClient;
+            }
+            else
+            {
+                prev->next = newClient;
+                newClient->next = current->next;
+                free(current);
+                return head;
+            }
+        }
+        prev = current;
+        current = current->next;
+    }
     return head;
 }
 
