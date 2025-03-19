@@ -94,7 +94,7 @@
     │   ├── data/
     │   │   ├── client.txt
     │   │   ├── contact.txt
-    │   │   ├── employee.txt
+    │   │   ├── sales.txt
     │   │   └── communication.txt
     │   ├── include/
     │   │   ├── client.h
@@ -123,8 +123,10 @@
     │       └── utils.c
     └── frontend/
         ├── index.html
-        ├── styles.css
-        ├── scripts.js
+        ├── css/
+        │   ├── admin.css
+        │   ├── login.css
+        │   └── global.css
         ├── js/
         │   ├── admin.js
         │   ├── client.js
