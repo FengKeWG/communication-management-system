@@ -1,0 +1,103 @@
+.top-nav {
+    width: 100%;
+    padding: 20px;
+    background-color: lightgrey;
+    border-bottom: 2px solid var(--main-color);
+    box-shadow: 4px 4px var(--main-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.nav-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--main-color);
+    padding-left: 20px;
+    float: left;
+}
+
+.nav-menu {
+    float: right;
+    display: flex;
+    gap: 20px;
+    padding-right: 20px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    color: var(--font-color);
+    text-decoration: none;
+    font-weight: 600;
+    border: 2px solid var(--main-color);
+    border-radius: 5px;
+    background-color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color);
+    transition: all 0.3s;
+}
+
+.nav-item:hover {
+    background-color: var(--input-focus);
+    color: var(--bg-color);
+}
+
+.logout-btn {
+    background-color: #ff4444;
+    color: var(--bg-color);
+}
+
+.logout-btn:hover {
+    background-color: #cc0000;
+}
+
+/* 内容区域样式 */
+.content-wrapper {
+    margin-top: 100px;
+    padding: 20px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.section.active {
+    display: block;
+}
+
+.section {
+    display: none;
+    width: 100%;
+}
+
+.form-card,
+.list-card {
+    background: lightgrey;
+    padding: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    box-shadow: 4px 4px var(--main-color);
+}
+
+.section-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.result-message {
+    margin-top: 15px;
+    color: var(--font-color);
+    text-align: center;
+}
+
+.list-content {
+    background-color: var(--bg-color);
+    padding: 15px;
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    margin-top: 15px;
+    white-space: pre-wrap;
+}
