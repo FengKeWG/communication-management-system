@@ -14,9 +14,6 @@ function login() {
                 sessionStorage.setItem("role", data.role);
 
                 switch (data.role) {
-                    case "admin":
-                        window.location.href = "/pages/admin.html";
-                        break;
                     case "manager":
                         window.location.href = "/pages/manager.html";
                         break;

@@ -33,8 +33,6 @@ int main(int argc, char *argv[])
         {
             const char *username = argv[2];
             const char *password = argv[3];
-            if (debug)
-                fprintf(stderr, "调试信息: 接收到用户名 '%s', 密码 '%s'\n", username, password);
             User *user = authenticateUser(userList, username, password);
             if (user)
             {
@@ -62,7 +60,27 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(argv[1], "list_client") == 0)
         {
-            displayAllClients(clientList);
+            if (argc > 2)
+            {
+                displayAllClients(clientList, argc, argv);
+            }
+            else
+            {
+                char *default_args[] = {"main", "list_client", "3"}; // 默认按 ID 排序
+                displayAllClients(clientList, 3, default_args);
+            }
+        }
+        else if (strcmp(argv[1], "delete_client") == 0)
+        {
+            clientList = deleteClient(clientList, atoi(argv[2]));
+            saveClientsToFile(clientFilePath, clientList);
+        }
+        else if (strcmp(argv[1], "update_client") == 0)
+        {
+            Client *newClient = parseClientFromArgs(argc, argv, false);
+            clientList = modifyClient(clientList, newClient);
+            saveClientsToFile(clientFilePath, clientList);
+            free(newClient);
         }
         else
         {

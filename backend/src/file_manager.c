@@ -75,29 +75,43 @@ Client *loadClientsFromFile(const char *filename)
         perror("无法打开文件");
         return NULL;
     }
+
     Client *head = NULL, *tail = NULL;
     char line[1024];
+    char temp_phones[1024]; // 用于临时存储电话号码的字符串
+
     while (fgets(line, sizeof(line), fp))
     {
-        if (line[0] == '\n')
+        if (line[0] == '\n') // 跳过空行
             continue;
 
-        Client *newClient = malloc(sizeof(Client));
+        Client *newClient = (Client *)malloc(sizeof(Client));
         if (!newClient)
         {
             perror("内存分配失败");
             fclose(fp);
+            // 应该释放之前分配的内存，这里简化处理
             return head;
         }
-        char *phone_token = NULL;
-        sscanf(line, "%d,%[^,],%[^,],%[^,],%[^,],%d,%d,%[^,],%[^,]",
-               &newClient->id, newClient->name, newClient->region,
-               newClient->address, newClient->legal_person, &newClient->size,
-               &newClient->contact_level, newClient->email, line);
+        memset(newClient, 0, sizeof(Client)); // 初始化
 
+        // 先读取除了电话号码之外的所有字段
+        int fields_read = sscanf(line, "%d,%[^,],%[^,],%[^,],%[^,],%d,%d,%[^,],%[^\n]",
+                                 &newClient->id, newClient->name, newClient->region,
+                                 newClient->address, newClient->legal_person, &newClient->size,
+                                 &newClient->contact_level, newClient->email, temp_phones);
+
+        if (fields_read < 8)
+        {
+            fprintf(stderr, "Error reading line: %s\n", line);
+            free(newClient);
+            continue; // 如果字段不足，跳过这一行
+        }
+
+        // 处理电话号码
         newClient->phone_count = 0;
-        phone_token = strtok(line, ";");
-        while (phone_token && newClient->phone_count < 100)
+        char *phone_token = strtok(temp_phones, ";");
+        while (phone_token != NULL && newClient->phone_count < 100)
         {
             strncpy(newClient->phones[newClient->phone_count], phone_token, sizeof(newClient->phones[0]) - 1);
             newClient->phones[newClient->phone_count][sizeof(newClient->phones[0]) - 1] = '\0';
@@ -106,9 +120,11 @@ Client *loadClientsFromFile(const char *filename)
         }
 
         newClient->next = NULL;
-        if (!head)
+
+        if (head == NULL)
         {
-            head = tail = newClient;
+            head = newClient;
+            tail = newClient;
         }
         else
         {

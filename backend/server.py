@@ -54,6 +54,49 @@ def add_user():
     return jsonify({"output": output.strip(), "error": error.strip()})
 
 
+@app.route("/api/delete_client/<client_id>", methods=["DELETE"])  # 使用 DELETE 方法
+def delete_client(client_id):  # 接收 client_id 作为参数
+    # data = request.get_json()  不需要从 JSON 中获取，直接使用 URL 参数
+    # client_id = data.get("id")
+    process = subprocess.Popen(
+        ["./main", "delete_client", str(client_id)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    output, error = process.communicate()
+    if error:
+        return jsonify({"error": error.strip()}), 400  # 错误处理
+    return jsonify({"output": output.strip(), "error": error.strip()})
+
+
+@app.route("/api/update_client/<client_id>", methods=["PUT"])  # 使用 PUT 方法
+def update_client(client_id):  # 接收 client_id 作为参数
+    data = request.get_json()
+    # 将字典转换为列表，并按C程序期望的顺序排列
+    client_data = [
+        data.get("name", ""),
+        data.get("region", ""),
+        data.get("address", ""),
+        data.get("legal_person", ""),
+        str(data.get("size", 0)),  # 转换为字符串，如果为空则为 "0"
+        str(data.get("contact_level", 0)),  # 转换为字符串，如果为空则为 "0"
+        data.get("email", ""),
+        data.get("phones", ""),
+    ]
+    process = subprocess.Popen(
+        ["./main", "update_client", str(client_id)]
+        + client_data,  # 将 client_id 加到参数列表
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    output, error = process.communicate()
+    if error:
+        return jsonify({"error": error.strip()}), 400  # 错误处理
+    return jsonify({"output": output.strip(), "error": error.strip()})
+
+
 @app.route("/api/add_client", methods=["POST"])
 def add_client():
     data = request.json
@@ -61,7 +104,7 @@ def add_client():
         [
             "./main",
             "add_client",
-            str(data["id"]),
+            "",
             data["name"],
             data["region"],
             data["address"],
@@ -82,18 +125,15 @@ def add_client():
 # 定义 /api/list_clients 路由，用于处理获取客户端列表的 GET 请求
 @app.route("/api/list_clients", methods=["GET"])
 def list_clients():
-    # 使用 subprocess 启动 C 程序，获取客户端列表
     process = subprocess.Popen(
         ["./main", "list_client"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
-
-    # 与 C 程序进行交互，获取输出和错误信息
     output, error = process.communicate()
-
-    # 将 C 程序的输出和错误信息打包成 JSON 对象，并返回给前端
+    print("C program output:", output)  # 调试：打印 C 程序的输出
+    print("C program error:", error)  # 调试：打印 C 程序的错误
     return jsonify({"output": output, "error": error})
 
 

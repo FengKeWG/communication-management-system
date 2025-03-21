@@ -1,0 +1,418 @@
+/* manager.css */
+:root {
+    --input-focus: #2d8cf0;
+    --font-color: #323232;
+    --bg-color: #fff;
+    --main-color: #323232;
+}
+
+/* body 样式 (如果与 login.css 不同，则需要定义) */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    /* 其他可能的 body 样式 */
+}
+
+/*如果两个页面的 body 样式完全相同，可以省略 manager.css 中的 body 定义*/
+.phone-input-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+    /* 与下方元素保持间距 */
+}
+
+.phone-input-container input {
+    flex-grow: 1;
+    /* 让输入框占据剩余空间 */
+}
+
+.remove-phone-btn {
+    background-color: #ff4444;
+    color: var(--bg-color);
+    border: 2px solid var(--main-color);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    height: auto;
+    padding: 5px 10px;
+    box-shadow: 4px 4px var(--main-color);
+    transition: box-shadow 0.1s, transform 0.1s;
+}
+
+.remove-phone-btn:hover {
+    background-color: #cc0000;
+}
+
+.remove-phone-btn:active {
+    box-shadow: 0px 0px var(--main-color);
+    transform: translate(3px, 3px);
+}
+
+.add-phone-btn {
+    background-color: #4CAF50;
+    color: var(--bg-color);
+    border: 2px solid var(--main-color);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    height: auto;
+    padding: 5px 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: 0;
+    box-shadow: 4px 4px var(--main-color);
+    transition: box-shadow 0.1s, transform 0.1s;
+}
+
+.add-phone-btn:hover {
+    background-color: #43A047;
+}
+
+.add-phone-btn:active {
+    box-shadow: 0px 0px var(--main-color);
+    transform: translate(3px, 3px);
+}
+
+/* 顶部导航栏 */
+.top-nav {
+    width: 100%;
+    padding: 20px;
+    background-color: lightgrey;
+    border-bottom: 2px solid var(--main-color);
+    box-shadow: 4px 4px var(--main-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.nav-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--main-color);
+    padding-left: 20px;
+    float: left;
+}
+
+.nav-menu {
+    float: right;
+    display: flex;
+    gap: 20px;
+    padding-right: 20px;
+}
+
+.nav-item {
+    height: auto;
+    padding: 8px 15px;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    background-color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--font-color);
+    cursor: pointer;
+    transition: box-shadow 0.1s, transform 0.1s;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-item:hover {
+    background-color: var(--input-focus);
+    color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color), 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.nav-item:active {
+    box-shadow: 0px 0px var(--main-color);
+    transform: translate(3px, 3px);
+}
+
+.logout-btn {
+    background-color: #ff4444;
+    color: var(--bg-color);
+    border: 2px solid var(--main-color);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 15px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 4px 4px var(--main-color);
+    transition: box-shadow 0.1s, transform 0.1s;
+}
+
+.logout-btn:hover {
+    background-color: #cc0000;
+}
+
+.logout-btn:active {
+    box-shadow: 0px 0px var(--main-color);
+    transform: translate(3px, 3px);
+}
+
+/* 内容区域 */
+.content-wrapper {
+    margin-top: 100px;
+    padding: 20px;
+    width: 100%;
+    max-width: 2000px;
+    margin-left: auto;
+    /* 添加此行 */
+    margin-right: auto;
+    /* 添加此行 */
+}
+
+/* section 样式，确保内容居中 */
+.section.active {
+    display: block;
+    text-align: center;
+    /* 居中内容 */
+}
+
+.section {
+    display: none;
+    width: 100%;
+}
+
+.form-card {
+    background: lightgrey;
+    padding: 30px 60px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 4px 4px var(--main-color);
+    display: inline-block;
+    text-align: left;
+    width: 90%;
+    max-width: 600px;
+}
+
+.list-card {
+    background: lightgrey;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 4px 4px var(--main-color);
+    display: inline-block;
+    text-align: left;
+    width: 90%;
+}
+
+/* 表单样式 */
+.section-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.section-label {
+    display: block;
+    margin-bottom: 8px;
+    /* 稍微增加 label 下方间距 */
+    font-weight: 600;
+    /* 加粗标签文字 */
+    color: var(--font-color);
+    /* 使用变量 */
+}
+
+.section-input {
+    width: 100%;
+    /* max-width: 300px;  管理页面的输入框宽度通常需要自适应，所以 max-width 可能会不需要 */
+    height: 40px;
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    background-color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color);
+    /* 应用登录页面的阴影 */
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--font-color);
+    padding: 5px 10px;
+    outline: none;
+}
+
+.section-input:focus {
+    border: 2px solid var(--input-focus);
+    /* focus 边框颜色保持不变 */
+    /* outline: none;  已经 outline: none; 了，不需要重复 */
+    box-shadow: none;
+    /* 移除 focus 时的默认阴影，或者可以添加新的 focus 阴影 */
+}
+
+/* 通用按钮样式 (可以提取出来，方便统一修改) */
+.retro-btn {
+    /*  新的通用按钮类名 */
+    /* width: 120px;  按钮宽度不固定，移除 width */
+    height: 40px;
+    /*  固定高度 */
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    background-color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color);
+    /* 应用登录页面的阴影 */
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--font-color);
+    cursor: pointer;
+    transition: box-shadow 0.1s, transform 0.1s;
+    /* 添加过渡效果 */
+    padding: 0 15px;
+    /* 左右 padding，让文字内容居中 */
+    display: inline-flex;
+    /* 使用 inline-flex 布局 */
+    justify-content: center;
+    /* 水平居中 */
+    align-items: center;
+    /* 垂直居中 */
+}
+
+.retro-btn:active {
+    box-shadow: 0px 0px var(--main-color);
+    /* 点击时阴影变为 0 */
+    transform: translate(3px, 3px);
+    /* 点击时位移 */
+}
+
+/* 应用通用按钮样式到各个按钮类 */
+.section-btn,
+.edit-btn,
+.delete-btn,
+.save-btn {
+    height: 40px;
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    background-color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color);
+    /* 应用登录页面的阴影 */
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--font-color);
+    cursor: pointer;
+    transition: box-shadow 0.1s, transform 0.1s;
+    /* 添加过渡效果 */
+    padding: 0 15px;
+    /* 左右 padding，让文字内容居中 */
+    display: inline-flex;
+    /* 使用 inline-flex 布局 */
+    justify-content: center;
+    /* 水平居中 */
+    align-items: center;
+    /* 垂直居中 */
+}
+
+.section-btn:active,
+.edit-btn:active,
+.delete-btn:active,
+.save-btn:active {
+    box-shadow: 0px 0px var(--main-color);
+    /* 点击时阴影变为 0 */
+    transform: translate(3px, 3px);
+    /* 点击时位移 */
+}
+
+/*  个别按钮的特殊样式调整 */
+/* 表格操作按钮 (edit, delete, save)  -  字号小一些，padding 小一些 */
+.edit-btn,
+.delete-btn,
+.save-btn {
+    font-size: 14px;
+    /* 表格按钮字号小一些 */
+    padding: 5px 10px;
+    /* 表格按钮 padding 小一些 */
+    /* margin: 2px;  表格按钮 margin 保持不变 */
+}
+
+.edit-btn {
+    background-color: #4CAF50;
+    /* edit 按钮背景色保持绿色 */
+    color: var(--bg-color);
+    /* edit 按钮文字颜色保持白色 */
+}
+
+.delete-btn {
+    background-color: #f44336;
+    /* delete 按钮背景色保持红色 */
+    color: var(--bg-color);
+    /* delete 按钮文字颜色保持白色 */
+}
+
+.save-btn {
+    background-color: #2d8cf0;
+    /* save 按钮背景色保持蓝色 */
+    color: var(--bg-color);
+    /* save 按钮文字颜色保持白色 */
+}
+
+/* 消息提示 */
+.result-message {
+    margin-top: 15px;
+    color: var(--font-color);
+    text-align: center;
+}
+
+/* 列表内容 */
+.list-content {
+    background-color: transparent;
+    /* 让 list-content 背景透明，直接显示 list-card 的背景 */
+    padding: 0;
+    /* 移除 list-content 的 padding，让表格直接贴边 */
+    border: none;
+    /* 移除 list-content 的边框 */
+    margin-top: 15px;
+    white-space: pre-wrap;
+    /* 保持 pre-wrap */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--bg-color);
+    table-layout: fixed;
+    /* 新增：添加表格外边框 */
+    border: 1px solid #ddd;
+}
+
+th,
+td {
+    border: none;
+    padding: 12px 10px;
+    text-align: left;
+    word-wrap: break-word;
+    border-bottom: 1px solid #eee;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-right: 1px solid #ddd;
+}
+
+th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    color: var(--font-color);
+    border-bottom: 2px solid #ccc;
+    border-right: 1px solid #eee;
+}
+
+th:first-child,
+td:first-child {
+    border-left: 1px solid #ddd;
+}
+
+th:last-child,
+td:last-child {
+    border-right: 1px solid #ddd;
+}

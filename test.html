@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --input-focus: #2d8cf0;
+            --font-color: #323232;
+            --font-color-sub: #666;
+            --bg-color: #fff;
+            --bg-color-alt: #666;
+            --main-color: #323232;
+        }
+
+        body {
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+        }
+
+        .title {
+            margin: 20px 0 20px 0;
+            font-size: 25px;
+            font-weight: 900;
+            text-align: center;
+            color: var(--main-color);
+        }
+
+        .section-input {
+            width: 100%;
+            max-width: 300px;
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            background-color: var(--bg-color);
+            box-shadow: 4px 4px var(--main-color);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--font-color);
+            padding: 5px 10px;
+            outline: none;
+        }
+
+        .section-input:focus {
+            border: 2px solid var(--input-focus);
+        }
+
+        .section-btn {
+            width: 120px;
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            background-color: var(--bg-color);
+            box-shadow: 4px 4px var(--main-color);
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--font-color);
+            cursor: pointer;
+            align-self: center;
+        }
+
+        .section-btn:active {
+            box-shadow: 0px 0px var(--main-color);
+            transform: translate(3px, 3px);
+        }
+
+        .top-nav {
+            width: 100%;
+            padding: 20px;
+            background-color: lightgrey;
+            border-bottom: 2px solid var(--main-color);
+            box-shadow: 4px 4px var(--main-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .nav-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--main-color);
+            padding-left: 20px;
+            float: left;
+        }
+
+        .nav-menu {
+            float: right;
+            display: flex;
+            gap: 20px;
+            padding-right: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            color: var(--font-color);
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid var(--main-color);
+            border-radius: 5px;
+            background-color: var(--bg-color);
+            box-shadow: 4px 4px var(--main-color);
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: var(--input-focus);
+            color: var(--bg-color);
+        }
+
+        .logout-btn {
+            background-color: #ff4444;
+            color: var(--bg-color);
+        }
+
+        .logout-btn:hover {
+            background-color: #cc0000;
+        }
+
+
+        .content-wrapper {
+            margin-top: 100px;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section {
+            display: none;
+            width: 100%;
+        }
+
+        .form-card,
+        .list-card {
+            background: lightgrey;
+            padding: 20px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            box-shadow: 4px 4px var(--main-color);
+        }
+
+        .section-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .result-message {
+            margin-top: 15px;
+            color: var(--font-color);
+            text-align: center;
+        }
+
+        .list-content {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid var(--main-color);
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <nav class="top-nav">
+            <div class="nav-title">用户管理系统</div>
+            <div class="nav-menu">
+                <a href="#" class="nav-item" onclick="showAddUser()">
+                    <span class="material-icons">person_add</span>
+                    添加用户
+                </a>
+                <a href="#" class="nav-item" onclick="showUserList()">
+                    <span class="material-icons">list</span>
+                    展示所有用户
+                </a>
+                <a href="#" class="nav-item logout-btn" onclick="logout()">
+                    <span class="material-icons">logout</span>
+                    退出
+                </a>
+            </div>
+        </nav>
+        <div class="content-wrapper">
+            <div id="add-user" class="section">
+                <div class="form-card">
+                    <h2 class="title">添加用户</h2>
+                    <form id="user-form" class="section-form">
+                        <input type="text" name="username" class="section-input" placeholder="账号" required>
+                        <input type="password" name="password" class="section-input" placeholder="密码" required>
+                        <select name="role" class="section-input" required>
+                            <option value="">请选择角色</option>
+                            <option value="admin">超级管理员</option>
+                            <option value="manager">经理</option>
+                            <option value="sales">业务员</option>
+                        </select>
+                        <button type="button" class="section-btn" onclick="submitUser()">提交</button>
+                    </form>
+                    <div id="add-result" class="result-message"></div>
+                </div>
+            </div>
+            <div id="user-list" class="section active">
+                <div class="list-card">
+                    <h2 class="title">用户列表</h2>
+                    <pre id="list-result" class="list-content"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script></script>
+</body>
+
+</html>
