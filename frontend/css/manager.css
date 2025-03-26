@@ -400,6 +400,7 @@ td {
 }
 
 th {
+    cursor: pointer;
     background-color: #f0f0f0;
     font-weight: bold;
     color: var(--font-color);

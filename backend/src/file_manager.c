@@ -78,11 +78,11 @@ Client *loadClientsFromFile(const char *filename)
 
     Client *head = NULL, *tail = NULL;
     char line[1024];
-    char temp_phones[1024]; // 用于临时存储电话号码的字符串
+    char temp_phones[1024];
 
     while (fgets(line, sizeof(line), fp))
     {
-        if (line[0] == '\n') // 跳过空行
+        if (line[0] == '\n')
             continue;
 
         Client *newClient = (Client *)malloc(sizeof(Client));
@@ -90,12 +90,10 @@ Client *loadClientsFromFile(const char *filename)
         {
             perror("内存分配失败");
             fclose(fp);
-            // 应该释放之前分配的内存，这里简化处理
             return head;
         }
         memset(newClient, 0, sizeof(Client)); // 初始化
 
-        // 先读取除了电话号码之外的所有字段
         int fields_read = sscanf(line, "%d,%[^,],%[^,],%[^,],%[^,],%d,%d,%[^,],%[^\n]",
                                  &newClient->id, newClient->name, newClient->region,
                                  newClient->address, newClient->legal_person, &newClient->size,

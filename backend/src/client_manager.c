@@ -155,6 +155,7 @@ int cmp(Client *a, Client *b, int num)
         return 0;
     }
 }
+
 Client *mergeSortedLists(Client *list1, Client *list2, int argc, int a[])
 {
     if (!list1)

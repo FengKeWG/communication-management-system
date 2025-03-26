@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                char *default_args[] = {"main", "list_client", "3"}; // 默认按 ID 排序
+                char *default_args[] = {"main", "list_client", "1"};
                 displayAllClients(clientList, 3, default_args);
             }
         }
