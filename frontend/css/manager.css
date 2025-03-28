@@ -1,4 +1,3 @@
-/* manager.css */
 :root {
     --input-focus: #2d8cf0;
     --font-color: #323232;
@@ -6,25 +5,20 @@
     --main-color: #323232;
 }
 
-/* body 样式 (如果与 login.css 不同，则需要定义) */
 body {
     font-family: sans-serif;
     margin: 0;
-    /* 其他可能的 body 样式 */
 }
 
-/*如果两个页面的 body 样式完全相同，可以省略 manager.css 中的 body 定义*/
 .phone-input-container {
     display: flex;
     align-items: center;
     gap: 5px;
     margin-bottom: 5px;
-    /* 与下方元素保持间距 */
 }
 
 .phone-input-container input {
     flex-grow: 1;
-    /* 让输入框占据剩余空间 */
 }
 
 .remove-phone-btn {
@@ -76,7 +70,6 @@ body {
     transform: translate(3px, 3px);
 }
 
-/* 顶部导航栏 */
 .top-nav {
     width: 100%;
     padding: 20px;
@@ -160,23 +153,18 @@ body {
     transform: translate(3px, 3px);
 }
 
-/* 内容区域 */
 .content-wrapper {
     margin-top: 100px;
     padding: 20px;
     width: 100%;
     max-width: 2000px;
     margin-left: auto;
-    /* 添加此行 */
     margin-right: auto;
-    /* 添加此行 */
 }
 
-/* section 样式，确保内容居中 */
 .section.active {
     display: block;
     text-align: center;
-    /* 居中内容 */
 }
 
 .section {
@@ -207,7 +195,6 @@ body {
     width: 90%;
 }
 
-/* 表单样式 */
 .section-form {
     display: flex;
     flex-direction: column;
@@ -218,22 +205,17 @@ body {
 .section-label {
     display: block;
     margin-bottom: 8px;
-    /* 稍微增加 label 下方间距 */
     font-weight: 600;
-    /* 加粗标签文字 */
     color: var(--font-color);
-    /* 使用变量 */
 }
 
 .section-input {
     width: 100%;
-    /* max-width: 300px;  管理页面的输入框宽度通常需要自适应，所以 max-width 可能会不需要 */
     height: 40px;
     border-radius: 5px;
     border: 2px solid var(--main-color);
     background-color: var(--bg-color);
     box-shadow: 4px 4px var(--main-color);
-    /* 应用登录页面的阴影 */
     font-size: 15px;
     font-weight: 600;
     color: var(--font-color);
@@ -243,47 +225,31 @@ body {
 
 .section-input:focus {
     border: 2px solid var(--input-focus);
-    /* focus 边框颜色保持不变 */
-    /* outline: none;  已经 outline: none; 了，不需要重复 */
     box-shadow: none;
-    /* 移除 focus 时的默认阴影，或者可以添加新的 focus 阴影 */
 }
 
-/* 通用按钮样式 (可以提取出来，方便统一修改) */
 .retro-btn {
-    /*  新的通用按钮类名 */
-    /* width: 120px;  按钮宽度不固定，移除 width */
     height: 40px;
-    /*  固定高度 */
     border-radius: 5px;
     border: 2px solid var(--main-color);
     background-color: var(--bg-color);
     box-shadow: 4px 4px var(--main-color);
-    /* 应用登录页面的阴影 */
     font-size: 17px;
     font-weight: 600;
     color: var(--font-color);
     cursor: pointer;
     transition: box-shadow 0.1s, transform 0.1s;
-    /* 添加过渡效果 */
     padding: 0 15px;
-    /* 左右 padding，让文字内容居中 */
     display: inline-flex;
-    /* 使用 inline-flex 布局 */
     justify-content: center;
-    /* 水平居中 */
     align-items: center;
-    /* 垂直居中 */
 }
 
 .retro-btn:active {
     box-shadow: 0px 0px var(--main-color);
-    /* 点击时阴影变为 0 */
     transform: translate(3px, 3px);
-    /* 点击时位移 */
 }
 
-/* 应用通用按钮样式到各个按钮类 */
 .section-btn,
 .edit-btn,
 .delete-btn,
@@ -293,21 +259,15 @@ body {
     border: 2px solid var(--main-color);
     background-color: var(--bg-color);
     box-shadow: 4px 4px var(--main-color);
-    /* 应用登录页面的阴影 */
     font-size: 17px;
     font-weight: 600;
     color: var(--font-color);
     cursor: pointer;
     transition: box-shadow 0.1s, transform 0.1s;
-    /* 添加过渡效果 */
     padding: 0 15px;
-    /* 左右 padding，让文字内容居中 */
     display: inline-flex;
-    /* 使用 inline-flex 布局 */
     justify-content: center;
-    /* 水平居中 */
     align-items: center;
-    /* 垂直居中 */
 }
 
 .section-btn:active,
@@ -315,62 +275,43 @@ body {
 .delete-btn:active,
 .save-btn:active {
     box-shadow: 0px 0px var(--main-color);
-    /* 点击时阴影变为 0 */
     transform: translate(3px, 3px);
-    /* 点击时位移 */
 }
 
-/*  个别按钮的特殊样式调整 */
-/* 表格操作按钮 (edit, delete, save)  -  字号小一些，padding 小一些 */
 .edit-btn,
 .delete-btn,
 .save-btn {
     font-size: 14px;
-    /* 表格按钮字号小一些 */
     padding: 5px 10px;
-    /* 表格按钮 padding 小一些 */
-    /* margin: 2px;  表格按钮 margin 保持不变 */
 }
 
 .edit-btn {
     background-color: #4CAF50;
-    /* edit 按钮背景色保持绿色 */
     color: var(--bg-color);
-    /* edit 按钮文字颜色保持白色 */
 }
 
 .delete-btn {
     background-color: #f44336;
-    /* delete 按钮背景色保持红色 */
     color: var(--bg-color);
-    /* delete 按钮文字颜色保持白色 */
 }
 
 .save-btn {
     background-color: #2d8cf0;
-    /* save 按钮背景色保持蓝色 */
     color: var(--bg-color);
-    /* save 按钮文字颜色保持白色 */
 }
 
-/* 消息提示 */
 .result-message {
     margin-top: 15px;
     color: var(--font-color);
     text-align: center;
 }
 
-/* 列表内容 */
 .list-content {
     background-color: transparent;
-    /* 让 list-content 背景透明，直接显示 list-card 的背景 */
     padding: 0;
-    /* 移除 list-content 的 padding，让表格直接贴边 */
     border: none;
-    /* 移除 list-content 的边框 */
     margin-top: 15px;
     white-space: pre-wrap;
-    /* 保持 pre-wrap */
 }
 
 table {
@@ -382,7 +323,6 @@ table {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     background-color: var(--bg-color);
     table-layout: fixed;
-    /* 新增：添加表格外边框 */
     border: 1px solid #ddd;
 }
 
@@ -420,73 +360,40 @@ td:last-child {
 
 th[data-sort-index] {
     cursor: pointer;
-    /* 鼠标悬停时显示手型光标 */
     position: relative;
-    /* 如果使用绝对定位的图标指示符，则需要 */
     user-select: none;
-    /* 防止双击选中文字 */
 }
 
-/* 鼠标悬停在可排序表头上的效果 */
 th[data-sort-index]:hover {
     background-color: #e0e0e0;
-    /* 轻微改变背景色以示可交互 */
 }
 
-/* 排序指示符 (▲/▼) 的样式 */
 .sort-indicator {
     display: inline-block;
-    /* 允许设置边距 */
     margin-left: 5px;
-    /* 与表头文字之间的间距 */
-    /* font-size: 0.8em;    /* 可以让指示符小一点 */
-    /* 可选 */
-    /* color: #555;         /* 指示符颜色 */
-    /* 可选 */
     width: 1em;
-    /* 预留一点宽度，即使没有指示符时也能对齐 */
     text-align: left;
-    /* 确保指示符靠左 */
 }
 
 .search-container {
     display: flex;
-    /* 使用 Flexbox 布局 */
     justify-content: flex-end;
-    /* 将元素靠右对齐 */
     align-items: center;
-    /* 垂直居中对齐 */
     gap: 10px;
-    /* 设置元素之间的间距 */
     margin-bottom: 15px;
-    /* 与下方内容的间距 */
 }
 
-/* 调整搜索输入框的样式 */
 #searchInput.section-input {
     width: auto;
-    /* 覆盖 section-input 的 width: 100% */
     flex-grow: 1;
-    /* 允许输入框伸展以填充可用空间 */
     max-width: 300px;
-    /* 可以设置一个最大宽度，防止过长 */
-    /* height, border, padding, shadow 等继承自 .section-input */
 }
 
-/* 搜索按钮和清除按钮将继承 .section-btn 的样式 */
-/* 无需为 #searchButton 添加额外样式，除非有特殊需求 */
-
-/* 为清除按钮添加特定样式 (可选) */
 .clear-btn {
     background-color: #757575;
-    /* 设置一个灰色背景 */
     color: var(--bg-color);
-    /* 使用背景色变量作为文字颜色 (通常是白色) */
-    /* border, shadow, padding, height 等继承自 .section-btn */
 }
 
 .clear-btn:hover {
     background-color: #5e5e5e;
-    /* 鼠标悬停时深一点的灰色 */
-    /* 其他 hover 效果继承自 .section-btn:hover (如果需要的话) */
 }
