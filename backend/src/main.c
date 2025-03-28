@@ -58,17 +58,9 @@ int main(int argc, char *argv[])
             clientList = addClient(clientList, newClient);
             saveClientsToFile(clientFilePath, clientList);
         }
-        else if (strcmp(argv[1], "list_client") == 0)
+        else if (strcmp(argv[1], "get_clients") == 0)
         {
-            if (argc > 2)
-            {
-                displayAllClients(clientList, argc, argv);
-            }
-            else
-            {
-                char *default_args[] = {"main", "list_client", "1"};
-                displayAllClients(clientList, 3, default_args);
-            }
+            displayClients(clientList, argc, argv);
         }
         else if (strcmp(argv[1], "delete_client") == 0)
         {

@@ -129,7 +129,14 @@
             <div id="client-list" class="section">
                 <div class="list-card">
                     <h2 class="title">客户列表</h2>
-                    <div id="client-list-content"></div> <!-- 表格将插入到这里 -->
+                    <div class="search-container">
+                        <input type="text" id="searchInput" class="section-input" placeholder="输入关键字搜索..."
+                            onkeydown="handleSearchInputKey(event)">
+                        <button id="searchButton" class="section-btn" onclick="performSearch()">搜索</button>
+                        <button id="clearSearchButton" class="section-btn clear-btn" style="display: none;"
+                            onclick="clearSearch()">清除搜索</button>
+                    </div>
+                    <div id="client-list-content"></div>
                 </div>
             </div>
         </div>

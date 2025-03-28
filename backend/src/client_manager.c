@@ -7,15 +7,12 @@
 
 Client *parseClientFromArgs(int argc, char *argv[], bool newID)
 {
-    if (argc < 10)
-    {
+    if (argc < 11)
         return NULL;
-    }
+
     Client *newClient = (Client *)malloc(sizeof(Client));
     if (!newClient)
-    {
         return NULL;
-    }
     memset(newClient, 0, sizeof(Client));
 
     if (newID)
@@ -62,7 +59,6 @@ Client *addClient(Client *head, Client *newClient)
     }
     else
         head = newClient;
-
     printf("客户 '%s' 添加成功！\n", newClient->name);
     return head;
 }
@@ -71,25 +67,24 @@ Client *deleteClient(Client *head, int id)
 {
     Client *current = head;
     Client *prev = NULL;
-    // 查找要删除的节点
-    while (current != NULL && current->id != id)
+    while (current && current->id != id)
     {
         prev = current;
         current = current->next;
     }
-    if (current == NULL)
+    if (!current)
     {
-        return head; // 没找到
+        return head;
     }
-    if (prev == NULL)
+    if (!prev)
     {
-        head = current->next; // 删除的是头节点
+        head = current->next;
     }
     else
     {
-        prev->next = current->next; // 从链表中移除
+        prev->next = current->next;
     }
-    free(current); // 释放内存
+    free(current);
     return head;
 }
 
@@ -125,12 +120,6 @@ Client *modifyClient(Client *head, Client *newClient)
     return head;
 }
 
-// 查询客户 (根据ID或名称等条件)
-void queryClient(Client *head, int id)
-{
-    printf("client_manager: queryClient - 功能待实现\n");
-}
-
 int cmp(Client *a, Client *b, int num)
 {
     switch (num)
@@ -151,35 +140,58 @@ int cmp(Client *a, Client *b, int num)
         return a->contact_level - b->contact_level;
     case 8:
         return strcmp(a->email, b->email);
+    case 9:
+        return a->phone_count - b->phone_count;
+    case -1:
+        return b->id - a->id;
+    case -2:
+        return strcmp(b->name, a->name);
+    case -3:
+        return strcmp(b->region, a->region);
+    case -4:
+        return strcmp(b->address, a->address);
+    case -5:
+        return strcmp(b->legal_person, a->legal_person);
+    case -6:
+        return b->size - a->size;
+    case -7:
+        return b->contact_level - a->contact_level;
+    case -8:
+        return strcmp(b->email, a->email);
+    case -9:
+        return b->phone_count - a->phone_count;
     default:
         return 0;
     }
 }
 
-Client *mergeSortedLists(Client *list1, Client *list2, int argc, int a[])
+Client *mergeSortedLists(Client *list1, Client *list2, int cnt, int a[])
 {
     if (!list1)
-        return list2; // 第一链表为空，返回第二链表
+        return list2;
     if (!list2)
-        return list1; // 第二链表为空，返回第一链表
-
+        return list1;
     Client *sortedList = NULL;
-    for (int i = 0; i < argc - 1; i++)
+    for (int i = 0; i < cnt; i++)
     {
         if (cmp(list1, list2, a[i]) < 0)
         {
             sortedList = list1;
-            sortedList->next = mergeSortedLists(list1->next, list2, argc, a);
+            sortedList->next = mergeSortedLists(list1->next, list2, cnt, a);
             break;
         }
         else if (cmp(list1, list2, a[i]) > 0)
         {
             sortedList = list2;
-            sortedList->next = mergeSortedLists(list1, list2->next, argc, a);
+            sortedList->next = mergeSortedLists(list1, list2->next, cnt, a);
             break;
         }
     }
-
+    if (!sortedList)
+    {
+        sortedList = list1;
+        sortedList->next = mergeSortedLists(list1->next, list2, cnt, a);
+    }
     return sortedList;
 }
 
@@ -187,87 +199,89 @@ void splitList(Client *head, Client **front, Client **back)
 {
     Client *slow = head;
     Client *fast = head->next;
-
-    // 使用快慢指针将链表分成两部分
-    while (fast != NULL)
+    while (fast)
     {
         fast = fast->next;
-        if (fast != NULL)
+        if (fast)
         {
             slow = slow->next;
             fast = fast->next;
         }
     }
-
-    *front = head;      // 前半部分链表
-    *back = slow->next; // 后半部分链表
-    slow->next = NULL;  // 断开链表
+    *front = head;
+    *back = slow->next;
+    slow->next = NULL;
 }
 
-// 排序函数
-Client *mergeSort(Client *head, int argc, int a[])
+Client *mergeSort(Client *head, int cnt, int a[])
 {
     if (!head || !head->next)
-    {
-        return head; // 链表为空或只有一个元素，无需排序
-    }
-
+        return head;
     Client *front = NULL;
     Client *back = NULL;
-
-    // 拆分链表为前后两部分
     splitList(head, &front, &back);
-
-    // 递归排序两部分
-    front = mergeSort(front, argc, a);
-    back = mergeSort(back, argc, a);
-
-    // 合并两个有序链表
-    return mergeSortedLists(front, back, argc, a);
+    front = mergeSort(front, cnt, a);
+    back = mergeSort(back, cnt, a);
+    return mergeSortedLists(front, back, cnt, a);
 }
 
-void displayAllClients(Client *head, int argc, char *argv[]) // num用来指示按什么排序
+void displayClients(Client *head, int argc, char *argv[])
 {
-    if (argc < 2)
+    if (argc < 3)
         return;
-    int a[argc - 1];
-    for (int i = 0; i < argc - 2; i++)
-        a[i] = atoi(argv[2 + i]);
-    a[argc - 2] = 1;
-    head = mergeSort(head, argc, a);
+    if (argc == 3)
+    {
+        argc++;
+        argv[3] = "1";
+    }
+    int cnt = argc - 3;
+    int a[cnt];
+    for (int i = 0; i < cnt; i++)
+        a[i] = atoi(argv[3 + i]);
+    head = mergeSort(head, cnt, a);
+    char pattern[10000] = "";
+    strcat(pattern, argv[2]);
+    toLower(pattern);
     Client *current = head;
     while (current)
     {
-        printf("%d,", current->id);
-        printf("%s,", current->name);
-        printf("%s,", current->region);
-        printf("%s,", current->address);
-        printf("%s,", current->legal_person);
-        printf("%d,", current->size);
-        printf("%d,", current->contact_level);
-        printf("%s,", current->email);
+        char text[10000] = "";
+        char tmp[50] = "";
+        snprintf(tmp, sizeof(tmp), "%d", current->id);
+        strcat(text, tmp);
+        strcat(text, current->name);
+        strcat(text, current->region);
+        strcat(text, current->address);
+        strcat(text, current->legal_person);
+        snprintf(tmp, sizeof(tmp), "%d", current->size);
+        strcat(text, tmp);
+        snprintf(tmp, sizeof(tmp), "%d", current->contact_level);
+        strcat(text, tmp);
+        strcat(text, current->email);
         for (int i = 0; i < current->phone_count; i++)
         {
-            char phone[100];
-            strncpy(phone, current->phones[i], sizeof(current->phones[i]) - 1);
-            phone[sizeof(current->phones[i]) - 1] = '\0';
-            printf("%s", phone);
-            if (i != current->phone_count - 1)
-                printf(";");
+            strcat(text, current->phones[i]);
         }
-        printf("\n");
+        toLower(text);
+        if (kmp(text, pattern) >= 0)
+        {
+            printf("%d,", current->id);
+            printf("%s,", current->name);
+            printf("%s,", current->region);
+            printf("%s,", current->address);
+            printf("%s,", current->legal_person);
+            printf("%d,", current->size);
+            printf("%d,", current->contact_level);
+            printf("%s,", current->email);
+            for (int i = 0; i < current->phone_count; i++)
+            {
+                char phone[100] = "";
+                strncpy(phone, current->phones[i], sizeof(current->phones[i]) - 1);
+                phone[sizeof(current->phones[i]) - 1] = '\0';
+                printf("%s;", phone);
+            }
+            printf("\n");
+        }
         current = current->next;
-    }
-}
-
-void freeClientList(Client *head)
-{
-    Client *current = head;
-    Client *next;
-    while (current != NULL)
-    {
-        next = current->next;
-        free(current);
-        current = next;
     }
 }

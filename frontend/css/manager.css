@@ -417,3 +417,76 @@ th:last-child,
 td:last-child {
     border-right: 1px solid #ddd;
 }
+
+th[data-sort-index] {
+    cursor: pointer;
+    /* 鼠标悬停时显示手型光标 */
+    position: relative;
+    /* 如果使用绝对定位的图标指示符，则需要 */
+    user-select: none;
+    /* 防止双击选中文字 */
+}
+
+/* 鼠标悬停在可排序表头上的效果 */
+th[data-sort-index]:hover {
+    background-color: #e0e0e0;
+    /* 轻微改变背景色以示可交互 */
+}
+
+/* 排序指示符 (▲/▼) 的样式 */
+.sort-indicator {
+    display: inline-block;
+    /* 允许设置边距 */
+    margin-left: 5px;
+    /* 与表头文字之间的间距 */
+    /* font-size: 0.8em;    /* 可以让指示符小一点 */
+    /* 可选 */
+    /* color: #555;         /* 指示符颜色 */
+    /* 可选 */
+    width: 1em;
+    /* 预留一点宽度，即使没有指示符时也能对齐 */
+    text-align: left;
+    /* 确保指示符靠左 */
+}
+
+.search-container {
+    display: flex;
+    /* 使用 Flexbox 布局 */
+    justify-content: flex-end;
+    /* 将元素靠右对齐 */
+    align-items: center;
+    /* 垂直居中对齐 */
+    gap: 10px;
+    /* 设置元素之间的间距 */
+    margin-bottom: 15px;
+    /* 与下方内容的间距 */
+}
+
+/* 调整搜索输入框的样式 */
+#searchInput.section-input {
+    width: auto;
+    /* 覆盖 section-input 的 width: 100% */
+    flex-grow: 1;
+    /* 允许输入框伸展以填充可用空间 */
+    max-width: 300px;
+    /* 可以设置一个最大宽度，防止过长 */
+    /* height, border, padding, shadow 等继承自 .section-input */
+}
+
+/* 搜索按钮和清除按钮将继承 .section-btn 的样式 */
+/* 无需为 #searchButton 添加额外样式，除非有特殊需求 */
+
+/* 为清除按钮添加特定样式 (可选) */
+.clear-btn {
+    background-color: #757575;
+    /* 设置一个灰色背景 */
+    color: var(--bg-color);
+    /* 使用背景色变量作为文字颜色 (通常是白色) */
+    /* border, shadow, padding, height 等继承自 .section-btn */
+}
+
+.clear-btn:hover {
+    background-color: #5e5e5e;
+    /* 鼠标悬停时深一点的灰色 */
+    /* 其他 hover 效果继承自 .section-btn:hover (如果需要的话) */
+}

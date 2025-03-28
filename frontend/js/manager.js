@@ -24,11 +24,11 @@ function submitUser() {
     })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('user-add-result').textContent = data.output; // Corrected ID
+            document.getElementById('user-add-result').textContent = data.output;
         })
         .catch(error => {
             console.error('Error:', error);
-            document.getElementById('user-add-result').textContent = '添加用户失败'; // Corrected ID
+            document.getElementById('user-add-result').textContent = '添加用户失败';
         });
 }
 
@@ -39,58 +39,132 @@ function showAddClient() {
     document.getElementById('client-list').classList.remove('active');
 }
 
+let currentSortParams = [];
+let currentSearchTerm = '';
+
+const indexToSortKey = {
+    0: 1,
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    5: 6,
+    6: 7,
+    7: 8,
+    8: 9
+};
+
+function fetchClientData() {
+    const contentDiv = document.getElementById('client-list-content');
+    const clearBtn = document.getElementById('clearSearchButton');
+
+    let queryParams = []; // 用于收集URL查询参数
+
+    // 如果有搜索词，添加到参数列表
+    if (currentSearchTerm) {
+        queryParams.push(`query=${encodeURIComponent(currentSearchTerm)}`);
+    }
+
+    // 如果有排序参数，添加到参数列表
+    if (currentSortParams.length > 0) {
+        queryParams.push(`sort=${encodeURIComponent(currentSortParams.join(','))}`);
+    }
+
+    // 组合查询字符串
+    const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+    fetch(`/api/fetch_clients${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                contentDiv.innerHTML = `<table><tbody><tr><td colspan="10">获取客户列表失败: ${data.error}</td></tr></tbody></table>`;
+                console.error('Error:', data.error);
+            } else {
+                generateClientTable(data.output); // 使用获取到的数据生成表格
+                // 根据是否存在搜索词，决定是否显示“清除搜索”按钮
+                clearBtn.style.display = currentSearchTerm ? 'inline-block' : 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contentDiv.innerHTML = '<table><tbody><tr><td colspan="10">获取客户列表时发生错误</td></tr></tbody></table>';
+        });
+}
+
 function showClientList() {
     document.getElementById('add-client').classList.remove('active');
     document.getElementById('client-list').classList.add('active');
     document.getElementById('add-user').classList.remove('active');
     document.getElementById('user-list').classList.remove('active');
 
-    fetch('/api/list_clients')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('client-list-content').innerHTML = '<tr><td colspan="9">获取客户列表失败</td></tr>'; // 修正
-                console.error('Error:', data.error);
-            } else {
-                // 解析数据并生成表格
-                generateClientTable(data.output); // 确保传递 data.output
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('client-list-content').innerHTML = '<tr><td colspan="9">获取客户列表失败</td></tr>'; // 修正
-        });
+    fetchClientData();
 }
 
-// 生成客户列表表格的函数
-function generateClientTable(output) {
-    console.log("Received output:", output);
-    const lines = output.trim().split('\n');
-    if (lines.length === 1 && lines[0] === "") {
-        document.getElementById('client-list-content').innerHTML = '<tr><td colspan="10">没有客户数据</td></tr>'; // colspan 增加到 10
+function handleSortClick(event) {
+    const header = event.currentTarget;
+    const columnIndex = parseInt(header.dataset.sortIndex, 10);
+    if (indexToSortKey[columnIndex] === undefined) {
         return;
     }
-    let tableHTML = '<table><thead><tr><th>ID</th><th>姓名</th><th>地区</th><th>地址</th><th>法人代表</th><th>规模</th><th>联系等级</th><th>邮箱</th><th>电话</th><th>操作</th></tr></thead><tbody>'; // 添加 "操作" 列
+    const sortKey = indexToSortKey[columnIndex];
+    const existingIndex = currentSortParams.findIndex(p => Math.abs(p) === sortKey);
+    if (existingIndex === -1) {
+        currentSortParams.push(sortKey);
+    } else {
+        const currentValue = currentSortParams[existingIndex];
+        if (currentValue > 0) {
+            currentSortParams[existingIndex] = -sortKey;
+        } else {
+            currentSortParams.splice(existingIndex, 1);
+        }
+    }
+    fetchClientData();
+}
+
+
+function generateClientTable(output) {
+    const lines = output.trim().split('\n');
+    const container = document.getElementById('client-list-content');
+    if (lines.length === 1 && lines[0] === "") {
+
+        container.innerHTML = '<table><tbody><tr><td colspan="10">没有客户数据</td></tr></tbody></table>';
+        return;
+    }
+    const headers = ['ID', '姓名', '地区', '地址', '法人代表', '规模', '联系等级', '邮箱', '电话', '操作'];
+    let tableHTML = '<table><thead><tr>';
+
+    headers.forEach((headerText, index) => {
+        const sortKey = indexToSortKey[index];
+        if (sortKey !== undefined) {
+            const currentSort = currentSortParams.find(p => Math.abs(p) === sortKey);
+            let sortClass = '';
+            let indicator = '';
+            if (currentSort) {
+
+                sortClass = currentSort > 0 ? 'sort-asc' : 'sort-desc';
+                indicator = currentSort > 0 ? ' ▲' : ' ▼';
+            }
+            tableHTML += `<th data-sort-index="${index}" onclick="handleSortClick(event)" class="${sortClass}">${headerText}<span class="sort-indicator">${indicator}</span></th>`;
+        } else {
+            tableHTML += `<th>${headerText}</th>`;
+        }
+    });
+
+    tableHTML += '</tr></thead><tbody>';
+
     lines.forEach(line => {
         const fields = line.split(',');
         if (fields.length < 9) {
-            console.warn("Skipping line due to insufficient fields:", line);
-            return; // 跳过字段不足的行
+            console.warn("因字段不足跳过此行:", line);
+            return;
         }
-        tableHTML += `<tr data-id="${fields[0]}">`; // 将 data-id 移动到 tr
-        // 前8个字段
+        tableHTML += `<tr data-id="${fields[0]}">`;
         for (let i = 0; i < 8; i++) {
-            tableHTML += `<td>${fields[i]}</td>`;
+            tableHTML += `<td>${fields[i] || ''}</td>`;
         }
-        // 电话号码
-        const phones = fields[8].split(';');
-        let phoneHTML = '';
-        phones.forEach(phone => {
-            phoneHTML += `${phone.trim()}<br>`;
-        });
-        // 修改这里，添加 data-phones 属性存储原始电话号码字符串
-        tableHTML += `<td data-phones="${fields[8]}">${phoneHTML}</td>`;
-        // 操作按钮 (添加 data-id 属性)
+        const phones = (fields[8] || '').split(';').filter(p => p.trim() !== '');
+        let phoneHTML = phones.join('<br>');
+        tableHTML += `<td data-phones="${fields[8] || ''}">${phoneHTML}</td>`;
         tableHTML += `<td>
             <button class="edit-btn">编辑</button>
             <button class="delete-btn">删除</button>
@@ -98,23 +172,22 @@ function generateClientTable(output) {
         tableHTML += '</tr>';
     });
     tableHTML += '</tbody></table>';
-    document.getElementById('client-list-content').innerHTML = tableHTML;
-    // 添加事件监听器（在表格生成后）
+    container.innerHTML = tableHTML;
     addTableButtonListeners();
 }
 
 function addTableButtonListeners() {
-    // 编辑按钮
+
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', function () {
-            const clientId = this.closest('tr').dataset.id; //改动
+            const clientId = this.closest('tr').dataset.id;
             editClient(clientId);
         });
     });
-    // 删除按钮
+
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', function () {
-            const clientId = this.closest('tr').dataset.id;//改动
+            const clientId = this.closest('tr').dataset.id;
             deleteClient(clientId);
         });
     });
@@ -131,7 +204,6 @@ function addPhoneInput() {
     newInput.name = 'phones';
     newInput.className = 'section-input phone-input';
     newInput.placeholder = '请输入电话号码';
-    // newInput.required = true; //  根据需要决定是否为必填
 
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
@@ -145,7 +217,6 @@ function addPhoneInput() {
     phoneInputContainer.appendChild(removeButton);
     container.appendChild(phoneInputContainer);
 
-    // Add this to show the remove button when there is more than one phone input
     if (container.children.length > 1) {
         for (let i = 0; i < container.children.length; i++) {
             container.children[i].querySelector('.remove-phone-btn').style.display = 'inline-block';
@@ -174,7 +245,6 @@ function submitClient() {
         }
     }
 
-
     fetch('/api/add_client', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -196,15 +266,10 @@ function submitClient() {
 
 function resetPhoneInputs() {
     const container = document.getElementById('phone-inputs-container');
-    // Remove all phone inputs except the first one
     while (container.children.length > 1) {
         container.removeChild(container.lastChild);
     }
-
-    // Reset the first phone input
     container.querySelector('.phone-input').value = '';
-
-    // Hide remove button
     const removeBtn = container.querySelector('.remove-phone-btn');
     if (removeBtn) {
         removeBtn.style.display = 'none';
@@ -219,49 +284,42 @@ function editClient(clientId) {
         return;
     }
 
-    // 1. 创建一个保存按钮（只创建一次）
     const saveButton = document.createElement('button');
     saveButton.textContent = '保存';
     saveButton.classList.add('save-btn');
     saveButton.onclick = function () { saveClient(clientId); };
 
-    // 2. 遍历单元格，创建 input 元素，并添加唯一标识
-    for (let i = 1; i < row.cells.length - 1; i++) { // -1 排除操作列
+    for (let i = 1; i < row.cells.length - 1; i++) {
         const cell = row.cells[i];
         const text = cell.textContent;
         const input = document.createElement('input');
         input.type = 'text';
         input.value = text;
-        // 添加唯一标识 (例如，使用 data-column 属性)
-        input.dataset.column = i; // 存储列索引
-        cell.innerHTML = ''; // 清空单元格内容
+        input.dataset.column = i;
+        cell.innerHTML = '';
         cell.appendChild(input);
     }
 
-    // 3. 特殊处理电话号码单元格
-    const phoneCell = row.cells[8]; // 电话号码在第9列（索引8）
-    // 从 data-phones 属性获取电话号码字符串
+    const phoneCell = row.cells[8];
     const phoneString = phoneCell.dataset.phones;
-    console.log("Phone String from data-phones:", phoneString); // 打印 data-phones 中的电话号码字符串
-    const phones = phoneString.split(';'); // 使用 data-phones 中的字符串分割
-    phoneCell.innerHTML = ''; // 清空
+    console.log("Phone String from data-phones:", phoneString);
+    const phones = phoneString.split(';');
+    phoneCell.innerHTML = '';
     phones.forEach(phone => {
         const input = document.createElement('input');
         input.type = 'text';
         input.value = phone.trim();
-        input.dataset.column = 'phones'; // 特殊标识
+        input.dataset.column = 'phones';
         phoneCell.appendChild(input);
         phoneCell.appendChild(document.createElement('br'));
     });
 
-    // 4. 替换编辑按钮为保存按钮
     const actionsCell = row.cells[row.cells.length - 1];
     const editButton = actionsCell.querySelector('.edit-btn');
     if (editButton) {
-        actionsCell.replaceChild(saveButton, editButton); // 使用 replaceChild
+        actionsCell.replaceChild(saveButton, editButton);
     }
 }
-
 
 function saveClient(clientId) {
     console.log("Save client with ID:", clientId);
@@ -270,8 +328,6 @@ function saveClient(clientId) {
         console.error("Row not found for client ID:", clientId);
         return;
     }
-
-    // 使用 data-column 属性获取输入框的值
     const name = row.querySelector('[data-column="1"]').value;
     const region = row.querySelector('[data-column="2"]').value;
     const address = row.querySelector('[data-column="3"]').value;
@@ -281,10 +337,8 @@ function saveClient(clientId) {
     const email = row.querySelector('[data-column="7"]').value;
     const phoneInputs = Array.from(row.querySelectorAll('[data-column="phones"]'));
     const phones = phoneInputs.map(input => input.value.trim()).filter(p => p !== "").join(';');
-
     const updatedData = { name, region, address, legal_person, size, contact_level, email, phones };
     console.log(updatedData);
-    // ... 其余的 fetch 请求代码 ...
     fetch(`/api/update_client/${clientId}`, {
         method: 'PUT',
         headers: {
@@ -296,15 +350,15 @@ function saveClient(clientId) {
         .then(data => {
             if (data.error) {
                 console.error('Error updating client:', data.error);
-                alert('更新客户信息失败：' + data.error); // 显示错误消息
+                alert('更新客户信息失败：' + data.error);
             } else {
-                alert('客户信息已更新！'); // 显示成功消息
-                showClientList();  // 重新加载列表
+                alert('客户信息已更新！');
+                showClientList();
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('更新客户信息失败：' + error); // 显示错误消息
+            alert('更新客户信息失败：' + error);
         });
 }
 
@@ -320,7 +374,7 @@ function deleteClient(clientId) {
                     console.error('Error deleting client:', data.error);
                     alert('删除客户失败：' + data.error);
                 } else {
-                    // 删除成功，重新加载客户列表
+
                     showClientList();
                 }
             })
@@ -329,4 +383,22 @@ function deleteClient(clientId) {
                 alert("删除失败" + error);
             });
     }
+}
+
+function handleSearchInputKey(event) {
+    if (event.key === 'Enter') {
+        performSearch();
+    }
+}
+
+function performSearch() {
+    currentSearchTerm = document.getElementById('searchInput').value.trim(); // 更新搜索词状态
+    fetchClientData(); // 调用统一获取函数
+}
+
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    currentSearchTerm = ''; // 清除搜索词状态
+    fetchClientData(); // 刷新数据
 }

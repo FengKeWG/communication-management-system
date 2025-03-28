@@ -5,7 +5,7 @@ import subprocess
 app = Flask(__name__, static_folder="../frontend", static_url_path="")
 
 
-# 定义根路由，用于提供前端页面
+# 定义根路由
 @app.route("/")
 def index():
     return app.send_static_file("index.html")
@@ -25,7 +25,7 @@ def login():
     if error:
         return jsonify({"error": "登录失败，服务器错误"}), 500
 
-    parts = output.strip().split()  # strip()去除空格，split()转换为数组
+    parts = output.strip().split()
     if len(parts) != 2:
         return jsonify({"error": "登录失败，用户名或密码错误"}), 401
 
@@ -54,10 +54,8 @@ def add_user():
     return jsonify({"output": output.strip(), "error": error.strip()})
 
 
-@app.route("/api/delete_client/<client_id>", methods=["DELETE"])  # 使用 DELETE 方法
-def delete_client(client_id):  # 接收 client_id 作为参数
-    # data = request.get_json()  不需要从 JSON 中获取，直接使用 URL 参数
-    # client_id = data.get("id")
+@app.route("/api/delete_client/<client_id>", methods=["DELETE"])
+def delete_client(client_id):
     process = subprocess.Popen(
         ["./main", "delete_client", str(client_id)],
         stdout=subprocess.PIPE,
@@ -66,12 +64,12 @@ def delete_client(client_id):  # 接收 client_id 作为参数
     )
     output, error = process.communicate()
     if error:
-        return jsonify({"error": error.strip()}), 400  # 错误处理
+        return jsonify({"error": error.strip()}), 400
     return jsonify({"output": output.strip(), "error": error.strip()})
 
 
-@app.route("/api/update_client/<client_id>", methods=["PUT"])  # 使用 PUT 方法
-def update_client(client_id):  # 接收 client_id 作为参数
+@app.route("/api/update_client/<client_id>", methods=["PUT"])
+def update_client(client_id):
     data = request.get_json()
     # 将字典转换为列表，并按C程序期望的顺序排列
     client_data = [
@@ -122,19 +120,51 @@ def add_client():
     return jsonify({"output": output.strip(), "error": error.strip()})
 
 
-# 定义 /api/list_clients 路由，用于处理获取客户端列表的 GET 请求
-@app.route("/api/list_clients", methods=["GET"])
-def list_clients():
+@app.route("/api/fetch_clients", methods=["GET"])
+def get_clients():
+    # 从请求URL中获取 query 参数，如果不存在则为空字符串
+    search_term = request.args.get("query", "").strip()
+    # 从请求URL中获取 sort 参数，如果不存在则为空字符串
+    sort_param_string = request.args.get("sort", "")
+
+    # 构建调用 C 程序的命令，使用一个新的命令名，如 "get_clients"
+    command = ["./main", "get_clients"]
+
+    # 添加搜索词参数 (即使为空也传递，让C程序知道没有搜索词)
+    command.append(
+        search_term if search_term else ""
+    )  # 如果 search_term 为空，传递空字符串
+
+    # 添加排序参数 (如果存在)
+    if sort_param_string:
+        sort_args = sort_param_string.split(",")
+        # 校验排序参数格式 (可选但推荐)
+        valid_sort_args = [
+            arg
+            for arg in sort_args
+            if arg and (arg.isdigit() or (arg.startswith("-") and arg[1:].isdigit()))
+        ]
+        if valid_sort_args:
+            command.extend(valid_sort_args)
+    # else: # 可选项：如果没有提供排序参数，可以添加一个默认排序，例如按ID升序
+    #     command.append('1')
+
+    print("准备执行命令:", command)  # 调试信息
     process = subprocess.Popen(
-        ["./main", "list_client"],
+        command,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
     output, error = process.communicate()
-    print("C program output:", output)  # 调试：打印 C 程序的输出
-    print("C program error:", error)  # 调试：打印 C 程序的错误
-    return jsonify({"output": output, "error": error})
+    print("C 程序 stdout:", output.strip())  # 调试信息
+    if error:
+        print("C 程序 stderr:", error.strip())  # 调试信息
+        # 将错误信息返回给前端
+        return jsonify({"output": "", "error": error.strip()}), 500  # 或 400
+
+    # 成功时，返回输出，错误信息为空字符串
+    return jsonify({"output": output.strip(), "error": ""})
 
 
 # 如果是直接运行该脚本，则启动 Flask 应用
