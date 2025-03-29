@@ -7,12 +7,13 @@ function login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username, password: password })
     })
-        .then(response => response.json())
+        .then(response => {
+            return response.json();
+        })
         .then(data => {
             if (data.access_token) {
                 sessionStorage.setItem("token", data.access_token);
                 sessionStorage.setItem("role", data.role);
-
                 switch (data.role) {
                     case "manager":
                         window.location.href = "/pages/manager.html";
@@ -26,5 +27,9 @@ function login() {
             } else {
                 alert("登录失败!");
             }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Error");
         });
 }

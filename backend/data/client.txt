@@ -1,5 +1,1 @@
-15300001,李明,NY,123 Main Street,小李,2,0,li.ming@example.com ,110;120;130
-15300002,穆罕默德·本·拉希德·阿勒马克图姆,TX,456 Oak Avenue,美美,0,1,mei.zhang@example.com ,220
-15300003,王强,FL,789 Pine Lane,强哥,1,1,qiang.wang@example.com ,330;340;350;360;370;380;390
-15300004,赵丽,CA,101 Elm Street,丽丽,0,0,li.zhao@example.com ,440;450
-15300005,钱伟,WA,222 Cedar Road,老钱,2,1,wei.qian@example.com ,550;560;570
+10895600,施博文,CA,3336 Red Maple Drive,555,666,777,@@1,$$;11,2.2.222.333.111.@@@e.ERT

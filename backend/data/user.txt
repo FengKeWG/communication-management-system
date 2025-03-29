@@ -1,6 +1,1 @@
-admin,7dd1705a,manager
-WindGuest,b8789fb,sales
-WindGuest,b8789fb,sales
-WindGuest,b8789fb,sales
-WindGuest,b8789fb,sales
-admin,7dd1705a,
+1,admin,7dd1705a,manager

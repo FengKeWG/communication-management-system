@@ -2,7 +2,6 @@
 #define FILE_MANAGER_H
 
 #include "client.h"
-#include "contact.h"
 #include "sales.h"
 #include "communication.h"
 #include "group.h"
@@ -16,9 +15,6 @@ int saveUsersToFile(const char *filename, User *head);
 
 Client *loadClientsFromFile(const char *filename);
 int saveClientsToFile(const char *filename, Client *head);
-
-Contact *loadContactsFromFile(const char *filename);
-int saveContactsToFile(const char *filename, Contact *head);
 
 Sales *loadSalesFromFile(const char *filename);
 int saveSalesToFile(const char *filename, Sales *head);

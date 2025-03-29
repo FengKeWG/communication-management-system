@@ -2,11 +2,22 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+typedef struct Contact
+{
+    int id;
+    char name[100];
+    char gender[10];
+    int birth_year;
+    int birth_month;
+    int birth_day;
+    char email[100];
+    int phone_count;
+    char phones[100][100];
+} Contact;
+
 typedef struct Client
 {
     int id;
-    int contact_count;
-    int contact_id[100]; // 联络员
     char name[100];
     char region[100];
     char address[100];
@@ -16,6 +27,8 @@ typedef struct Client
     char email[100];
     int phone_count;
     char phones[100][100];
+    int contact_count;
+    Contact contacts[100]; // 联络员Z
     struct Client *next;
 } Client;
 

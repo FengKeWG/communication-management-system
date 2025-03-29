@@ -3,8 +3,8 @@
 
 #include "user.h"
 
-User *authenticateUser(User *userList, const char *username, const char *password);
+User *authenticateUser(User *userList, char *username, char *password);
 User *addUser(User *head, User *newUser);
-User *parseUserFromArgs(int argc, char *argv[]);
+User *parseUserFromString(char *userString, bool newID, bool hash);
 
 #endif

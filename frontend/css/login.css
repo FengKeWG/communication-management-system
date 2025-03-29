@@ -160,7 +160,6 @@ body {
     text-decoration: underline;
 }
 
-/* 翻转卡片 */
 .flip-card__inner {
     width: 300px;
     height: 350px;

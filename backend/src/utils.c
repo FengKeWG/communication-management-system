@@ -95,6 +95,62 @@ void toLower(char *s)
 {
     if (s == NULL)
         return;
+    setlocale(LC_CTYPE, "");
     for (int i = 0; s[i]; i++)
-        s[i] = tolower((unsigned char)s[i]);
+        if (isalpha((unsigned char)s[i]))
+            s[i] = tolower((unsigned char)s[i]);
+}
+
+int stoi(char *str)
+{
+    if (str == NULL || str[0] == '\0')
+        return 0;
+    int sign = 1;
+    int res = 0;
+    int i = 0;
+    while (isspace(str[i]))
+    {
+        i++;
+    }
+    if (str[i] == '+' || str[i] == '-')
+    {
+        sign = (str[i] == '-') ? -1 : 1;
+        i++;
+    }
+    while (isdigit(str[i]))
+    {
+        int digit = str[i] - '0';
+        if (res > INT_MAX / 10 || (res == INT_MAX / 10 && digit > INT_MAX % 10))
+        {
+            return 0;
+        }
+        if (res < INT_MIN / 10 || (res == INT_MIN / 10 && -digit < INT_MIN % 10))
+        {
+            return 0;
+        }
+        res = res * 10 + sign * digit;
+        i++;
+    }
+    if (str[i] != '\0')
+    {
+        return 0;
+    }
+    return res;
+}
+
+char *scpy(char *dest, const char *src, size_t dest_size)
+{
+    if (!dest || dest_size == 0)
+        return dest;
+    if (src)
+    {
+        strncpy(dest, src, dest_size - 1);
+    }
+    else
+    {
+        dest[0] = '\0';
+        return dest;
+    }
+    dest[dest_size - 1] = '\0';
+    return dest;
 }

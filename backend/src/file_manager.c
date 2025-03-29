@@ -1,17 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "file_manager.h"
+#include "client_manager.h"
+#include "user_manager.h"
 
 User *loadUsersFromFile(const char *filename)
 {
 
     FILE *fp = fopen(filename, "r");
     if (!fp)
-    {
-        perror("打开用户文件失败");
         return NULL;
-    }
 
     User *head = NULL, *tail = NULL;
     char line[1024];
@@ -20,17 +20,11 @@ User *loadUsersFromFile(const char *filename)
         if (line[0] == '\n')
             continue;
 
-        User *newUser = malloc(sizeof(User));
+        User *newUser = parseUserFromString(line, false, false);
         if (!newUser)
-        {
-            perror("内存分配失败");
-            fclose(fp);
-            return head;
-        }
+            continue;
 
-        sscanf(line, "%[^,],%[^,],%s", newUser->username, newUser->password_hash, newUser->role);
         newUser->next = NULL;
-
         if (head)
         {
             tail->next = newUser;
@@ -51,15 +45,12 @@ int saveUsersToFile(const char *filename, User *head)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp)
-    {
-        perror("写入文件失败");
         return -1;
-    }
 
     User *current = head;
     while (current)
     {
-        fprintf(fp, "%s,%s,%s\n", current->username, current->password_hash, current->role);
+        fprintf(fp, "%d,%s,%s,%s\n", current->id, current->username, current->password_hash, current->role);
         current = current->next;
     }
 
@@ -71,62 +62,29 @@ Client *loadClientsFromFile(const char *filename)
 {
     FILE *fp = fopen(filename, "r");
     if (!fp)
-    {
-        perror("无法打开文件");
         return NULL;
-    }
 
     Client *head = NULL, *tail = NULL;
-    char line[1024];
-    char temp_phones[1024];
+    char line[8192];
 
     while (fgets(line, sizeof(line), fp))
     {
-        if (line[0] == '\n')
+        if (line[0] == '\n' || line[0] == '\0')
             continue;
 
-        Client *newClient = (Client *)malloc(sizeof(Client));
-        if (!newClient)
-        {
-            perror("内存分配失败");
-            fclose(fp);
-            return head;
-        }
-        memset(newClient, 0, sizeof(Client)); // 初始化
-
-        int fields_read = sscanf(line, "%d,%[^,],%[^,],%[^,],%[^,],%d,%d,%[^,],%[^\n]",
-                                 &newClient->id, newClient->name, newClient->region,
-                                 newClient->address, newClient->legal_person, &newClient->size,
-                                 &newClient->contact_level, newClient->email, temp_phones);
-
-        if (fields_read < 8)
-        {
-            fprintf(stderr, "Error reading line: %s\n", line);
-            free(newClient);
-            continue; // 如果字段不足，跳过这一行
-        }
-
-        // 处理电话号码
-        newClient->phone_count = 0;
-        char *phone_token = strtok(temp_phones, ";");
-        while (phone_token != NULL && newClient->phone_count < 100)
-        {
-            strncpy(newClient->phones[newClient->phone_count], phone_token, sizeof(newClient->phones[0]) - 1);
-            newClient->phones[newClient->phone_count][sizeof(newClient->phones[0]) - 1] = '\0';
-            newClient->phone_count++;
-            phone_token = strtok(NULL, ";");
-        }
+        Client *newClient = parseClientFromString(line, false);
 
         newClient->next = NULL;
-
-        if (head == NULL)
+        if (!newClient)
+            continue;
+        if (head)
         {
-            head = newClient;
+            tail->next = newClient;
             tail = newClient;
         }
         else
         {
-            tail->next = newClient;
+            head = newClient;
             tail = newClient;
         }
     }
@@ -139,24 +97,37 @@ int saveClientsToFile(const char *filename, Client *head)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp)
-    {
-        perror("写入文件失败");
         return -1;
-    }
 
     Client *current = head;
     while (current)
     {
-        fprintf(fp, "%d,%s,%s,%s,%s,%d,%d,%s,",
-                current->id, current->name, current->region, current->address,
-                current->legal_person, current->size, current->contact_level,
-                current->email);
+        fprintf(fp, "%d,%s,%s,%s,%s,%d,%d,%s,", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
+
         for (int i = 0; i < current->phone_count; i++)
         {
             fprintf(fp, "%s", current->phones[i]);
             if (i < current->phone_count - 1)
                 fprintf(fp, ";");
         }
+        fprintf(fp, ",");
+
+        for (int i = 0; i < current->contact_count; i++)
+        {
+            Contact *contact = &current->contacts[i];
+            fprintf(fp, "%s.%s.%d.%d.%d.%s.", contact->name, contact->gender, contact->birth_year, contact->birth_month, contact->birth_day, contact->email);
+
+            for (int j = 0; j < contact->phone_count; j++)
+            {
+                fprintf(fp, "%s", contact->phones[j]);
+                if (j < contact->phone_count - 1)
+                    fprintf(fp, "~");
+            }
+
+            if (i < current->contact_count - 1)
+                fprintf(fp, ";");
+        }
+
         fprintf(fp, "\n");
         current = current->next;
     }

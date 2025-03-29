@@ -76,48 +76,63 @@
                 <div class="form-card">
                     <h2 class="title">添加客户</h2>
                     <form id="client-form" class="section-form">
+                        <!-- Client 基本信息输入框 -->
                         <div>
-                            <label class="section-label" for="name">客户名称:</label>
-                            <input type="text" id="name" name="name" class="section-input" required>
+                            <label class="section-label" for="client-name">客户名称:</label>
+                            <input type="text" id="client-name" name="name" class="section-input" required>
                         </div>
                         <div>
-                            <label class="section-label" for="region">客户区域:</label>
-                            <input type="text" id="region" name="region" class="section-input" required>
+                            <label class="section-label" for="client-region">客户区域:</label>
+                            <input type="text" id="client-region" name="region" class="section-input" required>
                         </div>
                         <div>
-                            <label class="section-label" for="address">客户地址:</label>
-                            <input type="text" id="address" name="address" class="section-input" required>
+                            <label class="section-label" for="client-address">客户地址:</label>
+                            <input type="text" id="client-address" name="address" class="section-input" required>
                         </div>
                         <div>
-                            <label class="section-label" for="legal_person">客户法人:</label>
-                            <input type="text" id="legal_person" name="legal_person" class="section-input" required>
+                            <label class="section-label" for="client-legal_person">客户法人:</label>
+                            <input type="text" id="client-legal_person" name="legal_person" class="section-input"
+                                required>
                         </div>
                         <div>
-                            <label class="section-label" for="size">客户规模 (1-大, 2-中, 3-小):</label>
-                            <input type="number" id="size" class="section-input" name="size" required>
+                            <label class="section-label" for="client-size">客户规模:</label>
+                            <input type="number" id="client-size" class="section-input" name="size" placeholder="例如：500"
+                                required>
                         </div>
                         <div>
-                            <label class="section-label" for="contact_level">业务联系程度 (1-高, 2-中, 3-低):</label>
-                            <input type="number" id="contact_level" class="section-input" name="contact_level" required>
+                            <label class="section-label" for="client-contact_level">业务联系程度:</label>
+                            <input type="number" id="client-contact_level" class="section-input" name="contact_level"
+                                placeholder="例如：3" required>
                         </div>
                         <div>
-                            <label class="section-label" for="email">客户邮箱:</label>
-                            <input type="email" id="email" name="email" class="section-input" required>
+                            <label class="section-label" for="client-email">客户邮箱:</label>
+                            <input type="email" id="client-email" name="email" class="section-input" required>
                         </div>
                         <div>
-                            <label class="section-label">电话号码:</label>
-                            <div id="phone-inputs-container">
+                            <label class="section-label">客户电话号码:</label>
+                            <div id="client-phone-inputs-container">
                                 <!-- 初始电话号码输入框 -->
                                 <div class="phone-input-container">
-                                    <input type="text" name="phones" class="section-input phone-input"
-                                        placeholder="请输入电话号码" required>
-                                    <button type="button" class="remove-phone-btn" style="display: none;">-</button>
+                                    <input type="text" name="client_phones" class="section-input phone-input"
+                                        placeholder="请输入客户电话号码"> <!-- 非 required，允许为空 -->
+                                    <button type="button" class="remove-phone-btn" style="display: none;"
+                                        onclick="removePhoneInput(this)">-</button>
                                 </div>
-
                             </div>
-                            <button type="button" class="add-phone-btn" onclick="addPhoneInput()">+</button>
+                            <button type="button" class="add-phone-btn" onclick="addClientPhoneInput()">+</button>
                         </div>
-                        <!-- 使用 onclick 调用 submitClient 函数 -->
+
+                        <hr> <!-- 分隔线 -->
+
+                        <!-- 联络员信息区域 -->
+                        <div>
+                            <label class="section-label">联络员信息:</label>
+                            <div id="contacts-container">
+                                <!-- 联络员表单组将动态添加到这里 -->
+                            </div>
+                            <button type="button" class="add-contact-btn" onclick="addContactGroup()">+ 添加联络员</button>
+                        </div>
+
                         <button type="button" class="section-btn" onclick="submitClient()">提交</button>
                     </form>
                     <!-- 显示添加客户结果的消息 -->
@@ -136,8 +151,19 @@
                         <button id="clearSearchButton" class="section-btn clear-btn" style="display: none;"
                             onclick="clearSearch()">清除搜索</button>
                     </div>
+                    <!-- 表格容器 -->
                     <div id="client-list-content"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contact-details-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('contact-details-modal')">&times;</span>
+            <h2>联络人详细信息</h2>
+            <div id="contact-details-content">
+                <!-- 联络人详情将动态填充到这里 -->
             </div>
         </div>
     </div>

@@ -1,9 +1,8 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
-#include "client.h"  // 需要用到 Client 结构体
-#include "contact.h" // 需要用到 Contact 结构体
-#include "sales.h"   // 需要用到 Employee 结构体
+#include "client.h" // 需要用到 Client 结构体
+#include "sales.h"  // 需要用到 Employee 结构体
 
 typedef struct CommunicationRecord
 {

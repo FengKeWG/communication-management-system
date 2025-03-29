@@ -1,11 +1,9 @@
 from flask import Flask, request, jsonify
 import subprocess
 
-# 创建 Flask 应用实例，指定静态文件目录
 app = Flask(__name__, static_folder="../frontend", static_url_path="")
 
 
-# 定义根路由
 @app.route("/")
 def index():
     return app.send_static_file("index.html")
@@ -68,23 +66,16 @@ def delete_client(client_id):
     return jsonify({"output": output.strip(), "error": error.strip()})
 
 
-@app.route("/api/update_client/<client_id>", methods=["PUT"])
-def update_client(client_id):
+@app.route("/api/update_client", methods=["PUT"])
+def update_client():
     data = request.get_json()
-    # 将字典转换为列表，并按C程序期望的顺序排列
-    client_data = [
-        data.get("name", ""),
-        data.get("region", ""),
-        data.get("address", ""),
-        data.get("legal_person", ""),
-        str(data.get("size", 0)),  # 转换为字符串，如果为空则为 "0"
-        str(data.get("contact_level", 0)),  # 转换为字符串，如果为空则为 "0"
-        data.get("email", ""),
-        data.get("phones", ""),
-    ]
+    client_string = data.get("clientData")
     process = subprocess.Popen(
-        ["./main", "update_client", str(client_id)]
-        + client_data,  # 将 client_id 加到参数列表
+        [
+            "./main",
+            "update_client",
+            client_string,
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -98,25 +89,20 @@ def update_client(client_id):
 @app.route("/api/add_client", methods=["POST"])
 def add_client():
     data = request.json
+    client_string = data.get("clientData")
     process = subprocess.Popen(
         [
             "./main",
             "add_client",
-            "",
-            data["name"],
-            data["region"],
-            data["address"],
-            data["legal_person"],
-            str(data["size"]),
-            str(data["contact_level"]),
-            data["email"],
-            data["phones"],
+            client_string,
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
     output, error = process.communicate()
+    print(f"后端报错：{error}")
+    print(f"后端输出：{output}")
     return jsonify({"output": output.strip(), "error": error.strip()})
 
 

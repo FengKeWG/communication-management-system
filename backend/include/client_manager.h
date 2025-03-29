@@ -3,7 +3,7 @@
 
 #include "client.h"
 
-Client *parseClientFromArgs(int argc, char *argv[], bool newID);
+Client *parseClientFromString(char *inputString, bool newID);
 Client *addClient(Client *head, Client *newClient);
 Client *deleteClient(Client *head, int id);
 Client *modifyClient(Client *head, Client *newClient);
