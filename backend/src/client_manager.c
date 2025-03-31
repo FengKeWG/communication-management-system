@@ -20,7 +20,7 @@ Client *parseClientFromString(char *inputString, bool newID)
     char idStr[50] = {0};
     char phonesStr[1024] = {0};
     char contactsStr[4096] = {0};
-    int scanned = sscanf(inputString, "%[^,],%[^,],%[^,],%[^,],%[^,],%d,%d,%[^,],%[^,],%[^\n]", idStr, newClient->name, newClient->region, newClient->address, newClient->legal_person, &newClient->size, &newClient->contact_level, newClient->email, phonesStr, contactsStr);
+    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^\n]", idStr, newClient->name, newClient->region, newClient->address, newClient->legal_person, &newClient->size, &newClient->contact_level, newClient->email, phonesStr, contactsStr);
     if (scanned < 9)
     {
         free(newClient);
@@ -28,23 +28,23 @@ Client *parseClientFromString(char *inputString, bool newID)
     }
     newClient->id = newID ? uidGenerate() : stoi(idStr);
     newClient->phone_count = 0;
-    char *phone_token = strtok(phonesStr, ";");
+    char *phone_token = strtok(phonesStr, ",");
     while (phone_token && newClient->phone_count < 100)
     {
         scpy(newClient->phones[newClient->phone_count], phone_token, sizeof(newClient->phones[0]));
         newClient->phone_count++;
-        phone_token = strtok(NULL, ";");
+        phone_token = strtok(NULL, ",");
     }
     newClient->contact_count = 0;
     if (contactsStr[0] != '\0')
     {
-        char *contact_str = strtok(contactsStr, ";");
+        char *contact_str = strtok(contactsStr, ",");
         while (contact_str && newClient->contact_count < 100)
         {
             Contact *current_contact = &newClient->contacts[newClient->contact_count];
             memset(current_contact, 0, sizeof(Contact));
             char contact_phones[1024] = {0};
-            int contact_fields = sscanf(contact_str, "%[^.].%[^.].%d.%d.%d.%[^.].%[^\n]", current_contact->name, current_contact->gender, &current_contact->birth_year, &current_contact->birth_month, &current_contact->birth_day, current_contact->email, contact_phones);
+            int contact_fields = sscanf(contact_str, "%[^=]=%[^=]=%d=%d=%d=%[^=]=%[^\n]", current_contact->name, current_contact->gender, &current_contact->birth_year, &current_contact->birth_month, &current_contact->birth_day, current_contact->email, contact_phones);
             if (strlen(current_contact->gender) == 0)
                 strcpy(current_contact->gender, "未知");
             current_contact->phone_count = 0;
@@ -59,7 +59,7 @@ Client *parseClientFromString(char *inputString, bool newID)
                 }
             }
             newClient->contact_count++;
-            contact_str = strtok(NULL, ";");
+            contact_str = strtok(NULL, ",");
         }
     }
     newClient->next = NULL;
@@ -303,18 +303,18 @@ void displayClients(Client *head, int argc, char *argv[])
         toLower(text);
         if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
         {
-            printf("%d,%s,%s,%s,%s,%d,%d,%s,", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
+            printf("%d;%s;%s;%s;%s;%d;%d;%s;", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
             for (int i = 0; i < current->phone_count; i++)
-                printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ";");
-            printf(",");
+                printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
+            printf(";");
             for (int i = 0; i < current->contact_count; i++)
             {
                 Contact *c = &current->contacts[i];
-                printf("%s.%s.%d.%d.%d.%s.", c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
+                printf("%s=%s=%d=%d=%d=%s=", c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
                 for (int j = 0; j < c->phone_count; j++)
                     printf("%s%s", c->phones[j], (j == c->phone_count - 1) ? "" : "~");
                 if (i < current->contact_count - 1)
-                    printf(";");
+                    printf(",");
             }
             printf("\n");
         }

@@ -8,34 +8,24 @@
 </head>
 
 <body>
-    <div class="wrapper">
-        <div class="card-switch">
-            <label class="switch">
-                <input type="checkbox" class="toggle">
-                <span class="slider"></span>
-                <span class="card-side"></span>
-                <div class="flip-card__inner">
-                    <div class="flip-card__front">
-                        <div class="title">登陆</div>
-                        <form class="flip-card__form" action="" onsubmit="event.preventDefault(); login();">
-                            <input class="flip-card__input" id="username" placeholder="用户名" type="name">
-                            <input class="flip-card__input" id="password" placeholder="密码" type="password">
-                            <button class="flip-card__btn" onclick="login()">登陆</button>
-                        </form>
-                    </div>
-                    <div class="flip-card__back">
-                        <div class="title">忘记密码</div>
-                        <form class="flip-card__form" action="">
-                            <input class="flip-card__input" placeholder="用户名" type="name">
-                            <button class="flip-card__btn">提交</button>
-                        </form>
-                    </div>
-                </div>
-            </label>
-        </div>
-    </div>
+    <form class="form-control" action="">
+        <p class="title">登陆</p>
 
-    <script src="/js/scripts.js"></script>
+        <div class="input-field">
+            <input required class="input" type="text" id="username" />
+            <label class="label" for="username">输入用户名</label>
+        </div>
+
+        <div class="input-field">
+            <input required class="input" type="password" id="password" />
+            <label class="label" for="password">输入密码</label>
+        </div>
+
+        <a href="#">忘记密码?</a>
+
+        <button class="submit-btn" type="button" onclick="login()">登陆</button>
+    </form>
+
     <script src="/js/login.js"></script>
 </body>
 

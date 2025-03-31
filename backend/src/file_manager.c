@@ -50,7 +50,7 @@ int saveUsersToFile(const char *filename, User *head)
     User *current = head;
     while (current)
     {
-        fprintf(fp, "%d,%s,%s,%s\n", current->id, current->username, current->password_hash, current->role);
+        fprintf(fp, "%d;%s;%s;%s\n", current->id, current->username, current->password_hash, current->role);
         current = current->next;
     }
 
@@ -102,20 +102,20 @@ int saveClientsToFile(const char *filename, Client *head)
     Client *current = head;
     while (current)
     {
-        fprintf(fp, "%d,%s,%s,%s,%s,%d,%d,%s,", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
+        fprintf(fp, "%d;%s;%s;%s;%s;%d;%d;%s;", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
 
         for (int i = 0; i < current->phone_count; i++)
         {
             fprintf(fp, "%s", current->phones[i]);
             if (i < current->phone_count - 1)
-                fprintf(fp, ";");
+                fprintf(fp, ",");
         }
-        fprintf(fp, ",");
+        fprintf(fp, ";");
 
         for (int i = 0; i < current->contact_count; i++)
         {
             Contact *contact = &current->contacts[i];
-            fprintf(fp, "%s.%s.%d.%d.%d.%s.", contact->name, contact->gender, contact->birth_year, contact->birth_month, contact->birth_day, contact->email);
+            fprintf(fp, "%s=%s=%d=%d=%d=%s=", contact->name, contact->gender, contact->birth_year, contact->birth_month, contact->birth_day, contact->email);
 
             for (int j = 0; j < contact->phone_count; j++)
             {
@@ -125,7 +125,7 @@ int saveClientsToFile(const char *filename, Client *head)
             }
 
             if (i < current->contact_count - 1)
-                fprintf(fp, ";");
+                fprintf(fp, ",");
         }
 
         fprintf(fp, "\n");

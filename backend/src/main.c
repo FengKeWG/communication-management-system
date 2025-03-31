@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
             }
             else
             {
+                fprintf(stderr, "%s %s\n", user->username, user->role);
                 fprintf(stderr, "认证失败: 用户名或密码错误\n");
                 return 1;
             }

@@ -1,251 +1,129 @@
-/* login.css */
-
-/* 定义变量 (仅在 login.css 中使用) */
-:root {
-    --input-focus: #2d8cf0;
-    --font-color: #323232;
-    --font-color-sub: #666;
-    --bg-color: #fff;
-    --main-color: #323232;
-}
-
-/* body 样式 (如果登录页和管理页的 body 样式不同，则分别定义) */
 body {
-    font-family: sans-serif;
-    margin: 0;
-}
-
-/* 布局容器 */
-.wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: var(--bg-color);
+    background-color: #f0f2f5;
+    margin: 0;
 }
 
-/* 标题 */
+.form-control {
+    /* margin: 20px; /* 可以移除，因为 body 已经居中了 */
+    background-color: #ffffff;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+    /* 稍微减弱阴影 */
+    width: 400px;
+    max-width: 90%;
+    /* 添加最大宽度以适应小屏幕 */
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+    /* 稍微调整间距 */
+    padding: 30px 25px;
+    /* 调整内边距 */
+    border-radius: 8px;
+    box-sizing: border-box;
+    /* 确保 padding 不会撑大元素 */
+}
+
 .title {
-    margin: 20px 0;
-    font-size: 25px;
-    font-weight: 900;
+    font-size: 28px;
+    font-weight: 800;
     text-align: center;
-    color: var(--main-color);
+    /* 标题居中 */
+    margin-bottom: 15px;
+    /* 增加标题下方间距 */
+    color: #333;
+    /* 调整标题颜色 */
 }
 
-/* 输入框 */
-.section-input {
-    width: 100%;
-    max-width: 300px;
-    height: 40px;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    background-color: var(--bg-color);
-    box-shadow: 4px 4px var(--main-color);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--font-color);
-    padding: 5px 10px;
-    outline: none;
-}
-
-.section-input:focus {
-    border: 2px solid var(--input-focus);
-}
-
-/* 按钮 */
-.section-btn {
-    width: 120px;
-    height: 40px;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    background-color: var(--bg-color);
-    box-shadow: 4px 4px var(--main-color);
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--font-color);
-    cursor: pointer;
-    align-self: center;
-}
-
-.section-btn:active {
-    box-shadow: 0px 0px var(--main-color);
-    transform: translate(3px, 3px);
-}
-
-/* 切换卡片 */
-.switch {
-    transform: translateY(-200px);
+.input-field {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 30px;
-    width: 50px;
-    height: 20px;
-}
-
-.card-side::before {
-    position: absolute;
-    content: '登陆';
-    left: -70px;
-    top: 0;
-    width: 100px;
-    text-decoration: underline;
-    color: var(--font-color);
-    font-weight: 600;
-}
-
-.card-side::after {
-    position: absolute;
-    content: '忘记密码';
-    left: 70px;
-    top: 0;
-    width: 100px;
-    text-decoration: none;
-    color: var(--font-color);
-    font-weight: 600;
-}
-
-.toggle {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    box-sizing: border-box;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    box-shadow: 4px 4px var(--main-color);
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--bg-color);
-    transition: 0.3s;
-}
-
-.slider:before {
-    box-sizing: border-box;
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    border: 2px solid var(--main-color);
-    border-radius: 5px;
-    left: -2px;
-    bottom: 2px;
-    background-color: var(--bg-color);
-    box-shadow: 0 3px 0 var(--main-color);
-    transition: 0.3s;
-}
-
-.toggle:checked+.slider {
-    background-color: var(--input-focus);
-}
-
-.toggle:checked+.slider:before {
-    transform: translateX(30px);
-}
-
-.toggle:checked~.card-side:before {
-    text-decoration: none;
-}
-
-.toggle:checked~.card-side:after {
-    text-decoration: underline;
-}
-
-.flip-card__inner {
-    width: 300px;
-    height: 350px;
-    position: relative;
-    background-color: transparent;
-    perspective: 1000px;
-    text-align: center;
-    transition: transform 0.8s;
-    transform-style: preserve-3d;
-}
-
-.toggle:checked~.flip-card__inner {
-    transform: rotateY(180deg);
-}
-
-.toggle:checked~.flip-card__front {
-    box-shadow: none;
-}
-
-.flip-card__front,
-.flip-card__back {
-    padding: 20px;
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    background: lightgrey;
-    gap: 20px;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    box-shadow: 4px 4px var(--main-color);
-}
-
-.flip-card__back {
     width: 100%;
-    transform: rotateY(180deg);
 }
 
-.flip-card__form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-.flip-card__input {
-    width: 250px;
-    height: 40px;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    background-color: var(--bg-color);
-    box-shadow: 4px 4px var(--main-color);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--font-color);
-    padding: 5px 10px;
+.input {
+    margin-top: 15px;
+    width: 100%;
     outline: none;
+    border-radius: 8px;
+    height: 45px;
+    border: 1.5px solid #ecedec;
+    background: transparent;
+    padding-left: 10px;
+    font-size: 16px;
+    /* 调整字体大小 */
+    box-sizing: border-box;
+    /* 确保 padding 不会撑大元素 */
 }
 
-.flip-card__input::placeholder {
-    color: var(--font-color-sub);
-    opacity: 0.8;
+.input:focus {
+    border: 1.5px solid #2d79f3;
 }
 
-.flip-card__input:focus {
-    border: 2px solid var(--input-focus);
+.input-field .label {
+    position: absolute;
+    top: 25px;
+    /* 微调初始位置 */
+    left: 15px;
+    color: #aaa;
+    /* 调整标签颜色 */
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+    background-color: #ffffff;
+    /* 确保背景是白色，覆盖输入框边框 */
+    padding: 0 5px;
+    /* 调整浮动时的 padding */
 }
 
-.flip-card__btn:active,
-.button-confirm:active {
-    box-shadow: 0px 0px var(--main-color);
-    transform: translate(3px, 3px);
+.input-field .input:focus~.label,
+.input-field .input:valid~.label {
+    top: 5px;
+    /* 调整浮动后的位置 */
+    left: 10px;
+    /* 调整浮动后的位置 */
+    font-size: 12px;
+    color: #2d79f3;
+    /* background-color: #ffffff; */
+    /* 背景色已在上面设置 */
+    /* padding-left: 5px; */
+    /* padding-right: 5px; */
 }
 
-.flip-card__btn {
-    margin: 20px 0;
-    width: 120px;
-    height: 40px;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    background-color: var(--bg-color);
-    box-shadow: 4px 4px var(--main-color);
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--font-color);
+.form-control a {
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+    text-align: right;
+    /* 链接靠右 */
+    transition: color 0.3s ease;
+}
+
+.form-control a:hover {
+    color: #2d79f3;
+}
+
+
+.submit-btn {
+    margin-top: 25px;
+    /* 调整按钮上边距 */
+    height: 50px;
+    /* 调整按钮高度 */
+    background: #f2f2f2;
+    border-radius: 11px;
+    border: 0;
+    outline: none;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(180deg, #363636 0%, #1b1b1b 50%, #000000 100%);
+    box-shadow: 0px 0px 0px 0px #ffffff, 0px 0px 0px 0px #000000;
+    transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
     cursor: pointer;
+}
+
+.submit-btn:hover {
+    box-shadow: 0px 0px 0px 2px #ffffff, 0px 0px 0px 4px #0000003a;
 }

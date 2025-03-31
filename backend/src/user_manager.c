@@ -15,7 +15,7 @@ User *parseUserFromString(char *userString, bool newID, bool hash)
     char idStr[50] = {0};
     char password[256] = {0};
 
-    int scanned = sscanf(userString, "%[^,],%[^,],%[^,],%[^,]", idStr, newUser->username, password, newUser->role);
+    int scanned = sscanf(userString, "%[^;];%[^;];%[^;];%[^;]", idStr, newUser->username, password, newUser->role);
     if (scanned < 4)
     {
         free(newUser);
