@@ -19,8 +19,8 @@ int saveClientsToFile(const char *filename, Client *head);
 Sales *loadSalesFromFile(const char *filename);
 int saveSalesToFile(const char *filename, Sales *head);
 
-CommunicationRecord *loadCommunicationsFromFile(const char *filename);
-int saveCommunicationsToFile(const char *filename, CommunicationRecord *head);
+Communication *loadCommunicationsFromFile(const char *filename);
+int saveCommunicationsToFile(const char *filename, Communication *head);
 
 Group *loadGroupsFromFile(const char *filename);
 int saveGroupsToFile(const char *filename, Group *head);

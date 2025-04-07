@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/client_manager.h"
-#include "utils.h"
+#include "../include/utils.h"
 
 Client *parseClientFromString(char *inputString, bool newID)
 {
@@ -72,10 +72,10 @@ Client *addClient(Client *head, Client *newClient)
     {
         return head;
     }
-    if (head != NULL)
+    if (head)
     {
         Client *current = head;
-        while (current->next != NULL)
+        while (current->next)
         {
             current = current->next;
         }
@@ -119,10 +119,8 @@ Client *modifyClient(Client *head, Client *newClient)
 {
     if (head == NULL)
         return newClient;
-
     Client *current = head;
     Client *prev = NULL;
-
     while (current != NULL)
     {
         if (current->id == newClient->id)
@@ -147,7 +145,7 @@ Client *modifyClient(Client *head, Client *newClient)
     return head;
 }
 
-int cmp(Client *a, Client *b, int num)
+int cmpClient(Client *a, Client *b, int num)
 {
     switch (num)
     {
@@ -196,7 +194,7 @@ int cmp(Client *a, Client *b, int num)
     }
 }
 
-Client *mergeSortedLists(Client *list1, Client *list2, int cnt, int a[])
+Client *mergeClientSortedLists(Client *list1, Client *list2, int cnt, int a[])
 {
     if (!list1)
         return list2;
@@ -205,28 +203,28 @@ Client *mergeSortedLists(Client *list1, Client *list2, int cnt, int a[])
     Client *sortedList = NULL;
     for (int i = 0; i < cnt; i++)
     {
-        if (cmp(list1, list2, a[i]) < 0)
+        if (cmpClient(list1, list2, a[i]) < 0)
         {
             sortedList = list1;
-            sortedList->next = mergeSortedLists(list1->next, list2, cnt, a);
+            sortedList->next = mergeClientSortedLists(list1->next, list2, cnt, a);
             break;
         }
-        else if (cmp(list1, list2, a[i]) > 0)
+        else if (cmpClient(list1, list2, a[i]) > 0)
         {
             sortedList = list2;
-            sortedList->next = mergeSortedLists(list1, list2->next, cnt, a);
+            sortedList->next = mergeClientSortedLists(list1, list2->next, cnt, a);
             break;
         }
     }
     if (!sortedList)
     {
         sortedList = list1;
-        sortedList->next = mergeSortedLists(list1->next, list2, cnt, a);
+        sortedList->next = mergeClientSortedLists(list1->next, list2, cnt, a);
     }
     return sortedList;
 }
 
-void splitList(Client *head, Client **front, Client **back)
+void splitClientList(Client *head, Client **front, Client **back)
 {
     Client *slow = head;
     Client *fast = head->next;
@@ -244,16 +242,16 @@ void splitList(Client *head, Client **front, Client **back)
     slow->next = NULL;
 }
 
-Client *mergeSort(Client *head, int cnt, int a[])
+Client *mergeSortClient(Client *head, int cnt, int a[])
 {
     if (!head || !head->next)
         return head;
     Client *front = NULL;
     Client *back = NULL;
-    splitList(head, &front, &back);
-    front = mergeSort(front, cnt, a);
-    back = mergeSort(back, cnt, a);
-    return mergeSortedLists(front, back, cnt, a);
+    splitClientList(head, &front, &back);
+    front = mergeSortClient(front, cnt, a);
+    back = mergeSortClient(back, cnt, a);
+    return mergeClientSortedLists(front, back, cnt, a);
 }
 
 void displayClients(Client *head, int argc, char *argv[])
@@ -268,8 +266,8 @@ void displayClients(Client *head, int argc, char *argv[])
     int cnt = argc - 3;
     int a[cnt];
     for (int i = 0; i < cnt; i++)
-        a[i] = atoi(argv[3 + i]);
-    head = mergeSort(head, cnt, a);
+        a[i] = stoi(argv[3 + i]);
+    head = mergeSortClient(head, cnt, a);
     char pattern[10000] = "";
     strcat(pattern, argv[2]);
     toLower(pattern);
@@ -317,6 +315,47 @@ void displayClients(Client *head, int argc, char *argv[])
                     printf(",");
             }
             printf("\n");
+        }
+        current = current->next;
+    }
+    fflush(stdout);
+}
+
+void displayClientIdsAndNames(Client *head)
+{
+    Client *current = head;
+    while (current != NULL)
+    {
+        printf("%d,%s", current->id, current->name);
+        if (current->next)
+            printf(";");
+        current = current->next;
+    }
+    printf("\n");
+}
+
+void displayClientDetails(Client *head, int id)
+{
+    Client *current = head;
+    while (current)
+    {
+        if (current->id == id)
+        {
+            printf("%d;%s;%s;%s;%s;%d;%d;%s;", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
+            for (int i = 0; i < current->phone_count; i++)
+                printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
+            printf(";");
+            for (int i = 0; i < current->contact_count; i++)
+            {
+                Contact *c = &current->contacts[i];
+                printf("%s=%s=%d=%d=%d=%s=", c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
+                for (int j = 0; j < c->phone_count; j++)
+                    printf("%s%s", c->phones[j], (j == c->phone_count - 1) ? "" : "~");
+                if (i < current->contact_count - 1)
+                    printf(",");
+            }
+            printf("\n");
+            return;
         }
         current = current->next;
     }

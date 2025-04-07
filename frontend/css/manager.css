@@ -134,39 +134,95 @@ textarea {
     top: 0;
     left: 0;
     z-index: 100;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    height: auto !important;
 }
 
 .header-wrapper {
     position: relative;
     width: calc(100% - 100px);
     margin-left: 50px;
+    background-color: transparent !important;
+    height: auto !important;
 }
 
-.logo-wrap {
-    position: absolute;
-    display: block;
-    right: 0;
-    top: 40px;
+.user-info-area {
+    position: fixed;
+    top: 20px;
+    right: 25px;
+    z-index: 102;
+    display: flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 8px 15px;
+    border-radius: 12px;
+    box-shadow: 5px 5px 10px #bcbcbc,
+        -5px -5px 10px #ffffff;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: none;
 }
 
-.logo-wrap a {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 900;
-    font-size: 20px;
-    line-height: 20px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #1f2029;
-    transition: all 0.3s ease-out;
+.user-info-area:hover {
+    transform: translateY(-2px);
+    /* 轻微上浮 */
+    box-shadow: 7px 7px 14px #b0b0b0,
+        -7px -7px 14px #ffffff;
+    /* 阴影更明显 */
 }
 
-.logo-wrap a span {
-    color: #8167a9;
+/* Avatar using Material Icons */
+.avatar {
+    font-size: 32px;
+    /* 稍微调整大小以适应新的容器 padding */
+    color: #757575;
+    margin-right: 10px;
+    /* Space between icon and text */
+    border-radius: 50%;
+    /* Optional: if you want a background circle later */
+    /* background-color: #eee; */
+    /* Example: add background circle */
+    /* width: 42px; */
+    /* If using background, match size */
+    /* height: 42px; */
+    /* If using background, match size */
+    /* display: flex; */
+    /* If using background, center icon */
+    /* align-items: center; */
+    /* If using background, center icon */
+    /* justify-content: center; */
+    /* If using background, center icon */
+    flex-shrink: 0;
+    /* Prevent shrinking */
+    line-height: 1;
+    /* Ensure icon aligns well */
 }
 
-.logo-wrap a:hover {
-    opacity: 0.9;
+
+/* User Details Text Block */
+.user-details {
+    display: flex;
+    flex-direction: column;
+    /* Stack name and role vertically */
+    line-height: 1.3;
+    text-align: left;
+    color: #333;
+    /* Default text color */
 }
+
+#user-display-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    /* 深灰色 */
+}
+
+#user-display-role {
+    font-size: 12px;
+    color: #555;
+    /* 中灰色 */
+}
+
 
 /* ================================== */
 /* =========== 侧边导航栏 =========== */
@@ -179,6 +235,9 @@ textarea {
     padding-top: 15px;
     margin-top: 26px;
     transition: all 0.3s ease-out;
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 .menu-icon {
@@ -423,33 +482,45 @@ body.nav-active .nav__list-item:nth-child(3) {
 }
 
 .content-container {
-    padding: 110px 30px 50px 30px;
+    /* 增加上边距，防止被固定的元素遮挡 */
+    padding-top: 85px;
+    /* 原来是 110px，现在没有高 header 了，但要避开浮动元素，需要测试调整 */
+    /* 其他 padding 保持不变 */
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 50px;
+    /* 其他样式保持不变 */
     position: relative;
+    overflow: hidden;
     z-index: 10;
     max-width: 1200px;
     margin: 0 auto;
-    min-height: calc(100vh - 160px);
-    overflow: hidden;
 }
 
 .main-section {
+    position: relative;
     width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    max-height: 0;
     opacity: 0;
     transform: translateX(30px);
-    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    transition: opacity 0.5s ease-in-out,
+        transform 0.5s ease-in-out,
+        max-height 0.5s cubic-bezier(0, 1, 0, 1);
     pointer-events: none;
-    padding: inherit;
-    box-sizing: border-box;
+    z-index: 1;
 }
 
 .main-section.active {
     opacity: 1;
     transform: translateX(0);
+    max-height: 5000px;
+    overflow: visible;
+    transition: opacity 0.5s ease-in-out,
+        transform 0.5s ease-in-out,
+        max-height 0.5s cubic-bezier(0.6, 0, 1, 0);
     pointer-events: auto;
-    position: relative;
     z-index: 2;
 }
 
@@ -463,10 +534,8 @@ body.nav-active .nav__list-item:nth-child(3) {
     padding: 10px 15px;
     border-radius: 12px;
     background: #f0f0f0;
-    box-shadow: 5px 5px 10px #dcdcdc,
-        -5px -5px 10px #ffffff;
-    position: sticky;
-    top: 90px;
+    box-shadow: 5px 5px 10px #dcdcdc, -5px -5px 10px #ffffff;
+    position: relative;
     z-index: 11;
     width: fit-content;
     margin-left: auto;
@@ -528,17 +597,17 @@ body.nav-active .nav__list-item:nth-child(3) {
 /* =========== 内容视图切换 =========== */
 /* ================================== */
 .content-view {
-    background-color: transparent;
-    border-radius: 15px;
-    box-shadow: none;
-    margin-top: 0;
-    position: absolute;
+    position: relative;
     width: 100%;
-    top: 0;
-    left: 0;
+    box-sizing: border-box;
+    padding-bottom: 50px;
+    overflow: hidden;
+    max-height: 0;
     opacity: 0;
     transform: scale(0.98) translateY(10px);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    transition: opacity 0.4s ease-out,
+        transform 0.4s ease-out,
+        max-height 0.4s cubic-bezier(0, 1, 0, 1);
     pointer-events: none;
     z-index: 1;
 }
@@ -546,8 +615,12 @@ body.nav-active .nav__list-item:nth-child(3) {
 .content-view.active {
     opacity: 1;
     transform: scale(1) translateY(0);
+    max-height: 5000px;
+    overflow: visible;
+    transition: opacity 0.4s ease-out,
+        transform 0.4s ease-out,
+        max-height 0.4s cubic-bezier(0.6, 0, 1, 0);
     pointer-events: auto;
-    position: relative;
     z-index: 2;
 }
 
@@ -774,6 +847,9 @@ select.input:focus {
     gap: 6px;
     transition: all 0.2s ease;
     box-shadow: 2px 2px 5px #d1d1d1, -2px -2px 5px #ffffff;
+    min-width: 150px;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .add-btn:hover {
@@ -920,7 +996,7 @@ select.input:focus {
 
 
 /* ================================== */
-/* ======== 客户列表与搜索 ======== */
+/* ============ 列表与搜索 ============ */
 /* ================================== */
 
 .search-container {
@@ -931,7 +1007,7 @@ select.input:focus {
     position: relative;
 }
 
-.search-container input#searchInput {
+.search-container .section-input {
     flex-grow: 1;
     padding: 0.8em 1.2em;
     padding-left: 2.8em;
@@ -940,9 +1016,14 @@ select.input:focus {
     background-color: #fff;
     box-shadow: none;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    height: auto;
+    line-height: normal;
+    box-sizing: border-box;
 }
 
-.search-container input#searchInput:focus {
+.search-container .section-input:focus {
     border-color: #8167a9;
     box-shadow: 0 0 0 3px rgba(129, 103, 169, 0.1);
     background-color: #fff;
@@ -960,55 +1041,80 @@ select.input:focus {
     color: #aaa;
     pointer-events: none;
     z-index: 3;
+    line-height: 1;
 }
 
-.search-container input#searchInput:focus+ ::before {
-    color: #8167a9;
-}
-
-#searchButton {
+.search-container .section-btn:not(.clear-btn) {
     padding: 0.7em 1.5em;
     border-radius: 20px;
     background-color: #8167a9;
     color: white;
     border: none;
     font-weight: 500;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 2px 5px rgba(129, 103, 169, 0.2);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    line-height: normal;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
-#searchButton:hover {
+
+.search-container .section-btn:not(.clear-btn):hover {
     background-color: #6a508a;
     transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(129, 103, 169, 0.3);
+    color: white;
+    box-shadow: 0 4px 8px rgba(129, 103, 169, 0.3);
 }
 
-#searchButton:active {
+.search-container .section-btn:not(.clear-btn):active {
     background-color: #5e487e;
     transform: translateY(0px);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.clear-btn {
+.search-container .clear-btn {
+    padding: 0.7em 1.5em;
+    border-radius: 20px;
     background-color: #f0f0f0;
     color: #777;
-    border-radius: 20px;
-    padding: 0.7em 1.5em;
+    border: none;
     box-shadow: 2px 2px 4px #d1d1d1, -2px -2px 4px #ffffff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    line-height: normal;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
-.clear-btn:hover {
+.search-container .clear-btn:hover {
     color: #dc2626;
     box-shadow: inset 1px 1px 3px #d1d1d1, inset -1px -1px 3px #ffffff;
+    transform: scale(1.03);
+    background-color: #e9e9e9;
 }
 
-.clear-btn:active {
+.search-container .clear-btn:active {
     box-shadow: inset 2px 2px 4px #bebebe, inset -2px -2px 4px #ffffff;
+    transform: scale(0.98);
 }
 
 /* ================================== */
 /* ============ 表格样式 ============ */
 /* ================================== */
 
-#client-list-content table {
+.data-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
@@ -1018,7 +1124,7 @@ select.input:focus {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
 }
 
-#client-list-content th {
+.data-table th {
     border: none;
     padding: 14px 18px;
     text-align: left;
@@ -1034,18 +1140,17 @@ select.input:focus {
     font-family: 'Poppins', sans-serif;
 }
 
-#client-list-content th:hover {
+.data-table th:hover {
     background-color: #f1f3f5;
 }
 
-
-#client-list-content th .sort-indicator {
+.data-table th .sort-indicator {
     margin-left: 6px;
     font-size: 0.9em;
     opacity: 0.7;
 }
 
-#client-list-content td {
+.data-table td {
     border: none;
     padding: 12px 18px;
     text-align: left;
@@ -1055,11 +1160,11 @@ select.input:focus {
     color: #555;
 }
 
-#client-list-content tr:last-child td {
+.data-table tr:last-child td {
     border-bottom: none;
 }
 
-#client-list-content tr:hover {
+.data-table tr:hover {
     background-color: #f0f6ff;
 }
 
@@ -1141,8 +1246,8 @@ select.input:focus {
     display: none !important;
 }
 
-#client-list-content tr.editing td input.input,
-#client-list-content tr.editing td select.input {
+.data-table tr.editing td input.input,
+.data-table tr.editing td select.input {
     padding: 0.5em 0.8em;
     border-radius: 6px;
     font-size: 13px;
@@ -1153,15 +1258,15 @@ select.input:focus {
     box-sizing: border-box;
 }
 
-#client-list-content tr.editing td input.input:focus,
-#client-list-content tr.editing td select.input:focus {
+.data-table tr.editing td input.input:focus,
+.data-table tr.editing td select.input:focus {
     transform: none;
     border-color: #8167a9;
     box-shadow: 0 0 0 2px rgba(129, 103, 169, 0.1);
     background-color: white;
 }
 
-#client-list-content td.contacts-cell {
+.data-table td.contacts-cell {
     white-space: normal;
     word-break: break-word;
     line-height: 1.5;
@@ -1416,6 +1521,7 @@ select.input:focus {
 }
 
 
+
 /* ================================== */
 /* ============ 退出登录 ============ */
 /* ================================== */
@@ -1459,4 +1565,128 @@ select.input:focus {
 /* ================================== */
 .over-hide {
     overflow: hidden;
+}
+
+.password-cell {
+    font-family: monospace;
+    font-size: 1.2em;
+    color: #888;
+    cursor: default !important;
+    user-select: none;
+}
+
+.result-message {
+    margin-top: 20px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    font-size: 14px;
+    display: none;
+    border: 1px solid transparent;
+}
+
+/* ================================== */
+/* === 拟态卡片式复选框样式 ====== */
+/* ================================== */
+.checkbox-group-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding-top: 10px;
+}
+
+label.neumorphic-checkbox-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    box-shadow: 5px 5px 10px #dcdcdc,
+        -5px -5px 10px #ffffff;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: none;
+    position: relative;
+    text-align: center;
+    min-height: 80px;
+    border: 2px solid transparent;
+    user-select: none;
+}
+
+.neumorphic-checkbox-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.neumorphic-checkbox-card .client-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 1em;
+    margin-bottom: 3px;
+    font-family: 'Poppins', sans-serif;
+    transition: color 0.3s ease;
+}
+
+.neumorphic-checkbox-card .client-id-display {
+    font-size: 0.8em;
+    color: #777;
+    transition: color 0.3s ease;
+}
+
+label.neumorphic-checkbox-card:not(.selected):not(.disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 7px 7px 14px #d1d1d1,
+        -7px -7px 14px #ffffff;
+}
+
+label.neumorphic-checkbox-card.selected {
+    background-color: #e8e8e8;
+    box-shadow: inset 4px 4px 8px #c5c5c5,
+        inset -4px -4px 8px #ffffff;
+    border: 2px solid #8167a9;
+    transform: translateY(0px);
+}
+
+label.neumorphic-checkbox-card.selected .client-name {
+    color: #6a508a;
+}
+
+label.neumorphic-checkbox-card.selected .client-id-display {
+    color: #a18cb9;
+}
+
+label.neumorphic-checkbox-card.selected:not(.disabled):hover {
+    box-shadow: inset 5px 5px 10px #b8b8b8,
+        inset -5px -5px 10px #ffffff;
+    border-color: #6a508a;
+    background-color: #e5e5e5;
+}
+
+label.neumorphic-checkbox-card.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+    box-shadow: 3px 3px 6px rgba(220, 220, 220, 0.7),
+        -3px -3px 6px rgba(255, 255, 255, 0.8);
+    background-color: #f5f5f5;
+    border-color: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+label.neumorphic-checkbox-card.selected.disabled {
+    box-shadow: inset 2px 2px 4px #d0d0d0,
+        inset -2px -2px 4px #ffffff;
+    border: 2px solid #d0d0d0;
+    background-color: #ededed;
+}
+
+label.neumorphic-checkbox-card.disabled .client-name,
+label.neumorphic-checkbox-card.disabled .client-id-display {
+    color: #aaa;
 }

@@ -1,7 +1,6 @@
 function login() {
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
-
     fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -14,22 +13,14 @@ function login() {
             if (data.access_token) {
                 sessionStorage.setItem("token", data.access_token);
                 sessionStorage.setItem("role", data.role);
-                switch (data.role) {
-                    case "manager":
-                        window.location.href = "/pages/manager.html";
-                        break;
-                    case "sales":
-                        window.location.href = "/pages/sales.html";
-                        break;
-                    default:
-                        alert("未知角色!");
-                }
+                sessionStorage.setItem("username", username);
+                window.location.href = "/pages/manager.html";
             } else {
-                alert("登录失败!");
+                alert("登录失败: " + (data.error || "未知错误"));
             }
         })
         .catch(error => {
             console.error(error);
-            alert("Error");
+            alert("登录请求出错!");
         });
 }

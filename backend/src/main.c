@@ -2,13 +2,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include "file_manager.h"
-#include "client_manager.h"
-#include "sales_manager.h"
-#include "communication_manager.h"
-#include "group_manager.h"
-#include "user_manager.h"
-#include "utils.h"
+#include "../include/file_manager.h"
+#include "../include/client_manager.h"
+#include "../include/sales_manager.h"
+#include "../include/communication_manager.h"
+#include "../include/group_manager.h"
+#include "../include/user_manager.h"
+#include "../include/utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -21,61 +21,123 @@ int main(int argc, char *argv[])
     User *userList = loadUsersFromFile(userFilePath);
     Client *clientList = loadClientsFromFile(clientFilePath);
     Sales *salesList = loadSalesFromFile(salesFilePath);
-    CommunicationRecord *communicationList = loadCommunicationsFromFile(communicationFilePath);
+    Communication *communicationList = loadCommunicationsFromFile(communicationFilePath);
     Group *groupList = loadGroupsFromFile(groupFilePath);
 
-    if (argc > 1)
+    if (argc < 2)
     {
-        if (strcmp(argv[1], "login") == 0)
+        fprintf(stderr, "错误: 输入命令错误！\n");
+        return 1;
+    }
+
+    if (strcmp(argv[1], "login") == 0)
+    {
+        char *username = argv[2];
+        char *password = argv[3];
+        User *user = authenticateUser(userList, username, password);
+        if (user)
         {
-            char *username = argv[2];
-            char *password = argv[3];
-            User *user = authenticateUser(userList, username, password);
-            if (user)
-            {
-                printf("%s %s\n", user->username, user->role);
-                fflush(stdout);
-                return 0;
-            }
-            else
-            {
-                fprintf(stderr, "%s %s\n", user->username, user->role);
-                fprintf(stderr, "认证失败: 用户名或密码错误\n");
-                return 1;
-            }
-        }
-        else if (strcmp(argv[1], "add_user") == 0)
-        {
-            User *newUser = parseUserFromString(argv[2], true, true);
-            userList = addUser(userList, newUser);
-            saveUsersToFile(userFilePath, userList);
-        }
-        else if (strcmp(argv[1], "add_client") == 0)
-        {
-            Client *newClient = parseClientFromString(argv[2], true);
-            clientList = addClient(clientList, newClient);
-            saveClientsToFile(clientFilePath, clientList);
-        }
-        else if (strcmp(argv[1], "get_clients") == 0)
-        {
-            displayClients(clientList, argc, argv);
-        }
-        else if (strcmp(argv[1], "delete_client") == 0)
-        {
-            clientList = deleteClient(clientList, atoi(argv[2]));
-            saveClientsToFile(clientFilePath, clientList);
-        }
-        else if (strcmp(argv[1], "update_client") == 0)
-        {
-            Client *newClient = parseClientFromString(argv[2], false);
-            clientList = modifyClient(clientList, newClient);
-            saveClientsToFile(clientFilePath, clientList);
+            printf("%s %s\n", user->username, user->role);
+            fflush(stdout);
         }
         else
         {
-            printf("未知命令: %s\n", argv[1]);
+            fprintf(stderr, "用户名或密码错误\n");
             return 1;
         }
     }
+    else if (strcmp(argv[1], "add_user") == 0)
+    {
+        User *newUser = parseUserFromString(argv[2], true, true);
+        if (!newUser)
+        {
+            fprintf(stderr, "添加用户错误: 解析用户数据失败或格式错误\n");
+            return 1;
+        }
+        userList = addUser(userList, newUser);
+        saveUsersToFile(userFilePath, userList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "get_users") == 0)
+    {
+        displayUsers(userList, argc, argv);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "delete_user") == 0)
+    {
+        int userIdToDelete = stoi(argv[2]);
+        userList = deleteUser(userList, userIdToDelete);
+        saveUsersToFile(userFilePath, userList);
+        printf("用户 ID %d 已删除。\n", userIdToDelete);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "update_user") == 0)
+    {
+        User *newUser = parseUserFromString(argv[2], false, true);
+        userList = modifyUser(userList, newUser);
+        saveUsersToFile(userFilePath, userList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "add_client") == 0)
+    {
+        Client *newClient = parseClientFromString(argv[2], true);
+        clientList = addClient(clientList, newClient);
+        saveClientsToFile(clientFilePath, clientList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "get_clients") == 0)
+    {
+        displayClients(clientList, argc, argv);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "delete_client") == 0)
+    {
+        clientList = deleteClient(clientList, atoi(argv[2]));
+        saveClientsToFile(clientFilePath, clientList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "update_client") == 0)
+    {
+        Client *newClient = parseClientFromString(argv[2], false);
+        clientList = modifyClient(clientList, newClient);
+        saveClientsToFile(clientFilePath, clientList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "add_sales") == 0)
+    {
+        Sales *newSale = parseSalesFromString(argv[2], true);
+        salesList = addSales(salesList, newSale);
+        saveSalesToFile(salesFilePath, salesList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "get_sales") == 0)
+    {
+        displaySales(salesList, argc, argv);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "update_sales") == 0)
+    {
+        Sales *newSales = parseSalesFromString(argv[2], false);
+        salesList = modifySales(salesList, newSales);
+        saveSalesToFile(salesFilePath, salesList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "delete_sales") == 0)
+    {
+        salesList = deleteSales(salesList, atoi(argv[2]));
+        saveSalesToFile(salesFilePath, salesList);
+        fflush(stdout);
+    }
+    else if (strcmp(argv[1], "display_client_ids_names") == 0)
+    {
+        displayClientIdsAndNames(clientList);
+        fflush(stdout);
+    }
+    else
+    {
+        printf("未知命令: %s\n", argv[1]);
+        return 1;
+    }
+
     return 0;
 }

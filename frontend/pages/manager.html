@@ -4,18 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理系统</title>
+    <title>业务管理系统</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="../css/manager.css">
 </head>
 
 <body>
-    <!-- Header 和 Cursor 部分保持不变 -->
     <header class="cd-header">
         <div class="header-wrapper">
-            <div class="logo-wrap">
-                <a href="#" class="hover-target"><span>管理</span>系统</a>
-            </div>
             <div class="nav-but-wrap">
                 <div class="menu-icon hover-target">
                     <span class="menu-icon__line menu-icon__line-left"></span>
@@ -26,19 +22,40 @@
         </div>
     </header>
 
+    <div class="user-info-area">
+        <span class="material-icons avatar">account_circle</span>
+        <div class="user-details">
+            <span id="user-display-name">用户名</span>
+            <span id="user-display-role">角色</span>
+        </div>
+    </div>
+
     <div class="nav">
         <div class="nav__content">
             <ul class="nav__list">
-                <li class="nav__list-item">
+                <li class="nav__list-item" id="menu-client-management">
                     <a href="#" class="hover-target" onclick="showMainSection('client-section')">
                         <span class="material-icons nav-icon">groups</span>客户管理
                     </a>
                 </li>
-                <li class="nav__list-item">
+                <li class="nav__list-item" id="menu-user-management">
                     <a href="#" class="hover-target" onclick="showMainSection('user-section')">
                         <span class="material-icons nav-icon">manage_accounts</span>用户管理
                     </a>
                 </li>
+                <li class="nav__list-item" id="menu-sales-management">
+                    <a href="#" class="hover-target" onclick="showMainSection('sales-section')">
+                        <span class="material-icons nav-icon">support_agent</span>业务员管理
+                    </a>
+                </li>
+                <!-- 未来可以继续添加其他菜单项，并赋予唯一 ID -->
+                <!--
+            <li class="nav__list-item" id="menu-reports">
+                <a href="#" class="hover-target" onclick="showMainSection('reports-section')">
+                    <span class="material-icons nav-icon">assessment</span>报表管理
+                </a>
+            </li>
+             -->
             </ul>
         </div>
     </div>
@@ -46,9 +63,7 @@
     <div class="section full-height">
         <div class="content-container">
 
-            <!-- ===== 客户管理板块 ===== -->
             <div id="client-section" class="main-section">
-                <!-- ***** 二级导航条 ***** -->
                 <div class="secondary-nav">
                     <button class="secondary-nav-btn hover-target"
                         onclick="showView('add-client-view', 'client-section')">
@@ -59,21 +74,14 @@
                         <span class="material-icons-outlined">list_alt</span> 客户列表
                     </button>
                 </div>
-
-                <!-- 添加客户表单 (内容不变, ID 和 Class 修改) -->
                 <div id="add-client-view" class="content-view">
                     <div class="form-card">
-                        <!-- 修改点：给 h2 添加一个 id，方便修改标题 -->
                         <h2 class="title" id="client-form-title">添加新客户</h2>
-                        <form id="client-form" class="section-form modern-form"> <!-- 添加 modern-form class -->
-                            <!-- 添加点：隐藏域，用于编辑时存储客户ID -->
+                        <form id="client-form" class="section-form modern-form">
                             <input type="hidden" id="editing-client-id" name="editing_client_id">
-
-                            <!-- 基础信息 Fieldset (保持不变) -->
                             <fieldset class="form-fieldset">
                                 <legend>基础信息</legend>
-                                <div class="form-grid"> <!-- 使用 Grid 布局 -->
-                                    <!-- 所有 input 保持不变 -->
+                                <div class="form-grid">
                                     <div class="form-group">
                                         <label class="section-label" for="client-name">客户名称:</label>
                                         <input type="text" id="client-name" name="name" class="section-input input"
@@ -111,8 +119,6 @@
                                     </div>
                                 </div>
                             </fieldset>
-
-                            <!-- 客户电话 Fieldset (保持不变) -->
                             <fieldset class="form-fieldset">
                                 <legend>客户电话</legend>
                                 <div id="client-phone-inputs-container" class="dynamic-input-list">
@@ -120,7 +126,7 @@
                                         <input type="text" name="client_phones" class="section-input input phone-input"
                                             placeholder="请输入客户电话号码">
                                         <button type="button" class="remove-btn icon-btn" style="display: none;"
-                                            onclick="removePhoneInput(this)">
+                                            onclick="removeClientPhoneInput(this)">
                                             <span class="material-icons-outlined">remove</span>
                                         </button>
                                     </div>
@@ -129,29 +135,21 @@
                                     <span class="material-icons-outlined">add</span> 添加电话
                                 </button>
                             </fieldset>
-
-                            <!-- 联络员信息 Fieldset (保持不变) -->
                             <fieldset class="form-fieldset">
                                 <legend>联络员信息</legend>
                                 <div id="contacts-container" class="contacts-list">
-                                    <!-- 联络员信息将动态添加到这里 -->
                                 </div>
-                                <button type="button" class="add-btn" onclick="addContactGroup()">
+                                <button type="button" class="add-btn" onclick="addClientContactGroup()">
                                     <span class="material-icons-outlined">person_add</span> 添加联络员
                                 </button>
                             </fieldset>
-
-                            <!-- 修改点：修改提交按钮的 onclick，并添加取消按钮 -->
                             <div class="form-actions" style="text-align: center; margin-top: 25px;">
-                                <!-- onclick 会在 JS 中动态设置 -->
                                 <button type="button" id="client-submit-btn" class="submit-btn"
                                     onclick="submitClient()">提交客户信息</button>
-                                <!-- 添加点：取消按钮，默认隐藏 -->
                                 <button type="button" id="client-cancel-btn" class="section-btn cancel-btn"
                                     style="display: none; margin-left: 15px;" onclick="cancelClientUpdate()">取消</button>
                             </div>
                         </form>
-                        <div id="client-add-result" class="result-message"></div>
                     </div>
                 </div>
 
@@ -160,11 +158,11 @@
                         <h2 class="title">客户列表</h2>
                         <div class="search-container">
                             <input type="text" id="searchInput" class="section-input" placeholder="输入关键字搜索..."
-                                onkeydown="handleSearchInputKey(event)">
+                                onkeydown="handleClientSearchInputKey(event)">
                             <button id="searchButton" class="section-btn hover-target"
-                                onclick="performSearch()">搜索</button>
+                                onclick="performClientSearch()">搜索</button>
                             <button id="clearSearchButton" class="section-btn clear-btn hover-target"
-                                style="display: none;" onclick="clearSearch()">清除搜索</button>
+                                style="display: none;" onclick="clearClientSearch()">清除搜索</button>
                         </div>
                         <div id="client-list-content"></div>
                     </div>
@@ -184,37 +182,160 @@
 
                 <div id="add-user-view" class="content-view">
                     <div class="form-card">
-                        <h2 class="title">添加用户</h2>
+                        <h2 class="title" id="user-form-title">添加新用户</h2>
                         <form id="user-form" class="section-form modern-form">
-                            <div class="form-group">
-                                <label class="section-label" for="user-username">账号:</label>
-                                <input type="text" id="user-username" name="username" class="section-input input"
-                                    placeholder="输入账号" required>
+                            <input type="hidden" id="editing-user-id" name="editing_user_id">
+                            <fieldset class="form-fieldset">
+                                <legend>用户信息</legend>
+                                <div class="form-grid" style="grid-template-columns: 1fr;">
+                                    <div class="form-group">
+                                        <label class="section-label" for="user-username">账号:</label>
+                                        <input type="text" id="user-username" name="username"
+                                            class="section-input input" placeholder="输入用户账号" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="section-label" for="user-password">密码:</label>
+                                        <input type="password" id="user-password" name="password"
+                                            class="section-input input" placeholder="添加时必需，编辑时留空则不修改">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="section-label" for="user-role">角色:</label>
+                                        <select name="role" id="user-role" class="section-input input" required>
+                                            <option value="">请选择角色</option>
+                                            <option value="manager">经理</option>
+                                            <option value="sales">业务员</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <div class="form-actions" style="text-align: center; margin-top: 25px;">
+                                <button type="button" id="user-submit-btn" class="submit-btn"
+                                    onclick="submitUser()">提交用户信息</button>
+                                <button type="button" id="user-cancel-btn" class="section-btn cancel-btn"
+                                    style="display: none; margin-left: 15px;" onclick="cancelUserUpdate()">取消</button>
                             </div>
-                            <div class="form-group">
-                                <label class="section-label" for="user-password">密码:</label>
-                                <input type="password" id="user-password" name="password" class="section-input input"
-                                    placeholder="输入密码" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="section-label" for="user-role">角色:</label>
-                                <select name="role" id="user-role" class="section-input input" required>
-                                    <option value="">请选择角色</option>
-                                    <option value="manager">经理</option>
-                                    <option value="sales">业务员</option>
-                                </select>
-                            </div>
-                            <button type="button" class="submit-btn" onclick="submitUser()">提交</button>
                         </form>
-                        <div id="user-add-result" class="result-message"></div>
                     </div>
                 </div>
 
                 <div id="user-list-view" class="content-view active">
                     <div class="list-card">
                         <h2 class="title">用户列表</h2>
+                        <div class="search-container">
+                            <input type="text" id="userSearchInput" class="section-input" placeholder="按账号或角色搜索..."
+                                onkeydown="handleUserSearchInputKey(event)">
+                            <button id="userSearchButton" class="section-btn hover-target"
+                                onclick="performUserSearch()">搜索</button>
+                            <button id="userClearSearchButton" class="section-btn clear-btn hover-target"
+                                style="display: none;" onclick="clearUserSearch()">清除搜索</button>
+                        </div>
                         <div id="user-list-content">
-                            <p>用户列表内容将在此加载... (需要实现 JS 获取逻辑)</p>
+                            <p>正在加载用户列表...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sales-section" class="main-section">
+                <div class="secondary-nav">
+                    <button class="secondary-nav-btn hover-target"
+                        onclick="showView('add-sales-view', 'sales-section')">
+                        <span class="material-icons-outlined">person_add</span> 添加业务员
+                    </button>
+                    <button class="secondary-nav-btn hover-target active"
+                        onclick="showView('sales-list-view', 'sales-section')">
+                        <span class="material-icons-outlined">list_alt</span> 业务员列表
+                    </button>
+                </div>
+                <div id="add-sales-view" class="content-view">
+                    <div class="form-card">
+                        <h2 class="title" id="sales-form-title">添加新业务员</h2>
+                        <form id="sales-form" class="section-form modern-form">
+                            <input type="hidden" id="editing-sales-id" name="editing_sales_id">
+                            <fieldset class="form-fieldset">
+                                <legend>基础信息</legend>
+                                <div class="form-grid"
+                                    style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                                    <div class="form-group">
+                                        <label class="section-label" for="sales-name">姓名:</label>
+                                        <input type="text" id="sales-name" name="name" class="section-input input"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="section-label" for="sales-gender">性别:</label>
+                                        <select id="sales-gender" name="gender" class="section-input input" required>
+                                            <option value="">请选择</option>
+                                            <option value="1">男</option>
+                                            <option value="2">女</option>
+                                            <option value="0">未知</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group form-group-full">
+                                        <label class="section-label" for="sales-birth_year">生日 (年-月-日):</label>
+                                        <div class="birthdate-inputs">
+                                            <input type="number" id="sales-birth_year" name="birth_year"
+                                                class="section-input input contact-birth-year" placeholder="年" required>
+                                            -
+                                            <input type="number" id="sales-birth_month" name="birth_month"
+                                                class="section-input input contact-birth-month" placeholder="月"
+                                                required> -
+                                            <input type="number" id="sales-birth_day" name="birth_day"
+                                                class="section-input input contact-birth-day" placeholder="日" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-group-full">
+                                        <label class="section-label" for="sales-email">邮箱:</label>
+                                        <input type="email" id="sales-email" name="email" class="section-input input"
+                                            required>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-fieldset">
+                                <legend>业务员电话</legend>
+                                <div id="sales-phone-inputs-container" class="dynamic-input-list">
+                                    <div class="phone-input-container input-group-dynamic">
+                                        <input type="text" name="sales_phones" class="section-input input phone-input"
+                                            placeholder="请输入业务员电话号码">
+                                        <button type="button" class="remove-btn icon-btn" style="display: none;"
+                                            onclick="removeSalesPhoneInput(this)">
+                                            <span class="material-icons-outlined">remove</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="add-btn icon-btn" onclick="addSalesPhoneInput()">
+                                    <span class="material-icons-outlined">add</span> 添加电话
+                                </button>
+                            </fieldset>
+                            <fieldset class="form-fieldset">
+                                <legend>负责客户</legend>
+                                <div id="sales-client-selection" class="checkbox-group-container">
+                                    <p>正在加载客户列表...</p>
+                                </div>
+                            </fieldset>
+
+                            <div class="form-actions" style="text-align: center; margin-top: 25px;">
+                                <button type="button" id="sales-submit-btn" class="submit-btn"
+                                    onclick="submitSales()">提交业务员信息</button>
+                                <button type="button" id="sales-cancel-btn" class="section-btn cancel-btn"
+                                    style="display: none; margin-left: 15px;" onclick="cancelSalesUpdate()">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="sales-list-view" class="content-view active">
+                    <div class="list-card">
+                        <h2 class="title">业务员列表</h2>
+                        <div class="search-container">
+                            <input type="text" id="salesSearchInput" class="section-input" placeholder="按姓名或邮箱搜索..."
+                                onkeydown="handleSalesSearchInputKey(event)">
+                            <button id="salesSearchButton" class="section-btn hover-target"
+                                onclick="performSalesSearch()">搜索</button>
+                            <button id="salesClearSearchButton" class="section-btn clear-btn hover-target"
+                                style="display: none;" onclick="clearSalesSearch()">清除搜索</button>
+                        </div>
+                        <div id="sales-list-content">
+                            <p>正在加载业务员列表...</p>
                         </div>
                     </div>
                 </div>
@@ -244,9 +365,11 @@
             </div>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="../js/manager.js"></script>
+    <script src="../js/global.js"></script>
+    <script src="../js/client.js"></script>
+    <script src="../js/user.js"></script>
+    <script src="../js/sales.js"></script>
 </body>
 
 </html>
