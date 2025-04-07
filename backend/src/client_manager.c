@@ -360,3 +360,24 @@ void displayClientDetails(Client *head, int id)
         current = current->next;
     }
 }
+
+void displayClientContactsIdsAndNames(Client *head, int id)
+{
+    Client *current = head;
+    while (current)
+    {
+        if (current->id == id)
+        {
+            for (int i = 0; i < current->contact_count; i++)
+            {
+                Contact *contact = &current->contacts[i];
+                printf("%d,%s", contact->id, contact->name);
+                if (i < current->contact_count - 1)
+                    printf(";");
+            }
+            printf("\n");
+            return;
+        }
+        current = current->next;
+    }
+}

@@ -74,6 +74,8 @@ function showMainSection(sectionIdToShow) {
             defaultViewId = 'user-list-view';
         } else if (sectionIdToShow === 'sales-section') {
             defaultViewId = 'sales-list-view';
+        } else if (sectionIdToShow === 'communication-section') {
+            defaultViewId = 'communication-list-view';
         }
         if (defaultViewId) {
             setTimeout(() => {
@@ -135,6 +137,10 @@ function showView(viewIdToShow, parentSectionId) {
                     fetchSalesData();
                 } else if (viewIdToShow === 'add-sales-view' && typeof resetAndPrepareSalesAddForm === 'function') {
                     resetAndPrepareSalesAddForm();
+                } else if (viewIdToShow === 'communication-list-view' && typeof fetchCommunicationData === 'function') {
+                    fetchCommunicationData();
+                } else if (viewIdToShow === 'add-communication-view' && typeof resetAndPrepareCommunicationAddForm === 'function') {
+                    resetAndPrepareCommunicationAddForm();
                 }
             }
         }, 50);
@@ -146,6 +152,8 @@ function showView(viewIdToShow, parentSectionId) {
             fetchUserData();
         } else if (viewIdToShow === 'sales-list-view' && typeof fetchSalesData === 'function') {
             fetchSalesData();
+        } else if (viewIdToShow === 'communication-list-view' && typeof fetchCommunicationData === 'function') {
+            fetchCommunicationData();
         }
     }
     updateHoverTargets();
@@ -266,8 +274,8 @@ function applyMenuPermissions() {
     const role = sessionStorage.getItem("role");
     if (!role) return;
     const menuPermissions = {
-        'manager': ['menu-client-management', 'menu-user-management', 'menu-sales-management'],
-        'sales': ['menu-client-management'],
+        'manager': ['menu-client-management', 'menu-user-management', 'menu-sales-management', 'menu-communication-management'],
+        'sales': ['menu-client-management', 'menu-communication-management'],
         // 'accountant': ['menu-client-management', 'menu-reports']
     };
     const allowedMenus = menuPermissions[role] || [];

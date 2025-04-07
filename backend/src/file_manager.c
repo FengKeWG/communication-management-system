@@ -170,19 +170,52 @@ int saveSalesToFile(const char *filename, Sales *head)
     return 0;
 }
 
-// -----  通信记录数据文件操作 -----
 Communication *loadCommunicationsFromFile(const char *filename)
 {
-    // printf("file_manager: loadCommunicationsFromFile - 功能待实现\n");
-    return NULL;
+    FILE *fp = fopen(filename, "r");
+    if (!fp)
+        return NULL;
+    Communication *head = NULL, *tail = NULL;
+    char line[2048];
+    while (fgets(line, sizeof(line), fp))
+    {
+        if (line[0] == '\n' || line[0] == '\0')
+            continue;
+        Communication *newComm = parseCommunicationFromString(line, false);
+        if (!newComm)
+            continue;
+        newComm->next = NULL;
+        if (head)
+        {
+            tail->next = newComm;
+            tail = newComm;
+        }
+        else
+        {
+            head = newComm;
+            tail = newComm;
+        }
+    }
+    fclose(fp);
+    return head;
 }
 
 int saveCommunicationsToFile(const char *filename, Communication *head)
 {
-    // printf("file_manager: saveCommunicationsToFile - 功能待实现\n");
+    FILE *fp = fopen(filename, "w");
+    if (!fp)
+    {
+        return -1;
+    }
+    Communication *current = head;
+    while (current)
+    {
+        fprintf(fp, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%s\n", current->id, current->client_id, current->contact_id, current->sales_id, current->year, current->month, current->day, current->hour, current->minute, current->second, current->duration, current->content);
+        current = current->next;
+    }
+    fclose(fp);
     return 0;
 }
-
 // -----  客户分组数据文件操作 -----
 Group *loadGroupsFromFile(const char *filename)
 {

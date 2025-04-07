@@ -7,28 +7,28 @@
 
 Communication *parseCommunicationFromString(char *inputString, bool newID)
 {
-    if (!inputString)
+    if (!inputString || strlen(inputString) == 0)
     {
         return NULL;
     }
-    Communication *newCommunication = (Communication *)malloc(sizeof(Communication));
-    if (!newCommunication)
+    Communication *newComm = (Communication *)malloc(sizeof(Communication));
+    if (!newComm)
     {
         return NULL;
     }
-    memset(newCommunication, 0, sizeof(Communication));
+    memset(newComm, 0, sizeof(Communication));
     char idStr[50] = {0};
-    int scanned = sscanf(inputString, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%[^\n]", &newCommunication->client_id, &newCommunication->contact_id, &newCommunication->sales_id, &newCommunication->year, &newCommunication->month, &newCommunication->day, &newCommunication->hour, &newCommunication->minute, &newCommunication->second, &newCommunication->duration, newCommunication->content);
-    if (scanned < 11)
+    int scanned = sscanf(inputString, "%[^;];%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%[^\n]", idStr, &newComm->client_id, &newComm->contact_id, &newComm->sales_id, &newComm->year, &newComm->month, &newComm->day, &newComm->hour, &newComm->minute, &newComm->second, &newComm->duration, newComm->content);
+    if (scanned < 12)
     {
-        free(newCommunication);
+        free(newComm);
         return NULL;
     }
-    newCommunication->id = newID ? uidGenerate() : stoi(idStr);
-    newCommunication->next = NULL;
-    return newCommunication;
+    newComm->id = newID ? uidGenerate() : stoi(idStr);
+    newComm->next = NULL;
+    return newComm;
 }
-// 添加通信记录
+
 Communication *addCommunication(Communication *head, Communication *newCommunication)
 {
     if (newCommunication == NULL)
@@ -42,20 +42,15 @@ Communication *addCommunication(Communication *head, Communication *newCommunica
     }
     else
         head = newCommunication;
-
-    printf("通信记录 '%d' 添加成功！\n", newCommunication->id);
     return head;
 }
 
-// 修改通信记录
 Communication *modifyCommunication(Communication *head, Communication *newCommunication)
 {
     if (head == NULL)
         return newCommunication;
-
     Communication *current = head;
     Communication *prev = NULL;
-
     while (current != NULL)
     {
         if (current->id == newCommunication->id)
@@ -132,6 +127,7 @@ int cmpCommunication(Communication *a, Communication *b, int num)
         return 0;
     }
 }
+
 Communication *mergeCommunicationSortedLists(Communication *list1, Communication *list2, int cnt, int a[])
 {
     if (!list1)

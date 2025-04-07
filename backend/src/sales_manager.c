@@ -26,7 +26,7 @@ Sales *parseSalesFromString(char *inputString, bool newID)
         free(newSales);
         return NULL;
     }
-    newSales->id = newID ? uidGenerate() : (strlen(idStr) > 0 ? stoi(idStr) : 0);
+    newSales->id = newID ? uidGenerate() : stoi(idStr);
     newSales->phone_count = 0;
     if (scanned >= 8 && strlen(phonesStr) > 0)
     {
@@ -287,4 +287,17 @@ void displaySales(Sales *head, int argc, char *argv[])
         current = current->next;
     }
     fflush(stdout);
+}
+
+void displaySalesIdsAndNames(Sales *head)
+{
+    Sales *current = head;
+    while (current != NULL)
+    {
+        printf("%d,%s", current->id, current->name);
+        if (current->next)
+            printf(";");
+        current = current->next;
+    }
+    printf("\n");
 }
