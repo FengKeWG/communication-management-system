@@ -225,33 +225,21 @@ Sales *mergeSortSales(Sales *head, int cnt, int a[])
     return mergeSalesSortedLists(front, back, cnt, a);
 }
 
-void displaySales(Sales *head, int argc, char *argv[])
+void displaySales(Sales *head, const char *pattern, int *sortKeys, int sortKeyCount)
 {
-    if (argc < 3)
-        return;
-    if (argc == 3)
+    if (sortKeyCount > 0 && sortKeys != NULL)
     {
-        argc++;
-        argv[3] = "1";
+        head = mergeSortSales(head, sortKeyCount, sortKeys);
     }
-    int cnt = argc - 3;
-    int a[cnt];
-    for (int i = 0; i < cnt; i++)
-        a[i] = atoi(argv[3 + i]);
-    head = mergeSortSales(head, cnt, a);
-    char pattern[10000] = "";
-    strcat(pattern, argv[2]);
-    toLower(pattern);
     Sales *current = head;
     char text[15000];
     char tmp[200];
     while (current)
     {
-        char text[10000] = "";
-        char tmp[50] = "";
+        text[0] = '\0';
         snprintf(tmp, sizeof(tmp), "%d", current->id);
         strcat(text, tmp);
-        strcat(text, current->name);
+        strncat(text, current->name, sizeof(text) - strlen(text) - 1);
         snprintf(tmp, sizeof(tmp), "%d", current->gender);
         strcat(text, tmp);
         snprintf(tmp, sizeof(tmp), "%d", current->birth_year);
@@ -260,33 +248,32 @@ void displaySales(Sales *head, int argc, char *argv[])
         strcat(text, tmp);
         snprintf(tmp, sizeof(tmp), "%d", current->birth_day);
         strcat(text, tmp);
-        strcat(text, current->email);
+        strncat(text, current->email, sizeof(text) - strlen(text) - 1);
         for (int i = 0; i < current->phone_count; i++)
         {
-            strcat(text, current->phones[i]);
+            strncat(text, current->phones[i], sizeof(text) - strlen(text) - 1);
         }
         for (int i = 0; i < current->client_count; i++)
         {
             snprintf(tmp, sizeof(tmp), "%d", current->client_ids[i]);
-            strcat(text, tmp);
+            strncat(text, tmp, sizeof(text) - strlen(text) - 1);
         }
         toLower(text);
         if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
         {
-            printf("%d;%s;%d;%d;%d;%d;%s;", current->id, current->name, current->gender, current->birth_year, current->birth_month, current->birth_day, current->email);
+            printf("%d;%s;%d;%d;%d;%d;%s;",
+                   current->id, current->name, current->gender,
+                   current->birth_year, current->birth_month, current->birth_day,
+                   current->email);
             for (int i = 0; i < current->phone_count; i++)
                 printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
             printf(";");
             for (int i = 0; i < current->client_count; i++)
-            {
-                int c = current->client_ids[i];
-                printf("%d,", c);
-            }
+                printf("%d%s", current->client_ids[i], (i == current->client_count - 1) ? "" : ",");
             printf("\n");
         }
         current = current->next;
     }
-    fflush(stdout);
 }
 
 void displaySalesIdsAndNames(Sales *head)
@@ -300,4 +287,53 @@ void displaySalesIdsAndNames(Sales *head)
         current = current->next;
     }
     printf("\n");
+}
+
+Sales *findSalesById(Sales *head, int id)
+{
+    Sales *current = head;
+    while (current)
+    {
+        if (current->id == id)
+        {
+            return current;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+void displayUnlinkedSales(Sales *salesHead, User *userHead)
+{
+    Sales *currentSales = salesHead;
+    bool first = true;
+
+    while (currentSales)
+    {
+        bool linked = false;
+        User *currentUser = userHead;
+        while (currentUser)
+        {
+            // 检查是否有用户的 sales_id 与当前业务员的 id 匹配
+            if (strcmp(currentUser->role, "sales") == 0 && currentUser->sales_id == currentSales->id)
+            {
+                linked = true;
+                break;
+            }
+            currentUser = currentUser->next;
+        }
+
+        // 如果没有找到链接的用户，则输出该业务员
+        if (!linked)
+        {
+            if (!first)
+            {
+                printf(";"); // 分隔符
+            }
+            printf("%d,%s", currentSales->id, currentSales->name); // 输出格式 "id,name"
+            first = false;
+        }
+        currentSales = currentSales->next;
+    }
+    printf("\n"); // 结尾换行
 }

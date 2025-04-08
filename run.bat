@@ -11,7 +11,7 @@ if errorlevel 1 (
 
 REM 使用 gcc 编译源代码
 echo 正在编译项目...
-gcc -o main src/main.c src/client_manager.c src/user_manager.c src/sales_manager.c src/communication_manager.c src/file_manager.c -I include
+gcc -o main src/main.c src/client_manager.c src/user_manager.c src/sales_manager.c src/communication_manager.c src/file_manager.c src/group_manager.c -I include
 
 REM 检查编译是否成功
 if errorlevel 1 (

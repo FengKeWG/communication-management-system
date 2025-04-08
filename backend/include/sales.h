@@ -4,6 +4,7 @@
 typedef struct Sales
 {
     int id;
+    int user_id;
     char name[100];
     int gender; // 0: 未知, 1: 男, 2: 女
     int birth_year;

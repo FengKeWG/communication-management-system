@@ -6,6 +6,8 @@
 #include "client_manager.h"
 #include "user_manager.h"
 #include "sales_manager.h"
+#include "communication_manager.h"
+#include "group_manager.h"
 
 User *loadUsersFromFile(const char *filename)
 {
@@ -42,15 +44,34 @@ int saveUsersToFile(const char *filename, User *head)
 {
     FILE *fp = fopen(filename, "w");
     if (!fp)
+    {
+        perror("错误：无法打开用户文件进行写入"); // 提供更详细的错误信息
         return -1;
+    }
     User *current = head;
     while (current)
     {
-        fprintf(fp, "%d;%s;%s;%s\n", current->id, current->username, current->password_hash, current->role);
+        // **在格式字符串末尾添加 ";%d" 并传递 current->sales_id**
+        int written = fprintf(fp, "%d;%s;%s;%s;%d\n", // <-- 添加 ;%d
+                              current->id,
+                              current->username,
+                              current->password_hash, // 密码哈希应该被保存
+                              current->role,
+                              current->sales_id); // <-- 添加 sales_id
+        if (written < 0)
+        {
+            perror("错误：写入用户数据失败");
+            fclose(fp);
+            return -1; // 写入失败
+        }
         current = current->next;
     }
-    fclose(fp);
-    return 0;
+    if (fclose(fp) != 0)
+    {
+        perror("错误：关闭用户文件失败");
+        return -1; // 关闭失败
+    }
+    return 0; // 成功
 }
 
 Client *loadClientsFromFile(const char *filename)
@@ -216,15 +237,74 @@ int saveCommunicationsToFile(const char *filename, Communication *head)
     fclose(fp);
     return 0;
 }
-// -----  客户分组数据文件操作 -----
+
 Group *loadGroupsFromFile(const char *filename)
 {
-    // printf("file_manager: loadGroupsFromFile - 功能待实现\n");
-    return NULL;
+    FILE *fp = fopen(filename, "r");
+    if (!fp)
+        return NULL; // 文件不存在或无法打开，返回空
+
+    Group *head = NULL, *tail = NULL;
+    char line[10000]; // 分配足够大的缓冲区
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        // 移除可能的换行符
+        line[strcspn(line, "\n")] = 0;
+        if (strlen(line) == 0 || line[0] == ';')
+            continue; // 跳过空行或无效行
+
+        Group *newGroup = parseGroupFromString(line, false); // 使用 false 表示从文件加载，ID 已存在
+        if (!newGroup)
+        {
+            fprintf(stderr, "警告: 解析分组文件行失败: %s\n", line);
+            continue; // 解析失败，跳过此行
+        }
+
+        newGroup->next = NULL;
+        if (!head)
+        {
+            head = newGroup;
+            tail = newGroup;
+        }
+        else
+        {
+            tail->next = newGroup;
+            tail = newGroup;
+        }
+    }
+
+    fclose(fp);
+    return head;
 }
 
+// 保存分组数据
 int saveGroupsToFile(const char *filename, Group *head)
 {
-    // printf("file_manager: saveGroupsToFile - 功能待实现\n");
-    return 0;
+    FILE *fp = fopen(filename, "w");
+    if (!fp)
+    {
+        return -1;
+    }
+    Group *current = head;
+    while (current)
+    {
+        fprintf(fp, "%d;%s;", current->id, current->name);
+        for (int i = 0; i < current->client_count; i++)
+        {
+            fprintf(fp, "%d", current->client_ids[i]);
+            if (i < current->client_count - 1)
+            {
+                fprintf(fp, ",");
+            }
+        }
+        fprintf(fp, "\n");
+        current = current->next;
+    }
+    if (fclose(fp) != 0)
+    {
+        perror("错误：关闭分组文件失败");
+        return -1;
+    }
+    return 0; // 成功
 }

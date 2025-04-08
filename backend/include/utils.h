@@ -25,8 +25,8 @@ static inline int min(int a, int b, int c)
 
 void hashPassword(const char *password, char *hash_out);
 int uidGenerate();
-void next(char *s, int n, int *ne);
-int kmp(char *t, char *s);
+void next(const char *s, int n, int *ne);
+int kmp(char *t, const char *s);
 void toLower(char *s);
 int stoi(char *str);
 char *scpy(char *dest, const char *src, size_t dest_size);

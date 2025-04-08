@@ -30,6 +30,40 @@
         </div>
     </div>
 
+    <div class="user-actions-area">
+        <a href="#" onclick="logout(); return false;" class="logout-link hover-target" title="退出登录">
+            <span class="material-icons">logout</span>
+        </a>
+    </div>
+
+    <!-- 修改密码模态框 (可以放在 body 底部) -->
+    <div id="change-password-modal" class="modal-overlay">
+        <div class="modal-content form-card">
+            <h2 class="title">修改密码</h2>
+            <form id="change-password-form" class="section-form modern-form">
+                <div class="form-group">
+                    <label class="section-label" for="old-password">旧密码:</label>
+                    <input type="password" id="old-password" name="old_password" class="section-input input" required>
+                </div>
+                <div class="form-group">
+                    <label class="section-label" for="new-password">新密码:</label>
+                    <input type="password" id="new-password" name="new_password" class="section-input input" required>
+                </div>
+                <div class="form-group">
+                    <label class="section-label" for="confirm-new-password">确认新密码:</label>
+                    <input type="password" id="confirm-new-password" name="confirm_new_password"
+                        class="section-input input" required>
+                </div>
+                <p id="password-change-error" class="error-message" style="display: none;"></p>
+                <div class="form-actions" style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="submit-btn" onclick="submitPasswordChange()">确认修改</button>
+                    <button type="button" class="section-btn cancel-btn" style="margin-left: 15px;"
+                        onclick="closeChangePasswordModal()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="nav">
         <div class="nav__content">
             <ul class="nav__list">
@@ -46,6 +80,21 @@
                 <li class="nav__list-item" id="menu-sales-management">
                     <a href="#" class="hover-target" onclick="showMainSection('sales-section')">
                         <span class="material-icons nav-icon">support_agent</span>业务员管理
+                    </a>
+                </li>
+                <li class="nav__list-item" id="menu-communication-management">
+                    <a href="#" class="hover-target" onclick="showMainSection('communication-section')">
+                        <span class="material-icons nav-icon">call</span>通话记录
+                    </a>
+                </li>
+                <li class="nav__list-item" id="menu-group-management"> <!-- 新增 -->
+                    <a href="#" class="hover-target" onclick="showMainSection('group-section')">
+                        <span class="material-icons nav-icon">folder_shared</span>分组管理
+                    </a>
+                </li>
+                <li class="nav__list-item action-requires-manager" id="menu-backup-management">
+                    <a href="#" class="hover-target" onclick="showMainSection('backup-section')">
+                        <span class="material-icons nav-icon">settings_backup_restore</span>备份管理
                     </a>
                 </li>
                 <!-- 未来可以继续添加其他菜单项，并赋予唯一 ID -->
@@ -188,6 +237,7 @@
                             <fieldset class="form-fieldset">
                                 <legend>用户信息</legend>
                                 <div class="form-grid" style="grid-template-columns: 1fr;">
+                                    <!-- 用户名、密码、角色 不变 -->
                                     <div class="form-group">
                                         <label class="section-label" for="user-username">账号:</label>
                                         <input type="text" id="user-username" name="username"
@@ -206,6 +256,25 @@
                                             <option value="sales">业务员</option>
                                         </select>
                                     </div>
+
+                                    <!-- 新增：业务员关联区域 -->
+                                    <div class="form-group" id="user-sales-link-section" style="display: none;">
+                                        <label class="section-label" for="user-sales-selection">关联业务员:</label>
+                                        <select id="user-sales-selection" name="sales_id" class="section-input input">
+                                            <option value="0">不关联或选择业务员</option>
+                                            <!-- 选项将由 JS 动态加载 -->
+                                        </select>
+                                        <p class="form-hint">为业务员角色选择一个对应的业务员记录。</p>
+                                    </div>
+                                    <!-- 或者用 input 手动输入 -->
+                                    <!--
+                                     <div class="form-group" id="user-sales-link-section-manual" style="display: none;">
+                                        <label class="section-label" for="user-sales-id-input">关联业务员 ID:</label>
+                                        <input type="number" id="user-sales-id-input" name="sales_id" value="0" class="section-input input">
+                                        <p class="form-hint">为业务员角色输入对应的业务员记录 ID (经理或不关联请输入 0)。</p>
+                                     </div>
+                                     -->
+
                                 </div>
                             </fieldset>
 
@@ -341,7 +410,191 @@
                 </div>
             </div>
 
-            <!-- 可以继续添加其他管理板块, 如联络员管理 -->
+            <div id="communication-section" class="main-section">
+                <div class="secondary-nav">
+                    <button class="secondary-nav-btn hover-target"
+                        onclick="showView('add-communication-view', 'communication-section')">
+                        <span class="material-icons-outlined">note_add</span> 添加记录
+                    </button>
+                    <button class="secondary-nav-btn hover-target active"
+                        onclick="showView('communication-list-view', 'communication-section')">
+                        <span class="material-icons-outlined">list_alt</span> 记录列表
+                    </button>
+                </div>
+                <div id="add-communication-view" class="content-view">
+                    <div class="form-card">
+                        <h2 class="title" id="communication-form-title">添加新通话记录</h2>
+                        <form id="communication-form" class="section-form modern-form">
+                            <input type="hidden" id="editing-communication-id" name="editing_communication_id">
+                            <input type="hidden" id="selected-client-id" name="selected_client_id">
+                            <input type="hidden" id="selected-contact-id" name="selected_contact_id">
+                            <fieldset class="form-fieldset">
+                                <legend>关联方选择</legend>
+                                <div class="form-group form-group-full">
+                                    <label class="section-label">选择客户与联络人:</label>
+                                    <div id="communication-client-contact-selector" class="client-selector-container">
+                                        <p>正在加载客户列表...</p>
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-full">
+                                    <label class="section-label">选择业务员 (单选):</label>
+                                    <div id="communication-sales-selection"
+                                        class="checkbox-group-container single-select-checkbox-group">
+                                        <p>正在加载业务员列表...</p>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-fieldset">
+                                <legend>通话信息</legend>
+                                <div class="form-grid"
+                                    style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                                    <div class="form-group form-group-full">
+                                        <label class="section-label">通话日期 (年-月-日):</label>
+                                        <div class="birthdate-inputs">
+                                            <input type="number" id="communication-year" name="year"
+                                                class="section-input input" placeholder="年" required> -
+                                            <input type="number" id="communication-month" name="month"
+                                                class="section-input input" placeholder="月" required> -
+                                            <input type="number" id="communication-day" name="day"
+                                                class="section-input input" placeholder="日" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-group-full">
+                                        <label class="section-label">通话时间 (时:分:秒):</label>
+                                        <div class="birthdate-inputs">
+                                            <input type="number" id="communication-hour" name="hour"
+                                                class="section-input input" placeholder="时" required> :
+                                            <input type="number" id="communication-minute" name="minute"
+                                                class="section-input input" placeholder="分" required> :
+                                            <input type="number" id="communication-second" name="second"
+                                                class="section-input input" placeholder="秒" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="section-label" for="communication-duration">通话时长 (分钟):</label>
+                                        <input type="number" id="communication-duration" name="duration"
+                                            class="section-input input" placeholder="例如: 15" required>
+                                    </div>
+                                    <div class="form-group form-group-full">
+                                        <label class="section-label" for="communication-content">通话内容:</label>
+                                        <textarea id="communication-content" name="content" class="section-input input"
+                                            rows="4" required></textarea>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <div class="form-actions" style="text-align: center; margin-top: 25px;">
+                                <button type="button" id="communication-submit-btn" class="submit-btn"
+                                    onclick="submitCommunication()">提交通话记录</button>
+                                <button type="button" id="communication-cancel-btn" class="section-btn cancel-btn"
+                                    style="display: none; margin-left: 15px;"
+                                    onclick="cancelCommunicationUpdate()">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="communication-list-view" class="content-view active">
+                    <div class="list-card">
+                        <h2 class="title">通话记录列表</h2>
+                        <div class="search-container">
+                            <input type="text" id="communicationSearchInput" class="section-input"
+                                placeholder="按客户/联络人/业务员ID、内容搜索..."
+                                onkeydown="handleCommunicationSearchInputKey(event)">
+                            <button id="communicationSearchButton" class="section-btn hover-target"
+                                onclick="performCommunicationSearch()">搜索</button>
+                            <button id="communicationClearSearchButton" class="section-btn clear-btn hover-target"
+                                style="display: none;" onclick="clearCommunicationSearch()">清除搜索</button>
+                        </div>
+                        <div id="communication-list-content">
+                            <p>正在加载通话记录列表...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="group-section" class="main-section">
+                <!-- 二级导航 -->
+                <div class="secondary-nav">
+                    <button class="secondary-nav-btn hover-target"
+                        onclick="showView('add-group-view', 'group-section')">
+                        <span class="material-icons-outlined">create_new_folder</span> 添加分组
+                    </button>
+                    <button class="secondary-nav-btn hover-target active"
+                        onclick="showView('group-list-view', 'group-section')">
+                        <span class="material-icons-outlined">list_alt</span> 分组列表
+                    </button>
+                </div>
+
+                <!-- 添加/编辑分组视图 -->
+                <div id="add-group-view" class="content-view">
+                    <div class="form-card">
+                        <h2 class="title" id="group-form-title">添加新分组</h2>
+                        <form id="group-form" class="section-form modern-form">
+                            <input type="hidden" id="editing-group-id" name="editing_group_id">
+                            <fieldset class="form-fieldset">
+                                <legend>分组信息</legend>
+                                <div class="form-grid" style="grid-template-columns: 1fr;"> <!-- 单列布局 -->
+                                    <div class="form-group">
+                                        <label class="section-label" for="group-name">分组名称:</label>
+                                        <input type="text" id="group-name" name="name" class="section-input input"
+                                            required>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-fieldset">
+                                <legend>选择客户</legend>
+                                <div id="group-client-selection" class="checkbox-group-container">
+                                    <p>正在加载客户列表...</p> <!-- 初始提示 -->
+                                </div>
+                            </fieldset>
+
+                            <div class="form-actions" style="text-align: center; margin-top: 25px;">
+                                <button type="button" id="group-submit-btn" class="submit-btn"
+                                    onclick="submitGroup()">提交分组信息</button>
+                                <button type="button" id="group-cancel-btn" class="section-btn cancel-btn"
+                                    style="display: none; margin-left: 15px;" onclick="cancelGroupUpdate()">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 分组列表视图 -->
+                <div id="group-list-view" class="content-view active">
+                    <div class="list-card">
+                        <h2 class="title">分组列表</h2>
+                        <div class="search-container">
+                            <input type="text" id="groupSearchInput" class="section-input" placeholder="按名称或ID搜索..."
+                                onkeydown="handleGroupSearchInputKey(event)">
+                            <button id="groupSearchButton" class="section-btn hover-target"
+                                onclick="performGroupSearch()">搜索</button>
+                            <button id="groupClearSearchButton" class="section-btn clear-btn hover-target"
+                                style="display: none;" onclick="clearGroupSearch()">清除搜索</button>
+                        </div>
+                        <div id="group-list-content">
+                            <p>正在加载分组列表...</p> <!-- 初始提示 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="backup-section" class="main-section">
+                <div class="list-card">
+                    <h2 class="title">备份管理</h2>
+                    <div class="backup-actions" style="margin-bottom: 25px; text-align: center;">
+                        <button id="createBackupBtn" class="submit-btn hover-target" onclick="createBackup()">
+                            <span class="material-icons-outlined"
+                                style="vertical-align: middle; margin-right: 5px;">add_circle_outline</span>
+                            创建新备份
+                        </button>
+                        <p id="backup-status" style="margin-top: 10px; font-style: italic; color: #555;"></p>
+                    </div>
+                    <h3
+                        style="margin-top: 30px; margin-bottom: 15px; font-weight: 500; color: #444; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        历史备份列表</h3>
+                    <div id="backup-list-content">
+                        <p>正在加载备份列表...</p>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -349,6 +602,13 @@
     <div class='cursor' id="cursor"></div>
     <div class='cursor2' id="cursor2"></div>
     <div class='cursor3' id="cursor3"></div>
+
+    <!-- ***** 新增/移动的修改密码按钮 ***** -->
+    <button class="change-password-btn hover-target" onclick="showChangePasswordModal()" title="修改密码">
+        <span class="material-icons-outlined">password</span>
+    </button>
+    <!-- ***** 新增/移动的修改密码按钮结束 ***** -->
+
     <a href="#" onclick="logout(); return false;" class="logout-link hover-target" title="退出登录">
         <span class="material-icons">logout</span>
     </a>
@@ -370,6 +630,9 @@
     <script src="../js/client.js"></script>
     <script src="../js/user.js"></script>
     <script src="../js/sales.js"></script>
+    <script src="../js/communication.js"></script>
+    <script src="../js/group.js"></script>
+    <script src="../js/backup.js"></script>
 </body>
 
 </html>

@@ -127,3 +127,235 @@ body {
 .submit-btn:hover {
     box-shadow: 0px 0px 0px 2px #ffffff, 0px 0px 0px 4px #0000003a;
 }
+
+.modal {
+    display: none;
+    /* Initial state: hidden */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* --- Animation related --- */
+    opacity: 0;
+    /* Start fully transparent */
+    visibility: hidden;
+    /* Start hidden for accessibility and interaction */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    /* Transition opacity and visibility */
+}
+
+.modal.modal-show {
+    display: block;
+    /* Needed to allow visibility/opacity changes */
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-sizing: border-box;
+    /* --- Animation related --- */
+    transform: translateY(-20px);
+    /* Start slightly up */
+    transition: transform 0.3s ease;
+    /* Transition transform */
+}
+
+.modal.modal-show .modal-content {
+    transform: translateY(0);
+}
+
+.close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.55);
+    /* Slightly darker backdrop */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+    /* Delay visibility change until fade out */
+}
+
+.modal.modal-show {
+    display: block;
+    /* Or flex if needed for alignment */
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0s linear 0s;
+    /* Show immediately */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10vh auto;
+    /* Use viewport height for margin */
+    padding: 30px 30px;
+    border: none;
+    /* Remove border */
+    width: 90%;
+    /* Responsive width */
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    transform: translateY(-30px) scale(0.98);
+    /* Start slightly up and smaller */
+    opacity: 0;
+    /* Start content transparent for separate animation */
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+}
+
+.modal.modal-show .modal-content {
+    transform: translateY(0) scale(1);
+    /* Slide down and scale to normal */
+    opacity: 1;
+    /* Fade in content */
+}
+
+.modal .close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 12px;
+    /* Adjust position */
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 5px;
+    /* Make clickable area larger */
+    transition: color 0.2s ease;
+}
+
+.modal .close-btn:hover {
+    color: #555;
+}
+
+.modal h2 {
+    /* Modal title style */
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 25px;
+    /* More space below title */
+    color: #333;
+    font-size: 22px;
+    /* Consistent size */
+    font-weight: 600;
+}
+
+.modal p {
+    /* General paragraph styling within modal */
+    font-size: 15px;
+    /* Slightly larger */
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    /* More space */
+    text-align: left;
+    /* Align text left */
+}
+
+/* Birthdate input layout within modal */
+/* Use the class added in HTML */
+.modal .birthdate-layout {
+    display: flex;
+    gap: 10px;
+    margin-top: 0;
+    /* Remove negative margin */
+    margin-bottom: 10px;
+    /* Use standard field bottom margin */
+}
+
+.modal .birthdate-layout .input-field {
+    flex: 1;
+    /* Share width */
+    margin-bottom: 0;
+    /* Remove bottom margin as layout container handles spacing */
+}
+
+
+/* Error and Success Messages */
+.error-message {
+    color: #e74c3c;
+    /* Softer red */
+    font-size: 14px;
+    text-align: center;
+    margin-top: 15px;
+    /* More space above message */
+    min-height: 1.2em;
+}
+
+.success-message {
+    color: #2ecc71;
+    /* Softer green */
+    font-size: 14px;
+    font-weight: 500;
+    /* Slightly bolder success */
+    text-align: center;
+    margin-top: 15px;
+    min-height: 1.2em;
+}
+
+.modal .submit-btn {
+    width: 100%;
+    /* 让按钮宽度充满模态框内容区域 (减去内边距) */
+    height: 50px;
+    /* 强制高度为 50px */
+    font-size: 18px;
+    /* 强制字体大小为 18px */
+    font-weight: 700;
+    /* 保持字体粗细 */
+    margin-top: 20px;
+    /* 为模态框内的按钮设置合适的上边距 */
+    padding: 0;
+    /* 如果有不需要的内边距，可以重置 */
+    /* 可以根据需要，重新声明其他来自通用 .submit-btn 的样式 */
+    background: linear-gradient(180deg, #363636 0%, #1b1b1b 50%, #000000 100%);
+    color: #ffffff;
+    border-radius: 8px;
+    /* 可以考虑使用和模态框一致的圆角 */
+    border: 0;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
+}
+
+/* (可选) 确保悬停效果也应用 */
+.modal .submit-btn:hover {
+    box-shadow: 0px 0px 0px 2px #ffffff, 0px 0px 0px 4px #0000003a;
+}

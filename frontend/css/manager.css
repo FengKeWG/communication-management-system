@@ -459,6 +459,18 @@ body.nav-active .nav__list-item:nth-child(3) {
     transition-delay: 0.5s;
 }
 
+body.nav-active .nav__list-item:nth-child(4) {
+    transition-delay: 0.6s;
+}
+
+body.nav-active .nav__list-item:nth-child(5) {
+    transition-delay: 0.7s;
+}
+
+body.nav-active .nav__list-item:nth-child(6) {
+    transition-delay: 0.8s;
+}
+
 .nav__list-item a.disabled,
 .secondary-nav-btn.disabled {
     pointer-events: none;
@@ -482,14 +494,10 @@ body.nav-active .nav__list-item:nth-child(3) {
 }
 
 .content-container {
-    /* 增加上边距，防止被固定的元素遮挡 */
     padding-top: 85px;
-    /* 原来是 110px，现在没有高 header 了，但要避开浮动元素，需要测试调整 */
-    /* 其他 padding 保持不变 */
     padding-left: 30px;
     padding-right: 30px;
     padding-bottom: 50px;
-    /* 其他样式保持不变 */
     position: relative;
     overflow: hidden;
     z-index: 10;
@@ -1520,46 +1528,6 @@ select.input:focus {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-
-
-/* ================================== */
-/* ============ 退出登录 ============ */
-/* ================================== */
-.logout-link {
-    position: fixed;
-    bottom: 40px;
-    right: 50px;
-    z-index: 200;
-    cursor: none;
-    width: 50px;
-    height: 50px;
-    text-align: center;
-    border-radius: 50%;
-    background-color: #8167a9;
-    box-shadow: 0 0 0 3px rgba(129, 103, 169, 0.2);
-    transition: all .3s ease-out;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.logout-link .material-icons {
-    color: white;
-    font-size: 24px;
-    transition: transform 0.3s ease;
-}
-
-.logout-link:hover {
-    opacity: 1;
-    background-color: #6a508a;
-    box-shadow: 0 0 0 8px rgba(129, 103, 169, 0.15);
-    transform: scale(1.1);
-}
-
-.logout-link:hover .material-icons {
-    transform: rotate(15deg);
-}
-
 /* ================================== */
 /* =========== 其他杂项 ============ */
 /* ================================== */
@@ -1689,4 +1657,388 @@ label.neumorphic-checkbox-card.selected.disabled {
 label.neumorphic-checkbox-card.disabled .client-name,
 label.neumorphic-checkbox-card.disabled .client-id-display {
     color: #aaa;
+}
+
+.client-selector-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding-top: 10px;
+}
+
+.client-selector-card {
+    display: flex;
+    flex-direction: column;
+    /* 让内容垂直排列 */
+    justify-content: center;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    box-shadow: 5px 5px 10px #dcdcdc,
+        -5px -5px 10px #ffffff;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: none;
+    /* 保持自定义光标 */
+    position: relative;
+    text-align: center;
+    min-height: 80px;
+    border: 2px solid transparent;
+    user-select: none;
+    overflow: hidden;
+    /* 配合 max-height 动画 */
+}
+
+.client-selector-card .client-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 1em;
+    margin-bottom: 3px;
+    font-family: 'Poppins', sans-serif;
+    transition: color 0.3s ease;
+    pointer-events: none;
+    /* 防止文本干扰点击 */
+}
+
+.client-selector-card .client-id-display {
+    font-size: 0.8em;
+    color: #777;
+    transition: color 0.3s ease;
+    pointer-events: none;
+}
+
+/* 鼠标悬停效果 (未展开时) */
+.client-selector-card:not(.expanded):hover {
+    transform: translateY(-3px);
+    box-shadow: 7px 7px 14px #d1d1d1,
+        -7px -7px 14px #ffffff;
+}
+
+/* 卡片被选中（展开）时的样式 */
+.client-selector-card.expanded {
+    background-color: #e8e8e8;
+    /* 轻微下沉背景色 */
+    box-shadow: inset 4px 4px 8px #c5c5c5,
+        inset -4px -4px 8px #ffffff;
+    /* 内阴影 */
+    border: 2px solid #8167a9;
+    /* 边框高亮 */
+    transform: translateY(0px);
+    /* overflow: visible; /* 展开时允许内容溢出 */
+}
+
+/* 展开时卡片内文本样式 */
+.client-selector-card.expanded .client-name {
+    color: #6a508a;
+}
+
+.client-selector-card.expanded .client-id-display {
+    color: #a18cb9;
+}
+
+/* 联络人选择面板样式 */
+.contact-selection-panel {
+    margin-top: 15px;
+    /* 与客户信息隔开 */
+    padding: 15px;
+    border-radius: 10px;
+    /* 轻微圆角 */
+    background-color: #e0e0e0;
+    /* 比卡片展开颜色稍深一点 */
+    box-shadow: inset 3px 3px 6px #b9b9b9,
+        /* 更深的内阴影 */
+        inset -3px -3px 6px #ffffff;
+    max-height: 0;
+    /* 初始隐藏 */
+    opacity: 0;
+    overflow-y: auto;
+    /* 如果联络人多，允许滚动 */
+    transition: max-height 0.5s ease-out, opacity 0.3s ease-out 0.1s, padding 0.3s ease-out;
+    /* 平滑过渡 */
+    visibility: hidden;
+    border-top: 1px solid #ccc;
+    /* 添加顶部边框 */
+}
+
+.client-selector-card.expanded .contact-selection-panel {
+    max-height: 250px;
+    /* 展开后的最大高度 */
+    opacity: 1;
+    padding: 15px;
+    /* 展开后恢复内边距 */
+    visibility: visible;
+    transition: max-height 0.5s ease-in, opacity 0.3s ease-in, padding 0.3s ease-in;
+}
+
+
+/* 联络人单选列表样式 (拟态) */
+.contact-radio-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* 每行一个 */
+    gap: 10px;
+}
+
+.contact-radio-group label {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background-color: #ebebeb;
+    /* 按钮背景色 */
+    box-shadow: 3px 3px 6px #c7c7c7,
+        -3px -3px 6px #ffffff;
+    transition: all 0.2s ease-in-out;
+    cursor: none;
+    gap: 10px;
+}
+
+.contact-radio-group label:hover {
+    transform: scale(1.02);
+    box-shadow: 4px 4px 8px #bfbfbf,
+        -4px -4px 8px #ffffff;
+}
+
+
+.contact-radio-group input[type="radio"] {
+    opacity: 0;
+    /* 隐藏原生 radio */
+    position: absolute;
+    pointer-events: none;
+}
+
+/* 自定义 Radio 外观 (小圆圈) */
+.contact-radio-group .radio-custom {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #d1d1d1;
+    box-shadow: inset 2px 2px 4px #aaaaaa,
+        inset -2px -2px 4px #fcfcfc;
+    position: relative;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* 选中时的内圈 */
+.contact-radio-group input[type="radio"]:checked+.radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    /* 调整内圈位置和大小 */
+    left: 5px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #8167a9;
+    /* 选中颜色 */
+}
+
+/* 选中时 label 样式 */
+.contact-radio-group input[type="radio"]:checked~span {
+    font-weight: 600;
+    color: #6a508a;
+    /* 选中时文字颜色 */
+}
+
+.contact-radio-group input[type="radio"]:checked+.radio-custom {
+    background-color: #f0f0f0;
+    /* 选中时外圈背景 */
+}
+
+.contact-radio-group label.selected {
+    /* 如果需要给label加选中样式 */
+    background-color: #e5e5e5;
+    box-shadow: inset 3px 3px 6px #c0c0c0,
+        inset -3px -3px 6px #ffffff;
+}
+
+
+.contact-radio-group span {
+    font-size: 0.95em;
+    color: #555;
+    transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+/* 共享样式 (拟态圆形按钮) */
+.change-password-btn,
+.logout-link {
+    position: fixed;
+    /* 固定定位 */
+    right: 50px;
+    /* 距离右边 50px */
+    z-index: 200;
+    /* 确保在顶层 */
+    cursor: none;
+    /* 自定义光标 */
+    width: 50px;
+    /* 宽度 */
+    height: 50px;
+    /* 高度 */
+    border-radius: 50%;
+    /* 圆形 */
+    background-color: #f0f0f0;
+    /* 拟态风格的浅色背景 */
+    box-shadow: 5px 5px 10px #bcbcbc,
+        /* 外部阴影 */
+        -5px -5px 10px #ffffff;
+    /* 外部高光 */
+    transition: all .3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    /* 平滑过渡 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    /* 移除按钮默认边框 */
+    padding: 0;
+    /* 移除按钮默认内边距 */
+    color: #757575;
+    /* 图标默认颜色 */
+    text-decoration: none;
+    /* 移除链接下划线 (针对<a>) */
+}
+
+/* 按钮/链接内的图标样式 */
+.change-password-btn .material-icons-outlined,
+.logout-link .material-icons {
+    font-size: 24px;
+    /* 图标大小 */
+    transition: transform 0.3s ease, color 0.3s ease;
+    /* 图标过渡 */
+    color: inherit;
+    /* 继承父元素颜色 */
+    line-height: 1;
+    /* 确保图标垂直居中 */
+}
+
+/* 鼠标悬停效果 (轻微上浮，阴影变化，图标变色) */
+.change-password-btn:hover,
+.logout-link:hover {
+    transform: translateY(-3px);
+    /* 轻微上浮 */
+    box-shadow: 7px 7px 14px #b0b0b0,
+        /* 阴影加强 */
+        -7px -7px 14px #ffffff;
+    /* 高光加强 */
+    color: #8167a9;
+    /* 图标悬停颜色 */
+}
+
+/* 鼠标按下效果 (内凹) */
+.change-password-btn:active,
+.logout-link:active {
+    box-shadow: inset 4px 4px 8px #c5c5c5,
+        /* 内部阴影 */
+        inset -4px -4px 8px #ffffff;
+    /* 内部高光 */
+    transform: translateY(0px);
+    /* 按下时恢复原始Y位置 */
+    color: #6a508a;
+    /* 图标按下颜色 */
+}
+
+
+/* --- 定位 --- */
+
+.logout-link {
+    bottom: 40px;
+    /* 退出登录按钮的位置 */
+}
+
+.change-password-btn {
+    /* 定位在退出按钮上方，计算：
+       退出按钮底部位置 (40px) + 退出按钮高度 (50px) + 间距 (例如 15px)
+       = 40 + 50 + 15 = 105px
+    */
+    bottom: 105px;
+}
+
+.modal-overlay {
+    position: fixed;
+    /* 使用 fixed 定位脱离文档流，覆盖整个视口 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* 半透明黑色背景 */
+    z-index: 1000;
+    /* 确保在其他内容之上 (低于自定义提示/确认框) */
+    display: flex;
+    /* 使用 flex 布局来居中内容 */
+    justify-content: center;
+    /* 水平居中 */
+    align-items: center;
+    /* 垂直居中 */
+    opacity: 0;
+    /* 初始透明度为 0 */
+    visibility: hidden;
+    /* 初始不可见，配合 opacity 做动画 */
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+    /* 淡出动画 */
+}
+
+/* 当模态框显示时 (通过添加 .show 类) */
+.modal-overlay.show {
+    opacity: 1;
+    /* 透明度变为 1 */
+    visibility: visible;
+    /* 可见 */
+    transition: opacity 0.3s ease, visibility 0s linear 0s;
+    /* 淡入动画 */
+}
+
+/* 模态框内容区域样式 */
+/* .modal-content 已经有 .form-card 类，我们优先使用它，并补充样式 */
+.modal-overlay .modal-content.form-card {
+    padding: 30px 40px;
+    /* 可以调整内边距 */
+    border-radius: 12px;
+    /* 轻微调整圆角 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    /* 更明显的阴影 */
+    width: 90%;
+    /* 宽度为父容器的90% */
+    max-width: 500px;
+    /* 最大宽度，防止在大屏幕上过宽 */
+    background-color: #fdfdfd;
+    /* 确保背景色 */
+    border: none;
+    /* 移除 form-card 可能继承的边框 */
+    transform: scale(0.95) translateY(-10px);
+    /* 初始状态：轻微缩小并上移 */
+    opacity: 0;
+    /* 初始透明度为 0 */
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+    /* 形变和透明度动画 */
+    margin: 20px;
+    /* 添加一些外边距，防止极端情况下贴边 */
+}
+
+/* 当模态框显示时，内容区的动画 */
+.modal-overlay.show .modal-content.form-card {
+    transform: scale(1) translateY(0);
+    /* 恢复正常大小和位置 */
+    opacity: 1;
+    /* 变为不透明 */
+}
+
+/* 确保模态框内的标题和表单样式正常 */
+.modal-overlay .modal-content .title {
+    margin-bottom: 25px;
+    text-align: center;
+    /* 标题居中 */
+}
+
+.modal-overlay .modal-content .form-actions {
+    margin-top: 30px;
+    /* 调整按钮组的上边距 */
+}
+
+/* 确保错误信息样式 */
+.modal-overlay #password-change-error {
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: -10px;
+    /* 调整与按钮的间距 */
 }

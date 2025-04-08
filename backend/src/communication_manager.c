@@ -188,58 +188,64 @@ Communication *mergeSortCommunication(Communication *head, int cnt, int a[])
     return mergeCommunicationSortedLists(front, back, cnt, a);
 }
 
-void displayCommunication(Communication *head, int argc, char *argv[])
+void displayCommunication(Communication *head, const char *pattern, int *sortKeys, int sortKeyCount, int filter_sales_id)
 {
-    if (argc < 3)
-        return;
-    if (argc == 3)
+    if (sortKeyCount > 0 && sortKeys != NULL)
     {
-        argc++;
-        argv[3] = "1";
+        head = mergeSortCommunication(head, sortKeyCount, sortKeys);
     }
-    int cnt = argc - 3;
-    int a[cnt];
-    for (int i = 0; i < cnt; i++)
-        a[i] = atoi(argv[3 + i]);
-    head = mergeSortCommunication(head, cnt, a);
-    char pattern[10000] = "";
-    strcat(pattern, argv[2]);
-    toLower(pattern);
     Communication *current = head;
     char text[15000];
     char tmp[200];
     while (current)
     {
-        char text[10000] = "";
-        char tmp[50] = "";
-        snprintf(tmp, sizeof(tmp), "%d", current->id);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->client_id);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->contact_id);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->sales_id);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->year);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->month);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->day);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->hour);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->minute);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->second);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->duration);
-        strcat(text, tmp);
-        strcat(text, current->content);
-        toLower(text);
-        if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
+        bool should_display = true;
+
+        // ---- 过滤逻辑 ----
+        if (filter_sales_id > 0)
+        { // 如果需要按业务员过滤
+            if (current->sales_id != filter_sales_id)
+            {
+                should_display = false; // ID 不匹配，不显示
+            }
+        }
+        // ---- 过滤逻辑结束 ----
+
+        if (should_display)
         {
-            printf("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%s;", current->id, current->client_id, current->contact_id, current->sales_id, current->year, current->month, current->day, current->hour, current->minute, current->second, current->content);
-            printf("\n");
+            text[0] = '\0';
+            snprintf(tmp, sizeof(tmp), "%d", current->id);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->client_id);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->contact_id);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->sales_id);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->year);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->month);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->day);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->hour);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->minute);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->second);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->duration);
+            strcat(text, tmp);
+            strncat(text, current->content, sizeof(text) - strlen(text) - 1);
+            toLower(text);
+            if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
+            {
+                printf("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%s\n",
+                       current->id, current->client_id, current->contact_id, current->sales_id,
+                       current->year, current->month, current->day,
+                       current->hour, current->minute, current->second,
+                       current->duration, current->content);
+            }
         }
         current = current->next;
     }

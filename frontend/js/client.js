@@ -4,17 +4,33 @@ const clientIndexToSortKey = { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8 };
 
 function fetchClientData() {
     const contentDiv = document.getElementById('client-list-content');
-    const clearBtn = document.getElementById('clientClearSearchButton');
+    const clearBtn = document.getElementById('clearSearchButton'); // 客户列表的清除按钮 ID 可能不同，请确认
+
+    // **获取角色和 Sales ID 以进行过滤**
+    const role = sessionStorage.getItem("role");
+    const sales_id = sessionStorage.getItem("sales_id");
+
     let queryParams = [];
     if (currentClientSearchTerm) { queryParams.push(`query=${encodeURIComponent(currentClientSearchTerm)}`); }
     if (currentClientSortParams.length > 0) { queryParams.push(`sort=${encodeURIComponent(currentClientSortParams.join(','))}`); }
+
+    // ---- 添加过滤参数 (如果当前用户是业务员) ----
+    if (role === 'sales' && sales_id && sales_id !== '0' && sales_id !== '-1') {
+        queryParams.push(`filter_sales_id=${encodeURIComponent(sales_id)}`);
+        console.log("Fetching clients filtered by sales_id:", sales_id); // Debug log
+    } else {
+        console.log("Fetching all clients (Manager or no Sales ID)"); // Debug log
+    }
+    // ---- 过滤结束 ----
+
     const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
     contentDiv.innerHTML = '<p>正在加载客户列表...</p>';
-    fetch(`/api/fetch_clients${queryString}`)
+
+    fetch(`/api/fetch_clients${queryString}`) // URL 包含查询和过滤参数
         .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
         .then(data => {
             if (data.error) throw new Error(data.error);
-            generateClientTable(data.output || "");
+            generateClientTable(data.output || ""); // 生成表格
             if (clearBtn) clearBtn.style.display = currentClientSearchTerm ? 'inline-block' : 'none';
         })
         .catch(error => {
@@ -26,6 +42,8 @@ function fetchClientData() {
 function generateClientTable(output) {
     const lines = output.trim().split('\n').filter(line => line.trim() !== '');
     const container = document.getElementById('client-list-content');
+    const role = sessionStorage.getItem("role");
+    const isSales = (role === 'sales');
     if (lines.length === 0) {
         container.innerHTML = '<div class="table-responsive"><table class="data-table"><tbody><tr><td colspan="11">没有找到客户数据。</td></tr></tbody></table></div>';
         return;
@@ -80,17 +98,21 @@ function generateClientTable(output) {
         for (let i = renderedCells; i < 10; i++) {
             tableHTML += '<td>-</td>';
         }
+        // **操作列按钮根据角色显示**
         tableHTML += `<td class="action-cell" style="white-space: nowrap;">
             <button class="view-btn icon-btn" onclick="viewClientDetails('${clientId}')" title="查看详情">
                 <span class="material-icons-outlined">visibility</span>
-            </button>
-            <button class="edit-btn icon-btn" onclick="editClientSetup('${clientId}')" title="编辑">
-                <span class="material-icons-outlined">edit</span>
-            </button>
-            <button class="delete-btn icon-btn" onclick="deleteClient('${clientId}')" title="删除">
-                <span class="material-icons-outlined">delete</span>
-            </button>
-        </td>`;
+            </button>`;
+        // **只有非业务员 (经理) 才能看到编辑和删除按钮**
+        if (!isSales) {
+            tableHTML += `<button class="edit-btn icon-btn action-requires-manager" onclick="editClientSetup('${clientId}')" title="编辑">
+                            <span class="material-icons-outlined">edit</span>
+                          </button>
+                          <button class="delete-btn icon-btn action-requires-manager" onclick="deleteClient('${clientId}')" title="删除">
+                              <span class="material-icons-outlined">delete</span>
+                          </button>`;
+        }
+        tableHTML += `</td>`;
         tableHTML += '</tr>';
     });
     tableHTML += '</tbody></table></div>';
@@ -201,6 +223,7 @@ function addClientContactGroup() {
     const container = document.getElementById('contacts-container');
     const contactGroup = document.createElement('div');
     contactGroup.className = 'contact-group card';
+    contactGroup.dataset.contactId = '0';
     contactGroup.innerHTML = `
         <button type="button" class="remove-contact-btn remove-btn icon-btn" onclick="removeClientContactGroup(this)" title="移除此联络员"> <!-- 中文：移除此联络员 -->
             <span class="material-icons-outlined">close</span>
@@ -413,7 +436,7 @@ function submitClient() {
             if (phone) contactPhones.push(phone);
         });
         const contactPhonesStr = contactPhones.join('~');
-        const contactString = `${name}=${gender}=${year}=${month}=${day}=${email}=${contactPhonesStr}`;
+        const contactString = `0=${name}=${gender}=${year}=${month}=${day}=${email}=${contactPhonesStr}`;
         contactsArray.push(contactString);
     });
     const contactsStr = contactsArray.join(',');
@@ -518,13 +541,15 @@ function populateClientForm(clientId, fullClientString) {
         addClientContactGroup();
         const newGroup = contactsContainer.lastElementChild;
         const contactFields = contactData.split('=');
-        newGroup.querySelector('.contact-name').value = contactFields[0] || '';
-        newGroup.querySelector('.contact-gender').value = contactFields[1] || '未知';
-        newGroup.querySelector('.contact-birth-year').value = contactFields[2] || '';
-        newGroup.querySelector('.contact-birth-month').value = contactFields[3] || '';
-        newGroup.querySelector('.contact-birth-day').value = contactFields[4] || '';
-        newGroup.querySelector('.contact-email').value = contactFields[5] || '';
-        const contactPhonesStr = contactFields.slice(6).join('=');
+        const contactId = contactFields[0] || '0';
+        newGroup.dataset.contactId = contactId;
+        newGroup.querySelector('.contact-name').value = contactFields[1] || '';
+        newGroup.querySelector('.contact-gender').value = contactFields[2] || '未知';
+        newGroup.querySelector('.contact-birth-year').value = contactFields[3] || '';
+        newGroup.querySelector('.contact-birth-month').value = contactFields[4] || '';
+        newGroup.querySelector('.contact-birth-day').value = contactFields[5] || '';
+        newGroup.querySelector('.contact-email').value = contactFields[6] || '';
+        const contactPhonesStr = contactFields.slice(7).join('=');
         const contactPhones = contactPhonesStr.split('~').filter(p => p.trim());
         const contactPhoneContainer = newGroup.querySelector('.contact-phones-container');
         if (contactPhoneContainer.children.length === 1 && !contactPhoneContainer.querySelector('.contact-phone-input').value && contactPhones.length > 0) {
@@ -572,6 +597,7 @@ function submitClientUpdate() {
     contactGroups.forEach(group => {
         const name = group.querySelector('.contact-name').value.trim();
         if (!name) return;
+        const contactId = group.dataset.contactId || '0';
         const gender = group.querySelector('.contact-gender').value.trim() || '未知';
         const year = group.querySelector('.contact-birth-year').value.trim() || '0';
         const month = group.querySelector('.contact-birth-month').value.trim() || '0';
@@ -584,7 +610,7 @@ function submitClientUpdate() {
             if (phone) contactPhones.push(phone);
         });
         const contactPhonesStr = contactPhones.join('~');
-        const contactString = `${name}=${gender}=${year}=${month}=${day}=${email}=${contactPhonesStr}`;
+        const contactString = `${contactId}=${name}=${gender}=${year}=${month}=${day}=${email}=${contactPhonesStr}`;
         contactsArray.push(contactString);
     });
     const contactsStr = contactsArray.join(',');

@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/sales_manager.h"
 #include "../include/client_manager.h"
 #include "../include/utils.h"
 
@@ -44,18 +45,30 @@ Client *parseClientFromString(char *inputString, bool newID)
             Contact *current_contact = &newClient->contacts[newClient->contact_count];
             memset(current_contact, 0, sizeof(Contact));
             char contact_phones[1024] = {0};
-            int contact_fields = sscanf(contact_str, "%[^=]=%[^=]=%d=%d=%d=%[^=]=%[^\n]", current_contact->name, current_contact->gender, &current_contact->birth_year, &current_contact->birth_month, &current_contact->birth_day, current_contact->email, contact_phones);
+            char contact_id_str[50] = {0};
+            int contact_fields = sscanf(contact_str, "%[^=]=%[^=]=%[^=]=%d=%d=%d=%[^=]=%[^\n]", contact_id_str, current_contact->name, current_contact->gender, &current_contact->birth_year, &current_contact->birth_month, &current_contact->birth_day, current_contact->email, contact_phones);
+            current_contact->id = newID ? uidGenerate() : stoi(contact_id_str);
             if (strlen(current_contact->gender) == 0)
                 strcpy(current_contact->gender, "未知");
             current_contact->phone_count = 0;
-            if (contact_fields >= 7 && contact_phones[0] != '\0')
+            if (contact_fields >= 8 && contact_phones[0] != '\0')
             {
-                char *phone_num = strtok(contact_phones, "~");
-                while (phone_num && current_contact->phone_count < 100)
+                char *phone_start = contact_phones;
+                char *delimiter;
+                while ((delimiter = strchr(phone_start, '~')) && current_contact->phone_count < 100)
                 {
-                    scpy(current_contact->phones[current_contact->phone_count], phone_num, sizeof(current_contact->phones[0]));
+                    *delimiter = '\0';
+                    if (strlen(phone_start) > 0)
+                    {
+                        scpy(current_contact->phones[current_contact->phone_count], phone_start, sizeof(current_contact->phones[0]));
+                        current_contact->phone_count++;
+                    }
+                    phone_start = delimiter + 1;
+                }
+                if (strlen(phone_start) > 0 && current_contact->phone_count < 100)
+                {
+                    scpy(current_contact->phones[current_contact->phone_count], phone_start, sizeof(current_contact->phones[0]));
                     current_contact->phone_count++;
-                    phone_num = strtok(NULL, "~");
                 }
             }
             newClient->contact_count++;
@@ -254,71 +267,89 @@ Client *mergeSortClient(Client *head, int cnt, int a[])
     return mergeClientSortedLists(front, back, cnt, a);
 }
 
-void displayClients(Client *head, int argc, char *argv[])
+void displayClients(Client *head, const char *pattern, int *sortKeys, int sortKeyCount, int filter_sales_id, Sales *salesList)
 {
-    if (argc < 3)
-        return;
-    if (argc == 3)
+    if (sortKeyCount > 0 && sortKeys != NULL)
     {
-        argc++;
-        argv[3] = "1";
+        head = mergeSortClient(head, sortKeyCount, sortKeys);
     }
-    int cnt = argc - 3;
-    int a[cnt];
-    for (int i = 0; i < cnt; i++)
-        a[i] = stoi(argv[3 + i]);
-    head = mergeSortClient(head, cnt, a);
-    char pattern[10000] = "";
-    strcat(pattern, argv[2]);
-    toLower(pattern);
+    Sales *targetSales = NULL;
+    if (filter_sales_id > 0 && salesList)
+    {
+        targetSales = findSalesById(salesList, filter_sales_id);
+        if (!targetSales)
+        {
+            // 如果找不到业务员，理论上不应该发生，或者该业务员不负责任何客户
+            // fprintf(stderr, "警告: 未找到 ID 为 %d 的业务员用于过滤客户列表。\n", filter_sales_id);
+            // 可以选择直接返回空，或者继续显示所有（取决于需求）
+            return; // 直接返回空结果
+        }
+    }
     Client *current = head;
     char text[15000];
     char tmp[200];
     while (current)
     {
-        text[0] = '\0';
-        snprintf(tmp, sizeof(tmp), "%d", current->id);
-        strcat(text, tmp);
-        strcat(text, current->name);
-        strcat(text, current->region);
-        strcat(text, current->address);
-        strcat(text, current->legal_person);
-        snprintf(tmp, sizeof(tmp), "%d", current->size);
-        strcat(text, tmp);
-        snprintf(tmp, sizeof(tmp), "%d", current->contact_level);
-        strcat(text, tmp);
-        strcat(text, current->email);
-        for (int i = 0; i < current->phone_count; i++)
-            strcat(text, current->phones[i]);
-        for (int i = 0; i < current->contact_count; i++)
-        {
-            strcat(text, current->contacts[i].name);
-            strcat(text, current->contacts[i].gender);
-            strcat(text, current->contacts[i].email);
-            for (int j = 0; j < current->contacts[i].phone_count; j++)
-                strcat(text, current->contacts[i].phones[j]);
+        bool should_display = true;
+        if (targetSales)
+        {                           // 如果需要按业务员过滤
+            should_display = false; // 先假设不显示
+            for (int i = 0; i < targetSales->client_count; i++)
+            {
+                if (targetSales->client_ids[i] == current->id)
+                {
+                    should_display = true; // 找到匹配，设为显示
+                    break;
+                }
+            }
         }
-        toLower(text);
-        if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
+        if (should_display)
         {
-            printf("%d;%s;%s;%s;%s;%d;%d;%s;", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
+            // 构建搜索文本 (这部分应该在过滤之后，只对可能显示的项构建)
+            text[0] = '\0';
+            // ... (构建 text 的代码不变) ...
+            snprintf(tmp, sizeof(tmp), "%d", current->id);
+            strcat(text, tmp);
+            strcat(text, current->name);
+            strcat(text, current->region);
+            strcat(text, current->address);
+            strcat(text, current->legal_person);
+            snprintf(tmp, sizeof(tmp), "%d", current->size);
+            strcat(text, tmp);
+            snprintf(tmp, sizeof(tmp), "%d", current->contact_level);
+            strcat(text, tmp);
+            strcat(text, current->email);
             for (int i = 0; i < current->phone_count; i++)
-                printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
-            printf(";");
+                strcat(text, current->phones[i]);
             for (int i = 0; i < current->contact_count; i++)
             {
-                Contact *c = &current->contacts[i];
-                printf("%s=%s=%d=%d=%d=%s=", c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
-                for (int j = 0; j < c->phone_count; j++)
-                    printf("%s%s", c->phones[j], (j == c->phone_count - 1) ? "" : "~");
-                if (i < current->contact_count - 1)
-                    printf(",");
+                strcat(text, current->contacts[i].name);
+                strcat(text, current->contacts[i].gender);
+                strcat(text, current->contacts[i].email);
+                for (int j = 0; j < current->contacts[i].phone_count; j++)
+                    strcat(text, current->contacts[i].phones[j]);
             }
-            printf("\n");
+            toLower(text);
+            if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
+            {
+                printf("%d;%s;%s;%s;%s;%d;%d;%s;", current->id, current->name, current->region, current->address, current->legal_person, current->size, current->contact_level, current->email);
+                for (int i = 0; i < current->phone_count; i++)
+                    printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
+                printf(";");
+                for (int i = 0; i < current->contact_count; i++)
+                {
+                    Contact *c = &current->contacts[i];
+                    printf("%d=%s=%s=%d=%d=%d=%s=", c->id, c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
+                    for (int j = 0; j < c->phone_count; j++)
+                        printf("%s%s", c->phones[j], (j == c->phone_count - 1) ? "" : "~");
+                    if (i < current->contact_count - 1)
+                        printf(",");
+                }
+                printf("\n");
+            }
         }
         current = current->next;
     }
-    fflush(stdout);
 }
 
 void displayClientIdsAndNames(Client *head)
@@ -348,7 +379,7 @@ void displayClientDetails(Client *head, int id)
             for (int i = 0; i < current->contact_count; i++)
             {
                 Contact *c = &current->contacts[i];
-                printf("%s=%s=%d=%d=%d=%s=", c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
+                printf("%d=%s=%s=%d=%d=%d=%s=", c->id, c->name, c->gender, c->birth_year, c->birth_month, c->birth_day, c->email);
                 for (int j = 0; j < c->phone_count; j++)
                     printf("%s%s", c->phones[j], (j == c->phone_count - 1) ? "" : "~");
                 if (i < current->contact_count - 1)

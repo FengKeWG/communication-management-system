@@ -35,7 +35,7 @@ int uidGenerate()
     return uid;
 }
 
-void next(char *s, int n, int *ne)
+void next(const char *s, int n, int *ne)
 {
     int len = 0;
     ne[0] = 0;
@@ -61,7 +61,7 @@ void next(char *s, int n, int *ne)
     }
 }
 
-int kmp(char *t, char *s)
+int kmp(char *t, const char *s)
 {
     int lent = strlen(t);
     int lens = strlen(s);
