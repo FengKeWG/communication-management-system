@@ -1,0 +1,2 @@
+1;admin;7dd1705a;manager;0
+12731700;zhaoli;7dd1705a;sales;1

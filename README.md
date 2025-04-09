@@ -21,17 +21,17 @@
     - 管理客户联络员信息（增、删、改、查）。
     - 管理业务员信息（增、删、改、查）。
     - 记录和管理通信记录。
-    - 数据存储在文本文件中（如 `data/client.txt`、`data/sales.txt`、`data/communication.txt`）。
+    - 数据存储在文本文件中（如 `data/client.txt`、`data/contact.txt`、`data/sales.txt`、`data/communication.txt`）。
 - **实现方式**：
     - 使用链表结构在内存中管理客户、联络员、业务员和通信记录数据。
-    - 通过命令行参数接收操作指令，例如 `./main add_client` 添加客户，`./main get_clients` 显示客户列表。
+    - 通过命令行参数接收操作指令，例如 `./main add_client` 添加客户，`./main list_clients` 显示客户列表。
     - 从标准输入（stdin）读取数据，输出结果到标准输出（stdout）。
     ```
 
 ### **2. Web 服务器（Flask）**
 - **功能**：
     - 提供 RESTful API 接口，接收前端请求并与 C 程序交互。
-    - 服务前端静态文件（如 `index.html`、`manager.css` 和 `login.js` 等）。
+    - 服务前端静态文件（如 `index.html`、`styles.css` 和 `scripts.js` 等）。
 - **实现方式**：
     - 使用 Python 的 `subprocess` 模块调用 C 程序（`main.exe`），传递数据并接收结果。
     - 将前端的 JSON 请求转换为 C 程序所需的输入格式。
@@ -53,7 +53,7 @@
 ### **项目架构图**
 ```
 +-----------------+       +-----------------+       +-----------------+
-|     前端        | <-->  |    Flask API    | <-->  |     C 后端      |
+|     前端        | <-->  |    Flask API    | <-->  |    C 后端       |
 | (HTML/CSS/JS)   |       |    (Python)     |       |   (数据管理)    |
 +-----------------+       +-----------------+       +-----------------+
 ```
