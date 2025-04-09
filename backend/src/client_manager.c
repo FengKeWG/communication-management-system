@@ -11,22 +11,52 @@ Client *parseClientFromString(char *inputString, bool newID)
     {
         return NULL;
     }
+
     Client *newClient = (Client *)malloc(sizeof(Client));
     if (!newClient)
     {
         return NULL;
     }
     memset(newClient, 0, sizeof(Client));
+
     char idStr[50] = {0};
+    char sizeStr[50] = {0};
+    char contactLevelStr[50] = {0};
     char phonesStr[1024] = {0};
     char contactsStr[4096] = {0};
-    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^\n]", idStr, newClient->name, newClient->region, newClient->address, newClient->legal_person, &newClient->size, &newClient->contact_level, newClient->email, phonesStr, contactsStr);
-    if (scanned < 9)
-    {
+
+    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]",
+                         idStr, newClient->name, newClient->region, newClient->address, newClient->legal_person,
+                         sizeStr, contactLevelStr, newClient->email, phonesStr, contactsStr);
+
+    if (scanned < 10)
+    { // 需要扫描 10 个字段
+        fprintf(stderr, "Error: Input string format is incorrect.\n");
         free(newClient);
         return NULL;
     }
+
+    // 验证 idStr ，如果 newID 为 false
     newClient->id = newID ? uidGenerate() : stoi(idStr);
+
+    // 验证 sizeStr
+    if (/* 验证 sizeStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid size format: '%s'\n", sizeStr);
+        free(newClient);
+        return NULL;
+    }
+    newClient->size = stoi(sizeStr);
+
+    // 验证 contactLevelStr
+    if (/* 验证 contactLevelStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid contact level format: '%s'\n", contactLevelStr);
+        free(newClient);
+        return NULL;
+    }
+    newClient->contact_level = stoi(contactLevelStr);
+
     newClient->phone_count = 0;
     char *phone_token = strtok(phonesStr, ",");
     while (phone_token && newClient->phone_count < 100)
@@ -35,6 +65,7 @@ Client *parseClientFromString(char *inputString, bool newID)
         newClient->phone_count++;
         phone_token = strtok(NULL, ",");
     }
+
     newClient->contact_count = 0;
     if (contactsStr[0] != '\0')
     {
@@ -43,14 +74,73 @@ Client *parseClientFromString(char *inputString, bool newID)
         {
             Contact *current_contact = &newClient->contacts[newClient->contact_count];
             memset(current_contact, 0, sizeof(Contact));
-            char contact_phones[1024] = {0};
+
             char contact_id_str[50] = {0};
-            int contact_fields = sscanf(contact_str, "%[^=]=%[^=]=%[^=]=%d=%d=%d=%[^=]=%[^\n]", contact_id_str, current_contact->name, current_contact->gender, &current_contact->birth_year, &current_contact->birth_month, &current_contact->birth_day, current_contact->email, contact_phones);
-            current_contact->id = newID ? uidGenerate() : stoi(contact_id_str);
+            char contact_birth_year_str[50] = {0};
+            char contact_birth_month_str[50] = {0};
+            char contact_birth_day_str[50] = {0};
+            char contact_phones[1024] = {0};
+
+            int contact_fields = sscanf(contact_str, "%[^=]=%[^=]=%[^=]=%[^=]=%[^=]=%[^=]=%[^=]=%[^\n]",
+                                        contact_id_str, current_contact->name, current_contact->gender,
+                                        contact_birth_year_str, contact_birth_month_str, contact_birth_day_str,
+                                        current_contact->email, contact_phones);
+
+            if (contact_fields < 8)
+            {
+                fprintf(stderr, "Error: Invalid contact format: '%s'\n", contact_str);
+                contact_str = strtok(NULL, ",");
+                continue;
+            }
+
+            // 验证联系人 ID
+            if (!newID)
+            {
+                if (/* 验证 contact_id_str 是否合法 */)
+                {
+                    fprintf(stderr, "Error: Invalid contact ID format: '%s'\n", contact_id_str);
+                    contact_str = strtok(NULL, ",");
+                    continue;
+                }
+                current_contact->id = stoi(contact_id_str);
+            }
+            else
+            {
+                current_contact->id = uidGenerate();
+            }
+
+            // 验证联系人出生年份
+            if (/* 验证 contact_birth_year_str 是否合法 */)
+            {
+                fprintf(stderr, "Error: Invalid contact birth year format: '%s'\n", contact_birth_year_str);
+                contact_str = strtok(NULL, ",");
+                continue;
+            }
+            current_contact->birth_year = stoi(contact_birth_year_str);
+
+            // 验证联系人出生月份
+            if (/* 验证 contact_birth_month_str 是否合法 */)
+            {
+                fprintf(stderr, "Error: Invalid contact birth month format: '%s'\n", contact_birth_month_str);
+                contact_str = strtok(NULL, ",");
+                continue;
+            }
+            current_contact->birth_month = stoi(contact_birth_month_str);
+
+            // 验证联系人出生日
+            if (/* 验证 contact_birth_day_str 是否合法 */)
+            {
+                fprintf(stderr, "Error: Invalid contact birth day format: '%s'\n", contact_birth_day_str);
+                contact_str = strtok(NULL, ",");
+                continue;
+            }
+            current_contact->birth_day = stoi(contact_birth_day_str);
+
             if (strlen(current_contact->gender) == 0)
                 strcpy(current_contact->gender, "未知");
+
             current_contact->phone_count = 0;
-            if (contact_fields >= 8 && contact_phones[0] != '\0')
+            if (contact_phones[0] != '\0')
             {
                 char *phone_start = contact_phones;
                 char *delimiter;
@@ -70,10 +160,12 @@ Client *parseClientFromString(char *inputString, bool newID)
                     current_contact->phone_count++;
                 }
             }
+
             newClient->contact_count++;
             contact_str = strtok(NULL, ",");
         }
     }
+
     newClient->next = NULL;
     return newClient;
 }

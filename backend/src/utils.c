@@ -502,3 +502,67 @@ int isPasswordValid(const char *password)
 
     return 1; // 所有检查通过，密码有效
 }
+
+int isTimeValid(const char *year_str, const char *month_str, const char *day_str,
+                const char *hour_str, const char *minute_str, const char *second_str)
+{
+    int year, month, day, hour, minute, second;
+
+    // 1. NULL 检查
+    if (year_str == NULL || month_str == NULL || day_str == NULL ||
+        hour_str == NULL || minute_str == NULL || second_str == NULL)
+    {
+        return 0; // 任何一个字符串为空，则无效
+    }
+
+    // 2. 空字符串检查
+    if (strlen(year_str) == 0 || strlen(month_str) == 0 || strlen(day_str) == 0 ||
+        strlen(hour_str) == 0 || strlen(minute_str) == 0 || strlen(second_str) == 0)
+    {
+        return 0; // 任何一个字符串为空，则无效
+    }
+
+    // 3.  转换为整数 (使用你提供的 stoi 函数)
+    year = stoi((char *)year_str); // 需要类型转换，去掉const属性
+    month = stoi((char *)month_str);
+    day = stoi((char *)day_str);
+    hour = stoi((char *)hour_str);
+    minute = stoi((char *)minute_str);
+    second = stoi((char *)second_str);
+
+    // 4.  stoi 转换失败检查。 因为stoi在出错时返回0，需要进行区分。
+    // 如果年、月、日其中任何一个是0，说明转换出错，直接返回0
+    if (year == 0 || month == 0 || day == 0)
+        return 0;
+
+    // 小时，分钟，秒  可以是0，所以要区分是否是因为格式不正确导致的返回0
+    if (hour_str[0] != '0' && hour == 0 && strlen(hour_str) > 0)
+        return 0;
+    if (minute_str[0] != '0' && minute == 0 && strlen(minute_str) > 0)
+        return 0;
+    if (second_str[0] != '0' && second == 0 && strlen(second_str) > 0)
+        return 0;
+    // 5. 范围检查
+    if (year < 1 || year > 9999)
+        return 0; // 年份有效范围
+    if (month < 1 || month > 12)
+        return 0;
+    if (hour < 0 || hour > 23)
+        return 0;
+    if (minute < 0 || minute > 59)
+        return 0;
+    if (second < 0 || second > 59)
+        return 0;
+
+    // 6. 天数检查 (考虑闰年)
+    int days_in_month[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
+    {
+        days_in_month[2] = 29; // 闰年
+    }
+
+    if (day < 1 || day > days_in_month[month])
+        return 0;
+
+    return 1; // 所有检查通过，时间合法
+}

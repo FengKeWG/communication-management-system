@@ -10,55 +10,46 @@
 Group *parseGroupFromString(char *inputString, bool newID)
 {
     if (!inputString || strlen(inputString) == 0)
+    {
         return NULL;
+    }
 
     Group *newGroup = (Group *)malloc(sizeof(Group));
     if (!newGroup)
+    {
         return NULL;
+    }
     memset(newGroup, 0, sizeof(Group)); // 初始化
 
     char idStr[50] = {0};
-    char clientIDsStr[10000] = {0}; // 足够容纳 ID 和逗号
+    char clientIDsStr[10000] = {0}; // 用于存储用逗号分隔的 Client IDs
 
-    // 格式: id;name;client_ids_comma_separated
-    // 注意：sscanf 对于最后一个可能为空的字段处理需要小心
-    char *token;
-    char *rest = inputString;
-    int field = 0;
+    // 使用 sscanf 解析输入字符串
+    int scanned = sscanf(inputString, "%[^;];%[^;];%[^\n]", idStr, newGroup->name, clientIDsStr);
 
-    // 1. ID
-    token = strtok_r(rest, ";", &rest);
-    if (!token)
+    if (scanned < 2) // 至少需要 ID 和 Name 两个字段
     {
+        fprintf(stderr, "Error: Input string format is incorrect.\n");
         free(newGroup);
         return NULL;
     }
-    scpy(idStr, token, sizeof(idStr));
-    field++;
 
-    // 2. Name
-    token = strtok_r(rest, ";", &rest);
-    if (!token)
+    // 验证 idStr
+    if (/* 验证 idStr 是否合法 */)
     {
+        fprintf(stderr, "Error: Invalid group ID format: '%s'\n", idStr);
         free(newGroup);
         return NULL;
     }
-    scpy(newGroup->name, token, sizeof(newGroup->name));
-    field++;
-
-    // 3. Client IDs (optional)
-    token = strtok_r(rest, ";", &rest); // rest 现在是 client IDs 或 NULL
-    if (token && strlen(token) > 0)
-    {
-        scpy(clientIDsStr, token, sizeof(clientIDsStr));
-    }
-    else
-    {
-        clientIDsStr[0] = '\0'; // 确保为空字符串
-    }
-    // field++; // 不再需要严格计数
-
     newGroup->id = newID ? uidGenerate() : stoi(idStr);
+
+    // 验证 group name
+    if (/* 验证 name 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid group name format: '%s'\n", newGroup->name);
+        free(newGroup);
+        return NULL;
+    }
 
     // 解析 Client IDs
     newGroup->client_count = 0;
@@ -67,18 +58,25 @@ Group *parseGroupFromString(char *inputString, bool newID)
         char *clientIdToken = strtok(clientIDsStr, ",");
         while (clientIdToken && newGroup->client_count < 100)
         {
-            if (strlen(clientIdToken) > 0)
-            { // 避免空 token
-                newGroup->client_ids[newGroup->client_count] = stoi(clientIdToken);
-                if (newGroup->client_ids[newGroup->client_count] > 0)
-                { // 确保 ID 有效
-                    newGroup->client_count++;
-                }
-                else
-                {
-                    fprintf(stderr, "警告: 解析分组 %d 时遇到无效的客户 ID '%s'\n", newGroup->id, clientIdToken);
-                }
+            // 验证客户端 ID 是否合法
+            if (/* 验证 clientIdToken 是否合法 */)
+            {
+                fprintf(stderr, "Error: Invalid client ID format: '%s'\n", clientIdToken);
+                free(newGroup);
+                return NULL;
             }
+
+            int clientId = stoi(clientIdToken);
+            if (clientId > 0) // 确保 ID 有效
+            {
+                newGroup->client_ids[newGroup->client_count] = clientId;
+                newGroup->client_count++;
+            }
+            else
+            {
+                fprintf(stderr, "Warning: Ignored invalid client ID '%s' for group '%s'\n", clientIdToken, newGroup->name);
+            }
+
             clientIdToken = strtok(NULL, ",");
         }
     }

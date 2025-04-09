@@ -11,20 +11,135 @@ Communication *parseCommunicationFromString(char *inputString, bool newID)
     {
         return NULL;
     }
+
     Communication *newComm = (Communication *)malloc(sizeof(Communication));
     if (!newComm)
     {
         return NULL;
     }
     memset(newComm, 0, sizeof(Communication));
+
     char idStr[50] = {0};
-    int scanned = sscanf(inputString, "%[^;];%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%[^\n]", idStr, &newComm->client_id, &newComm->contact_id, &newComm->sales_id, &newComm->year, &newComm->month, &newComm->day, &newComm->hour, &newComm->minute, &newComm->second, &newComm->duration, newComm->content);
+    char clientIdStr[50] = {0};
+    char contactIdStr[50] = {0};
+    char salesIdStr[50] = {0};
+    char yearStr[50] = {0};
+    char monthStr[50] = {0};
+    char dayStr[50] = {0};
+    char hourStr[50] = {0};
+    char minuteStr[50] = {0};
+    char secondStr[50] = {0};
+    char durationStr[50] = {0};
+
+    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]",
+                         idStr, clientIdStr, contactIdStr, salesIdStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr, durationStr, newComm->content);
+
     if (scanned < 12)
     {
+        fprintf(stderr, "Error: Input string format is incorrect.\n");
+        free(newComm);
+        return NULL;
+    }
+
+    // 验证 idStr
+    if (/* 验证 idStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid communication ID format: '%s'\n", idStr);
         free(newComm);
         return NULL;
     }
     newComm->id = newID ? uidGenerate() : stoi(idStr);
+
+    // 验证 clientIdStr
+    if (/* 验证 clientIdStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid client ID format: '%s'\n", clientIdStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->client_id = stoi(clientIdStr);
+
+    // 验证 contactIdStr
+    if (/* 验证 contactIdStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid contact ID format: '%s'\n", contactIdStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->contact_id = stoi(contactIdStr);
+
+    // 验证 salesIdStr
+    if (/* 验证 salesIdStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid sales ID format: '%s'\n", salesIdStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->sales_id = stoi(salesIdStr);
+
+    // 验证 yearStr
+    if (/* 验证 yearStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid year format: '%s'\n", yearStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->year = stoi(yearStr);
+
+    // 验证 monthStr
+    if (/* 验证 monthStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid month format: '%s'\n", monthStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->month = stoi(monthStr);
+
+    // 验证 dayStr
+    if (/* 验证 dayStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid day format: '%s'\n", dayStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->day = stoi(dayStr);
+
+    // 验证 hourStr
+    if (/* 验证 hourStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid hour format: '%s'\n", hourStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->hour = stoi(hourStr);
+
+    // 验证 minuteStr
+    if (/* 验证 minuteStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid minute format: '%s'\n", minuteStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->minute = stoi(minuteStr);
+
+    // 验证 secondStr
+    if (/* 验证 secondStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid second format: '%s'\n", secondStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->second = stoi(secondStr);
+
+    // 验证 durationStr
+    if (/* 验证 durationStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid duration format: '%s'\n", durationStr);
+        free(newComm);
+        return NULL;
+    }
+    newComm->duration = stoi(durationStr);
+
     newComm->next = NULL;
     return newComm;
 }

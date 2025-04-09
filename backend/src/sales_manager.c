@@ -11,47 +11,113 @@ Sales *parseSalesFromString(char *inputString, bool newID)
     {
         return NULL;
     }
+
     Sales *newSales = (Sales *)malloc(sizeof(Sales));
     if (!newSales)
     {
         return NULL;
     }
     memset(newSales, 0, sizeof(Sales));
+
     char idStr[50] = {0};
+    char birthYearStr[50] = {0};
+    char birthMonthStr[50] = {0};
+    char birthDayStr[50] = {0};
     char phonesStr[4096] = {0};
     char clientIDsStr[4096] = {0};
-    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%d;%d;%d;%[^;];%[^;];%[^\n]", idStr, newSales->name, newSales->gender, &newSales->birth_year, &newSales->birth_month, &newSales->birth_day, newSales->email, phonesStr, clientIDsStr);
-    if (scanned < 7)
+
+    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]",
+                         idStr, newSales->name, newSales->gender, birthYearStr, birthMonthStr, birthDayStr, newSales->email, phonesStr, clientIDsStr);
+
+    if (scanned < 7) // 至少需要扫描出7个字段
     {
+        fprintf(stderr, "Error: Input string format is incorrect.\n");
+        free(newSales);
+        return NULL;
+    }
+
+    // 验证 idStr
+    if (/* 验证 idStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid sales ID format: '%s'\n", idStr);
         free(newSales);
         return NULL;
     }
     newSales->id = newID ? uidGenerate() : stoi(idStr);
+
+    // 验证 gender
+    if (/* 验证 newSales->gender 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid gender format: '%s'\n", newSales->gender);
+        free(newSales);
+        return NULL;
+    }
+
+    // 验证 birthYearStr
+    if (/* 验证 birthYearStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid birth year format: '%s'\n", birthYearStr);
+        free(newSales);
+        return NULL;
+    }
+    newSales->birth_year = stoi(birthYearStr);
+
+    // 验证 birthMonthStr
+    if (/* 验证 birthMonthStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid birth month format: '%s'\n", birthMonthStr);
+        free(newSales);
+        return NULL;
+    }
+    newSales->birth_month = stoi(birthMonthStr);
+
+    // 验证 birthDayStr
+    if (/* 验证 birthDayStr 是否合法 */)
+    {
+        fprintf(stderr, "Error: Invalid birth day format: '%s'\n", birthDayStr);
+        free(newSales);
+        return NULL;
+    }
+    newSales->birth_day = stoi(birthDayStr);
+
     newSales->phone_count = 0;
     if (scanned >= 8 && strlen(phonesStr) > 0)
     {
         char *phone_token = strtok(phonesStr, ",");
         while (phone_token && newSales->phone_count < 100)
         {
+            if (/* 验证 phone_token 是否合法 */)
+            {
+                fprintf(stderr, "Error: Invalid phone format: '%s'\n", phone_token);
+                free(newSales);
+                return NULL;
+            }
+
             scpy(newSales->phones[newSales->phone_count], phone_token, sizeof(newSales->phones[0]));
             newSales->phone_count++;
             phone_token = strtok(NULL, ",");
         }
     }
+
     newSales->client_count = 0;
     if (scanned >= 9 && strlen(clientIDsStr) > 0)
     {
         char *clientId_token = strtok(clientIDsStr, ",");
         while (clientId_token && newSales->client_count < 100)
         {
-            if (strlen(clientId_token) > 0)
+            if (/* 验证 clientId_token 是否合法 */)
             {
-                newSales->client_ids[newSales->client_count] = stoi(clientId_token);
-                newSales->client_count++;
+                fprintf(stderr, "Error: Invalid client ID format: '%s'\n", clientId_token);
+                free(newSales);
+                return NULL;
             }
+
+            newSales->client_ids[newSales->client_count] = stoi(clientId_token);
+            newSales->client_count++;
             clientId_token = strtok(NULL, ",");
         }
     }
+
     newSales->next = NULL;
     return newSales;
 }
