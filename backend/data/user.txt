@@ -1,2 +1,0 @@
-1;admin;7dd1705a;manager;0
-15135200;123;b8789fb;sales;11475100
