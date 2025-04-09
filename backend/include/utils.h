@@ -15,5 +15,7 @@ int kmp(const char *s, const char *p);
 void toLower(char *s);
 int stoi(char *str);
 char *scpy(char *dest, const char *src, size_t dest_size);
+int isPhoneNumberValid(const char *phone_number);
+int isEmailValid(const char *email);
 
 #endif
