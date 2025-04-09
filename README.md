@@ -71,7 +71,7 @@
 - **编译 C 代码**：
     ```cmd
     cd backend
-    gcc -o main src/main.c src/client_manager.c src/contact_manager.c src/employee_manager.c src/communication_manager.c src/file_manager.c -I include
+    gcc -o main src/main.c src/client_manager.c src/user_manager.c src/sales_manager.c src/communication_manager.c src/file_manager.c src/group_manager.c src/backup_manager.c -I include
     ```
     - 生成 `main.exe`（Windows）或 `main`（Linux/macOS）。
     - 确保包含所有相关的 `.c` 文件。
