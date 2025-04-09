@@ -36,105 +36,35 @@ Communication *parseCommunicationFromString(char *inputString, bool newID)
 
     if (scanned < 12)
     {
-        fprintf(stderr, "Error: Input string format is incorrect.\n");
+        fprintf(stderr, "输入错误请重新输入\n");
         free(newComm);
         return NULL;
     }
 
     // 验证 idStr
-    if (/* 验证 idStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid communication ID format: '%s'\n", idStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->id = newID ? uidGenerate() : stoi(idStr);
-
-    // 验证 clientIdStr
-    if (/* 验证 clientIdStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid client ID format: '%s'\n", clientIdStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->client_id = stoi(clientIdStr);
-
-    // 验证 contactIdStr
-    if (/* 验证 contactIdStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid contact ID format: '%s'\n", contactIdStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->contact_id = stoi(contactIdStr);
-
-    // 验证 salesIdStr
-    if (/* 验证 salesIdStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid sales ID format: '%s'\n", salesIdStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->sales_id = stoi(salesIdStr);
 
-    // 验证 yearStr
-    if (/* 验证 yearStr 是否合法 */)
+    // 验证 timeStr
+    if (isTimeValid(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr))
     {
-        fprintf(stderr, "Error: Invalid year format: '%s'\n", yearStr);
+        fprintf(stderr, "通话时刻输入格式错误请重新输入\n");
         free(newComm);
         return NULL;
     }
     newComm->year = stoi(yearStr);
-
-    // 验证 monthStr
-    if (/* 验证 monthStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid month format: '%s'\n", monthStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->month = stoi(monthStr);
-
-    // 验证 dayStr
-    if (/* 验证 dayStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid day format: '%s'\n", dayStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->day = stoi(dayStr);
-
-    // 验证 hourStr
-    if (/* 验证 hourStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid hour format: '%s'\n", hourStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->hour = stoi(hourStr);
-
-    // 验证 minuteStr
-    if (/* 验证 minuteStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid minute format: '%s'\n", minuteStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->minute = stoi(minuteStr);
-
-    // 验证 secondStr
-    if (/* 验证 secondStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid second format: '%s'\n", secondStr);
-        free(newComm);
-        return NULL;
-    }
     newComm->second = stoi(secondStr);
 
     // 验证 durationStr
-    if (/* 验证 durationStr 是否合法 */)
+    if (isPositiveNumberValid(durationStr))
     {
-        fprintf(stderr, "Error: Invalid duration format: '%s'\n", durationStr);
+        fprintf(stderr, "通话时间输入格式错误请重新输入\n");
         free(newComm);
         return NULL;
     }
@@ -157,6 +87,7 @@ Communication *addCommunication(Communication *head, Communication *newCommunica
     }
     else
         head = newCommunication;
+    printf("通话记录 '%d' 添加成功！\n", newCommunication->id);
     return head;
 }
 
@@ -173,16 +104,15 @@ Communication *modifyCommunication(Communication *head, Communication *newCommun
             if (current == head)
             {
                 newCommunication->next = current->next;
-                free(current);
-                return newCommunication;
             }
             else
             {
                 prev->next = newCommunication;
                 newCommunication->next = current->next;
-                free(current);
-                return head;
             }
+            printf("通话记录 ID %d 信息已更新。\n", newCommunication->id);
+            free(current);
+            return head;
         }
         prev = current;
         current = current->next;

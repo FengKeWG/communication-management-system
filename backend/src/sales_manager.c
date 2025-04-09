@@ -31,53 +31,30 @@ Sales *parseSalesFromString(char *inputString, bool newID)
 
     if (scanned < 7) // 至少需要扫描出7个字段
     {
-        fprintf(stderr, "Error: Input string format is incorrect.\n");
+        fprintf(stderr, "输入错误请重新输入\n");
         free(newSales);
         return NULL;
     }
 
-    // 验证 idStr
-    if (/* 验证 idStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid sales ID format: '%s'\n", idStr);
-        free(newSales);
-        return NULL;
-    }
     newSales->id = newID ? uidGenerate() : stoi(idStr);
 
     // 验证 gender
-    if (/* 验证 newSales->gender 是否合法 */)
+    if (judgeGender(newSales->gender) == -1)
     {
-        fprintf(stderr, "Error: Invalid gender format: '%s'\n", newSales->gender);
+        fprintf(stderr, "性别输入错误，请重新输入\n");
         free(newSales);
         return NULL;
     }
 
-    // 验证 birthYearStr
-    if (/* 验证 birthYearStr 是否合法 */)
+    // 验证 birthStr
+    if (isBirthDayValid(birthYearStr, birthMonthStr, birthDayStr))
     {
-        fprintf(stderr, "Error: Invalid birth year format: '%s'\n", birthYearStr);
+        fprintf(stderr, "出生日期输入错误\n");
         free(newSales);
         return NULL;
     }
     newSales->birth_year = stoi(birthYearStr);
-
-    // 验证 birthMonthStr
-    if (/* 验证 birthMonthStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid birth month format: '%s'\n", birthMonthStr);
-        free(newSales);
-        return NULL;
-    }
     newSales->birth_month = stoi(birthMonthStr);
-
-    // 验证 birthDayStr
-    if (/* 验证 birthDayStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid birth day format: '%s'\n", birthDayStr);
-        free(newSales);
-        return NULL;
-    }
     newSales->birth_day = stoi(birthDayStr);
 
     newSales->phone_count = 0;
@@ -86,9 +63,9 @@ Sales *parseSalesFromString(char *inputString, bool newID)
         char *phone_token = strtok(phonesStr, ",");
         while (phone_token && newSales->phone_count < 100)
         {
-            if (/* 验证 phone_token 是否合法 */)
+            if (isPhoneNumberValid(phone_token))
             {
-                fprintf(stderr, "Error: Invalid phone format: '%s'\n", phone_token);
+                fprintf(stderr, "手机号输入格式错误请重新输入");
                 free(newSales);
                 return NULL;
             }
@@ -105,13 +82,6 @@ Sales *parseSalesFromString(char *inputString, bool newID)
         char *clientId_token = strtok(clientIDsStr, ",");
         while (clientId_token && newSales->client_count < 100)
         {
-            if (/* 验证 clientId_token 是否合法 */)
-            {
-                fprintf(stderr, "Error: Invalid client ID format: '%s'\n", clientId_token);
-                free(newSales);
-                return NULL;
-            }
-
             newSales->client_ids[newSales->client_count] = stoi(clientId_token);
             newSales->client_count++;
             clientId_token = strtok(NULL, ",");
@@ -135,30 +105,34 @@ Sales *addSales(Sales *head, Sales *newSale)
     }
     else
         head = newSale;
+    printf("业务员 '%s' 添加成功！\n", newSale->name);
     return head;
 }
 
 Sales *deleteSales(Sales *head, int id)
 {
-    Sales *p1, *p2;
-    p1 = head;
-    if (p1->id == id)
+    Sales *current = head;
+    Sales *prev = NULL;
+    while (current && current->id != id)
     {
-        head = p1->next;
-        free(p1);
+        prev = current;
+        current = current->next;
     }
-    return head;
-    while (p1 != NULL)
+    if (!current)
     {
-        p2 = p1;
-        p1 = p1->next;
-        if (p1->id == id)
-        {
-            p2->next = p1->next;
-            free(p1);
-            break;
-        }
+        fprintf(stderr, "未找到要删除的业务员 ID: %d\n", id);
+        return head;
     }
+    if (!prev)
+    {
+        head = current->next;
+    }
+    else
+    {
+        prev->next = current->next;
+    }
+    printf("业务员 ID %d (%s) 已删除。\n", current->id, current->name);
+    free(current);
     return head;
 }
 
@@ -173,18 +147,15 @@ Sales *modifySales(Sales *head, Sales *newSale)
         if (current->id == newSale->id)
         {
             if (current == head)
-            {
                 newSale->next = current->next;
-                free(current);
-                return newSale;
-            }
             else
             {
                 prev->next = newSale;
                 newSale->next = current->next;
-                free(current);
-                return head;
             }
+            printf("业务员 ID %d (%s) 信息已更新。\n", newSale->id, newSale->name);
+            free(current);
+            return head;
         }
         prev = current;
         current = current->next;

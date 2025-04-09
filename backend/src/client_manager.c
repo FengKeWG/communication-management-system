@@ -9,6 +9,7 @@ Client *parseClientFromString(char *inputString, bool newID)
 {
     if (!inputString)
     {
+        fprintf(stderr, "请输入信息\n");
         return NULL;
     }
 
@@ -31,7 +32,7 @@ Client *parseClientFromString(char *inputString, bool newID)
 
     if (scanned < 10)
     { // 需要扫描 10 个字段
-        fprintf(stderr, "Error: Input string format is incorrect.\n");
+        fprintf(stderr, "输入错误请重新输入\n");
         free(newClient);
         return NULL;
     }
@@ -40,18 +41,18 @@ Client *parseClientFromString(char *inputString, bool newID)
     newClient->id = newID ? uidGenerate() : stoi(idStr);
 
     // 验证 sizeStr
-    if (/* 验证 sizeStr 是否合法 */)
+    if (isPositiveNumberValid(sizeStr))
     {
-        fprintf(stderr, "Error: Invalid size format: '%s'\n", sizeStr);
+        fprintf(stderr, "规模输入格式错误请重新输入\n");
         free(newClient);
         return NULL;
     }
     newClient->size = stoi(sizeStr);
 
     // 验证 contactLevelStr
-    if (/* 验证 contactLevelStr 是否合法 */)
+    if (isPositiveNumberValid(contactLevelStr))
     {
-        fprintf(stderr, "Error: Invalid contact level format: '%s'\n", contactLevelStr);
+        fprintf(stderr, "联络程度输入格式错误请重新输入\n");
         free(newClient);
         return NULL;
     }
@@ -88,57 +89,28 @@ Client *parseClientFromString(char *inputString, bool newID)
 
             if (contact_fields < 8)
             {
-                fprintf(stderr, "Error: Invalid contact format: '%s'\n", contact_str);
+                fprintf(stderr, "联系人输入存在错误请重新输入\n");
                 contact_str = strtok(NULL, ",");
                 continue;
             }
 
             // 验证联系人 ID
-            if (!newID)
-            {
-                if (/* 验证 contact_id_str 是否合法 */)
-                {
-                    fprintf(stderr, "Error: Invalid contact ID format: '%s'\n", contact_id_str);
-                    contact_str = strtok(NULL, ",");
-                    continue;
-                }
-                current_contact->id = stoi(contact_id_str);
-            }
-            else
-            {
-                current_contact->id = uidGenerate();
-            }
-
+            current_contact->id = newID ? uidGenerate() : stoi(contact_id_str);
             // 验证联系人出生年份
-            if (/* 验证 contact_birth_year_str 是否合法 */)
+            if (isBirthDayValid(contact_birth_year_str, contact_birth_month_str, contact_birth_day_str))
             {
-                fprintf(stderr, "Error: Invalid contact birth year format: '%s'\n", contact_birth_year_str);
+                fprintf(stderr, "出生时间输入格式错误请重新输入\n");
                 contact_str = strtok(NULL, ",");
                 continue;
             }
             current_contact->birth_year = stoi(contact_birth_year_str);
-
-            // 验证联系人出生月份
-            if (/* 验证 contact_birth_month_str 是否合法 */)
-            {
-                fprintf(stderr, "Error: Invalid contact birth month format: '%s'\n", contact_birth_month_str);
-                contact_str = strtok(NULL, ",");
-                continue;
-            }
             current_contact->birth_month = stoi(contact_birth_month_str);
-
-            // 验证联系人出生日
-            if (/* 验证 contact_birth_day_str 是否合法 */)
-            {
-                fprintf(stderr, "Error: Invalid contact birth day format: '%s'\n", contact_birth_day_str);
-                contact_str = strtok(NULL, ",");
-                continue;
-            }
             current_contact->birth_day = stoi(contact_birth_day_str);
 
             if (strlen(current_contact->gender) == 0)
                 strcpy(current_contact->gender, "未知");
-
+            if (judgeGender(current_contact->gender) == -1)
+                fprintf(stderr, "性别输入错误，请重新输入\n");
             current_contact->phone_count = 0;
             if (contact_phones[0] != '\0')
             {
@@ -205,6 +177,7 @@ Client *deleteClient(Client *head, int id)
     }
     if (!current)
     {
+        fprintf(stderr, "未找到要删除的联络员 ID: %d\n", id);
         return head;
     }
     if (!prev)
@@ -215,6 +188,7 @@ Client *deleteClient(Client *head, int id)
     {
         prev->next = current->next;
     }
+    printf("联络员 ID %d (%s) 已删除。\n", current->id, current->name);
     free(current);
     return head;
 }
@@ -232,16 +206,15 @@ Client *modifyClient(Client *head, Client *newClient)
             if (current == head)
             {
                 newClient->next = current->next;
-                free(current);
-                return newClient;
             }
             else
             {
                 prev->next = newClient;
                 newClient->next = current->next;
-                free(current);
-                return head;
             }
+            printf("联络员 ID %d (%s) 信息已更新。\n", newClient->id, newClient->name);
+            free(current);
+            return head;
         }
         prev = current;
         current = current->next;

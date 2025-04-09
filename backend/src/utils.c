@@ -384,43 +384,29 @@ int isBirthDayValid(const char *year_str, const char *month_str, const char *day
     return 1; // 所有检查通过，日期有效
 }
 
-int isNameValid(const char *name)
+int isStrValid(const char *str)
 {
-    if (name == NULL || *name == '\0')
+    if (str == NULL || *str == '\0')
     {
         return 0; // 空指针或空字符串
     }
 
-    int len = strlen(name);
-    if (len < 2 || len > 50)
+    int len = strlen(str);
+    if (len < 2 || len > 90)
     {
         return 0; // 长度不符合要求
     }
 
-    for (int i = 0; i < len; i++)
+    while (*str)
     {
-        unsigned char c = (unsigned char)name[i]; // 使用 unsigned char 处理中文
-
-        if (c <= 127)
-        { // ASCII 字符
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ' ' || c == '.'))
-            {             // 英文、空格和点
-                return 0; // 非法字符
-            }
-            if (c == '.' && (i == 0 || i == len - 1))
-            {
-                return 0; // 点不能在开头或结尾
-            }
+        // 如果不是字母、数字、空格或者汉字（高于ASCII范围的字符），视为非法
+        if (!(isalnum((unsigned char)*str) || isspace((unsigned char)*str) || *str < 0))
+        {
+            return 0; // 字符串非法
         }
-        else
-        { // 非 ASCII 字符（中文）
-            // 简单判断是否为中文，更精确的判断需要查表或使用专门的库
-            if (c < 0xA1)
-                return 0; // 如果小于0xA1,肯定不是中文
-        }
+        str++;
     }
-
-    return 1; // 所有检查通过，姓名有效
+    return 1; // 字符串合法
 }
 
 int isPositiveNumberValid(const char *number_str)
@@ -565,4 +551,27 @@ int isTimeValid(const char *year_str, const char *month_str, const char *day_str
         return 0;
 
     return 1; // 所有检查通过，时间合法
+}
+int judgeGender(const char *str)
+{
+    if (str == NULL)
+    {
+        return -1;
+    }
+    if (strcmp(str, "男") == 0)
+    {
+        return 1;
+    }
+    else if (strcmp(str, "女") == 0)
+    {
+        return 2;
+    }
+    else if (strcmp(str, "未知") == 0)
+    {
+        return 3;
+    }
+    else
+    {
+        return -1;
+    }
 }

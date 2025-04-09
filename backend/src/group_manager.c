@@ -11,6 +11,7 @@ Group *parseGroupFromString(char *inputString, bool newID)
 {
     if (!inputString || strlen(inputString) == 0)
     {
+        fprintf(stderr, "请输入分组信息\n");
         return NULL;
     }
 
@@ -29,24 +30,18 @@ Group *parseGroupFromString(char *inputString, bool newID)
 
     if (scanned < 2) // 至少需要 ID 和 Name 两个字段
     {
-        fprintf(stderr, "Error: Input string format is incorrect.\n");
+        fprintf(stderr, "输入格式错误请重新输入\n");
         free(newGroup);
         return NULL;
     }
 
     // 验证 idStr
-    if (/* 验证 idStr 是否合法 */)
-    {
-        fprintf(stderr, "Error: Invalid group ID format: '%s'\n", idStr);
-        free(newGroup);
-        return NULL;
-    }
     newGroup->id = newID ? uidGenerate() : stoi(idStr);
 
     // 验证 group name
-    if (/* 验证 name 是否合法 */)
+    if (isStrValid(newGroup->name))
     {
-        fprintf(stderr, "Error: Invalid group name format: '%s'\n", newGroup->name);
+        fprintf(stderr, "输入格式错误请重新输入\n");
         free(newGroup);
         return NULL;
     }
@@ -58,25 +53,9 @@ Group *parseGroupFromString(char *inputString, bool newID)
         char *clientIdToken = strtok(clientIDsStr, ",");
         while (clientIdToken && newGroup->client_count < 100)
         {
-            // 验证客户端 ID 是否合法
-            if (/* 验证 clientIdToken 是否合法 */)
-            {
-                fprintf(stderr, "Error: Invalid client ID format: '%s'\n", clientIdToken);
-                free(newGroup);
-                return NULL;
-            }
-
             int clientId = stoi(clientIdToken);
-            if (clientId > 0) // 确保 ID 有效
-            {
-                newGroup->client_ids[newGroup->client_count] = clientId;
-                newGroup->client_count++;
-            }
-            else
-            {
-                fprintf(stderr, "Warning: Ignored invalid client ID '%s' for group '%s'\n", clientIdToken, newGroup->name);
-            }
-
+            newGroup->client_ids[newGroup->client_count] = clientId;
+            newGroup->client_count++;
             clientIdToken = strtok(NULL, ",");
         }
     }
@@ -93,7 +72,6 @@ Group *addGroup(Group *head, Group *newGroup)
     if (!head)
     {
         printf("分组 '%s' 添加成功！\n", newGroup->name);
-        fflush(stdout);
         return newGroup;
     }
     Group *current = head;
@@ -103,7 +81,6 @@ Group *addGroup(Group *head, Group *newGroup)
     }
     current->next = newGroup;
     printf("分组 '%s' 添加成功！\n", newGroup->name);
-    fflush(stdout);
     return head;
 }
 
@@ -121,7 +98,7 @@ Group *deleteGroup(Group *head, int id)
 
     if (!current)
     { // 未找到
-        fprintf(stderr, "错误: 未找到要删除的分组 ID: %d\n", id);
+        fprintf(stderr, "未找到要删除的分组 ID: %d\n", id);
         return head;
     }
 
@@ -134,7 +111,6 @@ Group *deleteGroup(Group *head, int id)
         prev->next = current->next;
     }
     printf("分组 ID %d (%s) 已删除。\n", current->id, current->name);
-    fflush(stdout);
     free(current);
     return head;
 }
@@ -162,7 +138,6 @@ Group *modifyGroup(Group *head, Group *updatedGroup)
                 prev->next = updatedGroup; // 前一个节点指向新节点
             }
             printf("分组 ID %d (%s) 信息已更新。\n", updatedGroup->id, updatedGroup->name);
-            fflush(stdout);
             free(current); // 释放旧节点内存
             return head;
         }
@@ -171,7 +146,7 @@ Group *modifyGroup(Group *head, Group *updatedGroup)
     }
 
     // 如果循环结束还没找到
-    fprintf(stderr, "错误: 未找到要修改的分组 ID: %d\n", updatedGroup->id);
+    fprintf(stderr, "未找到要修改的分组 ID: %d\n", updatedGroup->id);
     free(updatedGroup); // 释放未使用的 updatedGroup 内存
     return head;
 }

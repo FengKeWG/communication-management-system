@@ -17,5 +17,11 @@ int stoi(char *str);
 char *scpy(char *dest, const char *src, size_t dest_size);
 int isPhoneNumberValid(const char *phone_number);
 int isEmailValid(const char *email);
-
+int isBirthDayValid(const char *year_str, const char *month_str, const char *day_str);
+int isStrValid(const char *str);
+int isPositiveNumberValid(const char *number_str);
+int isPasswordValid(const char *password);
+int isTimeValid(const char *year_str, const char *month_str, const char *day_str,
+                const char *hour_str, const char *minute_str, const char *second_str);
+int judgeGender(const char *str);
 #endif
