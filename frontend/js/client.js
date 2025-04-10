@@ -12,12 +12,9 @@ const clientIndexToSortKey = { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 9
 
 function fetchClientData() {
     const contentDiv = document.getElementById('client-list-content');
-    const clearBtn = document.getElementById('clearSearchButton'); // 客户列表的清除按钮 ID 可能不同，请确认
-
-    // **获取角色和 Sales ID 以进行过滤**
+    const clearBtn = document.getElementById('clearSearchButton');
     const role = sessionStorage.getItem("role");
     const sales_id = sessionStorage.getItem("sales_id");
-
     let queryParams = [];
     if (currentClientGeneralSearch) queryParams.push(`query=${encodeURIComponent(currentClientGeneralSearch)}`);
     if (currentClientNameSearch) queryParams.push(`name=${encodeURIComponent(currentClientNameSearch)}`);
@@ -29,24 +26,16 @@ function fetchClientData() {
     if (currentClientEmailSearch) queryParams.push(`email=${encodeURIComponent(currentClientEmailSearch)}`);
     if (currentClientContactCountSearch) queryParams.push(`contact_count=${encodeURIComponent(currentClientContactCountSearch)}`);
     if (currentClientSortParams.length > 0) { queryParams.push(`sort=${encodeURIComponent(currentClientSortParams.join(','))}`); }
-
-    // ---- 添加过滤参数 (如果当前用户是业务员) ----
     if (role === 'sales' && sales_id && sales_id !== '0' && sales_id !== '-1') {
         queryParams.push(`filter_sales_id=${encodeURIComponent(sales_id)}`);
-        console.log("Fetching clients filtered by sales_id:", sales_id); // Debug log
-    } else {
-        console.log("Fetching all clients (Manager or no Sales ID)"); // Debug log
     }
-    // ---- 过滤结束 ----
-
     const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
     contentDiv.innerHTML = '<p>正在加载客户列表...</p>';
-
-    fetch(`/api/fetch_clients${queryString}`) // URL 包含查询和过滤参数
+    fetch(`/api/fetch_clients${queryString}`)
         .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
         .then(data => {
             if (data.error) throw new Error(data.error);
-            generateClientTable(data.output || ""); // 生成表格
+            generateClientTable(data.output || "");
             const hasSearchTerms = currentClientGeneralSearch || currentClientNameSearch || currentClientRegionSearch || currentClientAddressSearch || currentClientLegalPersonSearch || currentClientSizeSearch || currentClientContactLevelSearch || currentClientEmailSearch || currentClientContactCountSearch;
             if (clearBtn) clearBtn.style.display = hasSearchTerms ? 'inline-block' : 'none';
         })
@@ -56,34 +45,27 @@ function fetchClientData() {
         });
 }
 
-function generateClientTable(output, totalCount) { // 接收 totalCount
+function generateClientTable(output, totalCount) {
     const lines = output.trim().split('\n').filter(line => line.trim() !== '');
     const container = document.getElementById('client-list-content');
     const role = sessionStorage.getItem("role");
     const isSales = (role === 'sales');
-    const resultCountDiv = document.getElementById('client-search-result-count'); // 获取计数显示元素
-
-    // 显示结果计数
+    const resultCountDiv = document.getElementById('client-search-result-count');
     if (resultCountDiv) {
         if (lines.length > 0) {
-            // 如果 totalCount 存在且有效，优先使用 totalCount
             const countToShow = (typeof totalCount !== 'undefined' && totalCount >= 0) ? totalCount : lines.length;
             resultCountDiv.textContent = `找到 ${countToShow} 条结果`;
             resultCountDiv.style.display = 'inline-block';
         } else {
             resultCountDiv.textContent = '没有找到匹配的结果';
-            resultCountDiv.style.display = 'inline-block'; // 也显示 "未找到" 的提示
+            resultCountDiv.style.display = 'inline-block';
         }
     }
-
-    if (lines.length === 0 && (typeof totalCount === 'undefined' || totalCount === 0)) { // 检查 totalCount
+    if (lines.length === 0 && (typeof totalCount === 'undefined' || totalCount === 0)) {
         container.innerHTML = '<div class="table-responsive"><table class="data-table"><tbody><tr><td colspan="11">没有找到客户数据。</td></tr></tbody></table></div>';
-        // 如果没有结果，也隐藏计数区域或显示“未找到”
-        // if (resultCountDiv) resultCountDiv.style.display = 'none'; // 如果不希望显示 "未找到"
         return;
     }
-
-    const headers = ['ID', '姓名', '地区', '地址', '法人', '规模', '等级', '邮箱', '客户电话', '联络员数', '操作']; // 修改表头文字
+    const headers = ['ID', '姓名', '地区', '地址', '法人', '规模', '等级', '邮箱', '客户电话', '联络员数', '操作'];
     let tableHTML = '<div class="table-responsive"><table class="data-table"><thead><tr>';
     headers.forEach((headerText, index) => {
         if (index < headers.length - 1 && clientIndexToSortKey[index] !== undefined) {
@@ -102,36 +84,32 @@ function generateClientTable(output, totalCount) { // 接收 totalCount
     });
     tableHTML += '</tr></thead><tbody>';
     lines.forEach(line => {
-        const fields = line.split(';');
+        const fields = line.split('\x1C');
         if (fields.length < 1 || !fields[0]) return;
         const clientId = fields[0];
         const fullDataEscaped = escape(line);
         tableHTML += `<tr data-id="${clientId}" data-full-client-string="${fullDataEscaped}">`;
-        for (let i = 0; i < 10; i++) { // 处理前10列
+        for (let i = 0; i < 10; i++) {
             const fieldValue = fields[i] !== undefined ? fields[i].trim() : '';
             if (i === 8) {
-                const clientPhones = fieldValue.split(',').filter(p => p.trim()).map(p => `<span>${p}</span>`).join('<br>');
+                const clientPhones = fieldValue.split('\x1D').filter(p => p.trim()).map(p => `<span>${p}</span>`).join('<br>');
                 tableHTML += `<td>${clientPhones || '-'}</td>`;
             } else if (i === 9) {
-                const contactsStr = fields.slice(9).join(';').trim();
+                const contactsStr = fields.slice(9).join('\x1C').trim();
                 let contactCount = 0;
                 if (contactsStr) {
-                    contactCount = contactsStr.split(',').filter(c => c.trim()).length;
+                    contactCount = contactsStr.split('\x1D').filter(c => c.trim()).length;
                 }
                 tableHTML += `<td class="contacts-count-cell">${contactCount}</td>`;
             } else {
                 tableHTML += `<td>${fieldValue || '-'}</td>`;
             }
         }
-        // 添加操作列占位符
         tableHTML += `<td class="action-cell" style="white-space: nowrap;"></td>`;
         tableHTML += '</tr>';
     });
-
     tableHTML += '</tbody></table></div>';
-    container.innerHTML = tableHTML; // 将包含空操作列的表格插入 DOM
-
-    // **** 修改开始: 使用 DOM 操作填充操作列 ****
+    container.innerHTML = tableHTML;
     const tableRows = container.querySelectorAll('.data-table tbody tr');
     tableRows.forEach(row => {
         const clientId = row.dataset.id;
@@ -140,7 +118,7 @@ function generateClientTable(output, totalCount) { // 接收 totalCount
             let buttonsHTML = `<button class="view-btn icon-btn" onclick="viewClientDetails('${clientId}')" title="查看详情">
                                    <span class="material-icons-outlined">visibility</span>
                                 </button>`;
-            if (!isSales) { // 只有非业务员 (经理) 才能看到编辑和删除
+            if (!isSales) {
                 buttonsHTML += `<button class="edit-btn icon-btn action-requires-manager" onclick="editClientSetup('${clientId}')" title="编辑">
                                      <span class="material-icons-outlined">edit</span>
                                    </button>
@@ -148,12 +126,10 @@ function generateClientTable(output, totalCount) { // 接收 totalCount
                                        <span class="material-icons-outlined">delete</span>
                                    </button>`;
             }
-            actionCell.innerHTML = buttonsHTML; // 填充按钮
+            actionCell.innerHTML = buttonsHTML;
         }
     });
-    // **** 修改结束 ****
-
-    updateHoverTargets(); // 确保新按钮有悬停效果
+    updateHoverTargets();
 }
 
 function handleClientSortClick(event) {
@@ -178,7 +154,6 @@ function handleClientSearchInputKey(event) {
 }
 
 function performClientSearch() {
-    // **** 修改开始: 读取所有搜索框的值 ****
     currentClientGeneralSearch = document.getElementById('clientSearchInput').value.trim();
     currentClientNameSearch = document.getElementById('clientNameSearchInput').value.trim();
     currentClientRegionSearch = document.getElementById('clientRegionSearchInput').value.trim();
@@ -188,12 +163,10 @@ function performClientSearch() {
     currentClientContactLevelSearch = document.getElementById('clientContactLevelSearchInput').value.trim();
     currentClientEmailSearch = document.getElementById('clientEmailSearchInput').value.trim();
     currentClientContactCountSearch = document.getElementById('clientContactCountSearchInput').value.trim();
-    // **** 修改结束 ****
     fetchClientData();
 }
 
 function clearClientSearch() {
-    // **** 修改开始: 清除所有搜索框和全局变量 ****
     const inputs = [
         'clientSearchInput', 'clientNameSearchInput', 'clientRegionSearchInput',
         'clientAddressSearchInput', 'clientLegalPersonSearchInput', 'clientSizeSearchInput',
@@ -204,7 +177,6 @@ function clearClientSearch() {
         const inputElement = document.getElementById(id);
         if (inputElement) inputElement.value = '';
     });
-
     currentClientGeneralSearch = '';
     currentClientNameSearch = '';
     currentClientRegionSearch = '';
@@ -214,19 +186,13 @@ function clearClientSearch() {
     currentClientContactLevelSearch = '';
     currentClientEmailSearch = '';
     urrentClientContactCountSearch = '';
-
-    // 收起高级搜索区域并重置按钮状态
     const detailedArea = document.getElementById('detailed-search-area');
     const toggleBtn = document.getElementById('toggleDetailedSearchBtn');
     if (detailedArea) detailedArea.classList.remove('show');
     if (toggleBtn) toggleBtn.classList.remove('active');
-
-
-    fetchClientData(); // 重新获取数据
-
+    fetchClientData();
     const clearBtn = document.getElementById('clearSearchButton');
-    if (clearBtn) clearBtn.style.display = 'none'; // 隐藏清除按钮
-    // **** 修改结束 ****
+    if (clearBtn) clearBtn.style.display = 'none';
 }
 
 function addClientPhoneInput() {
@@ -252,21 +218,19 @@ function addClientPhoneInput() {
 }
 
 function removeClientPhoneInput(button) {
-    const container = button.closest('.input-group-dynamic').parentNode; // 找到父容器
-    button.closest('.input-group-dynamic').remove(); // 移除整个输入组
-    updateClientPhoneRemoveButtonsVisibility(container); // 更新剩余按钮的可见性
+    const container = button.closest('.input-group-dynamic').parentNode;
+    button.closest('.input-group-dynamic').remove();
+    updateClientPhoneRemoveButtonsVisibility(container);
 }
 
 function updateClientPhoneRemoveButtonsVisibility(container) {
     const groups = container.querySelectorAll('.input-group-dynamic');
-    // 如果只有一个输入组，隐藏其移除按钮
     if (groups.length === 1) {
         const firstRemoveBtn = groups[0].querySelector('.remove-btn');
         if (firstRemoveBtn) {
             firstRemoveBtn.style.display = 'none';
         }
     } else {
-        // 如果有多个输入组，显示所有移除按钮
         groups.forEach(group => {
             const removeBtn = group.querySelector('.remove-btn');
             if (removeBtn) {
@@ -299,49 +263,49 @@ function addClientContactGroup() {
     contactGroup.className = 'contact-group card';
     contactGroup.dataset.contactId = '0';
     contactGroup.innerHTML = `
-        <button type="button" class="remove-contact-btn remove-btn icon-btn" onclick="removeClientContactGroup(this)" title="移除此联络员"> <!-- 中文：移除此联络员 -->
+        <button type="button" class="remove-contact-btn remove-btn icon-btn" onclick="removeClientContactGroup(this)" title="移除此联络员">
             <span class="material-icons-outlined">close</span>
         </button>
-        <h4 class="contact-title">新联络员信息</h4> <!-- 中文：新联络员信息 -->
+        <h4 class="contact-title">新联络员信息</h4>
         <div class="contact-fields-grid">
             <div class="form-group">
-                <label class="section-label">姓名:</label> <!-- 中文：姓名 -->
+                <label class="section-label">姓名:</label>
                 <input type="text" name="contact_name" class="section-input input contact-name" required>
             </div>
             <div class="form-group">
-            <label class="section-label">性别:</label> <!-- 中文：性别 -->
+            <label class="section-label">性别:</label>
             <select name="contact_gender" class="section-input input contact-gender" required>
-                <option value="">请选择</option> <!-- 添加一个默认的提示选项 -->
-                <option value="1">男</option>   <!-- 使用 '1' 作为 '男' 的值 -->
-                <option value="2">女</option>   <!-- 使用 '2' 作为 '女' 的值 -->
-                <option value="0">未知</option> <!-- 使用 '0' 作为 '未知' 的值 -->
+                <option value="">请选择</option>
+                <option value="1">男</option>  
+                <option value="2">女</option>  
+                <option value="0">未知</option>
             </select>
             </div>
             <div class="form-group form-group-full">
-                <label class="section-label">生日 (年-月-日):</label> <!-- 中文：生日 (年-月-日) -->
+                <label class="section-label">生日 (年-月-日):</label>
                 <div class="birthdate-inputs">
-                    <input type="number" name="contact_birth_year" class="section-input input contact-birth-year" placeholder="年"> - <!-- 中文：年 -->
-                    <input type="number" name="contact_birth_month" class="section-input input contact-birth-month" placeholder="月"> - <!-- 中文：月 -->
-                    <input type="number" name="contact_birth_day" class="section-input input contact-birth-day" placeholder="日"> <!-- 中文：日 -->
+                    <input type="number" name="contact_birth_year" class="section-input input contact-birth-year" placeholder="年"> -
+                    <input type="number" name="contact_birth_month" class="section-input input contact-birth-month" placeholder="月"> -
+                    <input type="number" name="contact_birth_day" class="section-input input contact-birth-day" placeholder="日">
                 </div>
             </div>
             <div class="form-group form-group-full">
-                <label class="section-label">邮箱:</label> <!-- 中文：邮箱 -->
-                <input type="email" name="contact_email" class="section-input input contact-email" placeholder="可选"> <!-- 中文：可选 -->
+                <label class="section-label">邮箱:</label>
+                <input type="email" name="contact_email" class="section-input input contact-email" placeholder="联络员邮箱">
             </div>
             <div class="form-group form-group-full">
-                <label class="section-label">电话:</label> <!-- 中文：电话 -->
+                <label class="section-label">电话:</label>
                 <div class="contact-phones-container dynamic-input-list">
-                    <!-- 联络员电话输入框 -->
+                   
                     <div class="contact-phone-input-container input-group-dynamic">
-                        <input type="text" name="contact_phones" class="section-input input contact-phone-input" placeholder="联络员电话"> <!-- 中文：联络员电话 -->
+                        <input type="text" name="contact_phones" class="section-input input contact-phone-input" placeholder="联络员电话">
                         <button type="button" class="remove-btn icon-btn remove-contact-phone-btn" style="display: none;" onclick="removeClientContactPhoneInput(this)">
                             <span class="material-icons-outlined">remove</span>
                         </button>
                     </div>
                 </div>
                 <button type="button" class="add-btn icon-btn add-contact-phone-btn" onclick="addClientContactPhoneInput(this)">
-                    <span class="material-icons-outlined">add</span> 添加电话 <!-- 中文：添加电话 -->
+                    <span class="material-icons-outlined">add</span> 添加电话
                 </button>
             </div>
         </div>
@@ -497,13 +461,19 @@ function submitClient() {
         const phone = input.value.trim();
         if (phone) clientPhones.push(phone);
     });
-    const clientPhonesStr = clientPhones.join(',');
+    const clientPhonesStr = clientPhones.join('\x1D');
     let contactsArray = [];
     const contactGroups = document.querySelectorAll('#contacts-container .contact-group');
     contactGroups.forEach(group => {
         const name = group.querySelector('.contact-name').value.trim();
         if (!name) return;
-        const gender = group.querySelector('.contact-gender').value.trim() || '未知';
+        const genderSelect = group.querySelector('.contact-gender');
+        let gender = '未知';
+        if (genderSelect.selectedIndex > 0) {
+            gender = genderSelect.options[genderSelect.selectedIndex].text.trim();
+        } else if (genderSelect.value === '0') {
+            gender = '未知';
+        }
         const year = group.querySelector('.contact-birth-year').value.trim() || '0';
         const month = group.querySelector('.contact-birth-month').value.trim() || '0';
         const day = group.querySelector('.contact-birth-day').value.trim() || '0';
@@ -514,16 +484,16 @@ function submitClient() {
             const phone = input.value.trim();
             if (phone) contactPhones.push(phone);
         });
-        const contactPhonesStr = contactPhones.join('~');
-        const contactString = `0=${name}=${gender}=${year}=${month}=${day}=${email}=${contactPhonesStr}`;
+        const contactPhonesStr = contactPhones.join('\x1F');
+        const contactString = `0\x1E${name}\x1E${gender}\x1E${year}\x1E${month}\x1E${day}\x1E${email}\x1E${contactPhonesStr}`;
         contactsArray.push(contactString);
     });
-    const contactsStr = contactsArray.join(',');
+    const contactsStr = contactsArray.join('\x1D');
     const finalClientString = [
         clientData.id, clientData.name, clientData.region, clientData.address,
         clientData.legal_person, clientData.size, clientData.contact_level,
         clientData.email, clientPhonesStr, contactsStr
-    ].join(';');
+    ].join('\x1C');
     fetch('/api/add_client', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -573,7 +543,7 @@ function populateClientForm(clientId, fullClientString) {
     resetClientPhoneInputs();
     resetContactsContainer();
     document.getElementById('editing-client-id').value = clientId;
-    const fields = fullClientString.split(';');
+    const fields = fullClientString.split('\x1C');
     form.elements['client-name'].value = fields[1] || '';
     form.elements['client-region'].value = fields[2] || '';
     form.elements['client-address'].value = fields[3] || '';
@@ -582,7 +552,7 @@ function populateClientForm(clientId, fullClientString) {
     form.elements['client-contact_level'].value = fields[6] || '';
     form.elements['client-email'].value = fields[7] || '';
     const clientPhonesStr = fields[8] || '';
-    const clientPhones = clientPhonesStr.split(',').filter(p => p.trim());
+    const clientPhones = clientPhonesStr.split('\x1D').filter(p => p.trim());
     const phoneContainer = document.getElementById('client-phone-inputs-container');
     if (phoneContainer.children.length === 1 && !phoneContainer.querySelector('.phone-input').value && clientPhones.length > 0) {
         phoneContainer.innerHTML = '';
@@ -612,33 +582,32 @@ function populateClientForm(clientId, fullClientString) {
         }
     }
     updateClientPhoneRemoveButtonsVisibility(phoneContainer);
-    const contactsStr = fields.slice(9).join(';').trim();
-    const contacts = contactsStr.split(',').filter(c => c.trim());
+    const contactsStr = fields.slice(9).join('\x1C').trim();
+    const contacts = contactsStr.split('\x1D').filter(c => c.trim());
     const contactsContainer = document.getElementById('contacts-container');
     contactsContainer.innerHTML = '';
     contacts.forEach(contactData => {
         addClientContactGroup();
         const newGroup = contactsContainer.lastElementChild;
-        const contactFields = contactData.split('=');
+        const contactFields = contactData.split('\x1E');
         const contactId = contactFields[0] || '0';
         newGroup.dataset.contactId = contactId;
         newGroup.querySelector('.contact-name').value = contactFields[1] || '';
-        const genderValueStored = contactFields[2] || '未知'; // 获取存储的值 ("男", "女", "未知" 或 "1", "2", "0")
+        const genderValueStored = contactFields[2] || '未知';
         const genderSelect = newGroup.querySelector('.contact-gender');
-
         if (genderValueStored === '男' || genderValueStored === '1') {
-            genderSelect.value = '1';
+            genderSelect.value = '男';
         } else if (genderValueStored === '女' || genderValueStored === '2') {
-            genderSelect.value = '2';
-        } else { // 包括 "未知", "0", 或其他任何无法识别的值，都设为 "未知"
-            genderSelect.value = '0';
+            genderSelect.value = '女';
+        } else {
+            genderSelect.value = '未知';
         }
         newGroup.querySelector('.contact-birth-year').value = contactFields[3] || '';
         newGroup.querySelector('.contact-birth-month').value = contactFields[4] || '';
         newGroup.querySelector('.contact-birth-day').value = contactFields[5] || '';
         newGroup.querySelector('.contact-email').value = contactFields[6] || '';
-        const contactPhonesStr = contactFields.slice(7).join('=');
-        const contactPhones = contactPhonesStr.split('~').filter(p => p.trim());
+        const contactPhonesStr = contactFields.slice(7).join('\x1E');
+        const contactPhones = contactPhonesStr.split('\x1F').filter(p => p.trim());
         const contactPhoneContainer = newGroup.querySelector('.contact-phones-container');
         if (contactPhoneContainer.children.length === 1 && !contactPhoneContainer.querySelector('.contact-phone-input').value && contactPhones.length > 0) {
             contactPhoneContainer.innerHTML = '';
@@ -679,14 +648,20 @@ function submitClientUpdate() {
         const phone = input.value.trim();
         if (phone) clientPhones.push(phone);
     });
-    const clientPhonesStr = clientPhones.join(',');
+    const clientPhonesStr = clientPhones.join('\x1D');
     let contactsArray = [];
     const contactGroups = document.querySelectorAll('#contacts-container .contact-group');
     contactGroups.forEach(group => {
         const name = group.querySelector('.contact-name').value.trim();
         if (!name) return;
         const contactId = group.dataset.contactId || '0';
-        const gender = group.querySelector('.contact-gender').value.trim() || '未知';
+        const genderSelect = group.querySelector('.contact-gender');
+        let gender = '未知';
+        if (genderSelect.selectedIndex > 0) {
+            gender = genderSelect.options[genderSelect.selectedIndex].text.trim();
+        } else if (genderSelect.value === '0') {
+            gender = '未知';
+        }
         const year = group.querySelector('.contact-birth-year').value.trim() || '0';
         const month = group.querySelector('.contact-birth-month').value.trim() || '0';
         const day = group.querySelector('.contact-birth-day').value.trim() || '0';
@@ -697,16 +672,16 @@ function submitClientUpdate() {
             const phone = input.value.trim();
             if (phone) contactPhones.push(phone);
         });
-        const contactPhonesStr = contactPhones.join('~');
-        const contactString = `${contactId}=${name}=${gender}=${year}=${month}=${day}=${email}=${contactPhonesStr}`;
+        const contactPhonesStr = contactPhones.join('\x1F');
+        const contactString = `${contactId}\x1E${name}\x1E${gender}\x1E${year}\x1E${month}\x1E${day}\x1E${email}\x1E${contactPhonesStr}`;
         contactsArray.push(contactString);
     });
-    const contactsStr = contactsArray.join(',');
+    const contactsStr = contactsArray.join('\x1D');
     const finalClientString = [
         clientData.id, clientData.name, clientData.region, clientData.address,
         clientData.legal_person, clientData.size, clientData.contact_level,
         clientData.email, clientPhonesStr, contactsStr
-    ].join(';');
+    ].join('\x1C');
     fetch('/api/update_client', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -737,7 +712,6 @@ function cancelClientUpdate() {
         }
     );
 }
-
 function deleteClient(clientId) {
     showCustomConfirm(
         `客户 ID 为 ${clientId} 的记录将被永久删除，此操作无法撤销。`,

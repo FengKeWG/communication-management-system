@@ -4,6 +4,7 @@ let currentSalesNameSearch = '';
 let currentSalesEmailSearch = '';
 let currentSalesClientCountSearch = '';
 const salesIndexToSortKey = { 0: 1, 1: 2, 2: 6, 6: 7 };
+
 function fetchSalesData() {
     const contentDiv = document.getElementById('sales-list-content');
     const clearBtn = document.getElementById('salesClearSearchButton');
@@ -18,7 +19,7 @@ function fetchSalesData() {
     if (currentSalesSortParams.length > 0) { queryParams.push(`sort=${encodeURIComponent(currentSalesSortParams.join(','))}`); }
     const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
     fetch(`/api/fetch_sales${queryString}`)
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
             if (data.error) throw new Error(data.error);
             generateSalesTable(data.output || "", data.count);
@@ -31,6 +32,7 @@ function fetchSalesData() {
             if (resultCountDiv) resultCountDiv.style.display = 'none';
         });
 }
+
 function generateSalesTable(output, totalCount) {
     const lines = output.trim().split('\n').filter(line => line.trim() !== '');
     const container = document.getElementById('sales-list-content');
@@ -68,7 +70,7 @@ function generateSalesTable(output, totalCount) {
     });
     tableHTML += '</tr></thead><tbody>';
     lines.forEach(line => {
-        const fields = line.split(';');
+        const fields = line.split('\x1C');
         if (fields.length < 1 || !fields[0]) return;
         const salesId = fields[0];
         const fullDataEscaped = escape(line);
@@ -85,9 +87,9 @@ function generateSalesTable(output, totalCount) {
         tableHTML += `<td>${genderText}</td>`;
         tableHTML += `<td>${fields[3] || '?'}-${fields[4] || '?'}-${fields[5] || '?'}</td>`;
         tableHTML += `<td>${fields[6] || '-'}</td>`;
-        const salesPhones = (fields[7] || '').split(',').filter(p => p.trim()).map(p => `<span>${p}</span>`).join('<br>');
+        const salesPhones = (fields[7] || '').split('\x1D').filter(p => p.trim()).map(p => `<span>${p}</span>`).join('<br>');
         tableHTML += `<td>${salesPhones || '-'}</td>`;
-        const clientIds = (fields[8] || '').split(',').filter(id => id.trim());
+        const clientIds = (fields[8] || '').split('\x1D').filter(id => id.trim());
         tableHTML += `<td>${clientIds.length}</td>`;
         tableHTML += `<td class="action-cell" style="white-space: nowrap;"></td>`;
         tableHTML += '</tr>';
@@ -113,6 +115,7 @@ function generateSalesTable(output, totalCount) {
     });
     updateHoverTargets();
 }
+
 function handleSalesSortClick(event) {
     const header = event.currentTarget;
     const columnIndex = parseInt(header.dataset.sortIndex, 10);
@@ -131,11 +134,13 @@ function handleSalesSortClick(event) {
     }
     fetchSalesData();
 }
+
 function handleSalesSearchInputKey(event) {
     if (event.key === 'Enter') {
         performSalesSearch();
     }
 }
+
 function performSalesSearch() {
     currentSalesGeneralSearch = document.getElementById('salesSearchInput').value.trim();
     currentSalesNameSearch = document.getElementById('salesNameSearchInput').value.trim();
@@ -143,6 +148,7 @@ function performSalesSearch() {
     currentSalesClientCountSearch = document.getElementById('salesClientCountSearchInput').value.trim();
     fetchSalesData();
 }
+
 function clearSalesSearch() {
     const inputs = ['salesSearchInput', 'salesNameSearchInput', 'salesEmailSearchInput', 'salesClientCountSearchInput'];
     inputs.forEach(id => {
@@ -161,6 +167,7 @@ function clearSalesSearch() {
     const clearBtn = document.getElementById('salesClearSearchButton');
     if (clearBtn) clearBtn.style.display = 'none';
 }
+
 function addSalesPhoneInput() {
     const container = document.getElementById('sales-phone-inputs-container');
     const phoneInputContainer = document.createElement('div');
@@ -182,11 +189,13 @@ function addSalesPhoneInput() {
     updateSalesPhoneRemoveButtonsVisibility(container);
     updateHoverTargets();
 }
+
 function removeSalesPhoneInput(button) {
     const container = button.closest('.input-group-dynamic').parentNode;
     button.closest('.input-group-dynamic').remove();
     updateSalesPhoneRemoveButtonsVisibility(container);
 }
+
 function updateSalesPhoneRemoveButtonsVisibility(container) {
     const groups = container.querySelectorAll('.input-group-dynamic');
     if (groups.length === 1) {
@@ -203,6 +212,7 @@ function updateSalesPhoneRemoveButtonsVisibility(container) {
         });
     }
 }
+
 function resetSalesPhoneInputs() {
     const container = document.getElementById('sales-phone-inputs-container');
     while (container.children.length > 1) {
@@ -219,6 +229,7 @@ function resetSalesPhoneInputs() {
         addSalesPhoneInput();
     }
 }
+
 function resetAndPrepareSalesAddForm() {
     setSalesFormReadOnly(false);
     const form = document.getElementById('sales-form');
@@ -235,6 +246,7 @@ function resetAndPrepareSalesAddForm() {
     if (returnBtn) returnBtn.remove();
     document.getElementById('add-sales-view').classList.remove('form-view-mode');
 }
+
 function setSalesFormReadOnly(isReadOnly) {
     const form = document.getElementById('sales-form');
     const formView = document.getElementById('add-sales-view');
@@ -257,6 +269,7 @@ function setSalesFormReadOnly(isReadOnly) {
         updateSalesPhoneRemoveButtonsVisibility(document.getElementById('sales-phone-inputs-container'));
     }
 }
+
 function loadClientCheckboxes(selectedClientIds = []) {
     const container = document.getElementById('sales-client-selection');
     container.innerHTML = '<p>正在加载客户列表...</p>';
@@ -270,9 +283,9 @@ function loadClientCheckboxes(selectedClientIds = []) {
                 container.innerHTML = '<p>未能加载客户列表或没有客户。</p>';
                 return;
             }
-            const clients = clientList.split(';');
+            const clients = clientList.split('\x1C');
             clients.forEach(clientStr => {
-                const parts = clientStr.split(',');
+                const parts = clientStr.split('\x1D');
                 if (parts.length === 2) {
                     const clientId = parts[0].trim();
                     const clientName = parts[1].trim();
@@ -320,6 +333,7 @@ function loadClientCheckboxes(selectedClientIds = []) {
             showCustomAlert(`加载客户列表失败: ${error.message || error}`, 'error');
         });
 }
+
 function viewSalesDetails(salesId) {
     const row = document.querySelector(`#sales-list-content tr[data-id="${salesId}"]`);
     if (!row) { showCustomAlert("无法加载业务员数据。", 'error'); return; }
@@ -350,6 +364,7 @@ function viewSalesDetails(salesId) {
     o(returnBtn);
     window.scrollTo(0, 0);
 }
+
 function editSalesSetup(salesId) {
     const row = document.querySelector(`#sales-list-content tr[data-id="${salesId}"]`);
     if (!row) { showCustomAlert("无法加载业务员数据。", 'error'); return; }
@@ -371,13 +386,14 @@ function editSalesSetup(salesId) {
     setSalesFormReadOnly(false);
     window.scrollTo(0, 0);
 }
+
 function populateSalesForm(salesId, fullSalesString) {
     setSalesFormReadOnly(false);
     const form = document.getElementById('sales-form');
     form.reset();
     resetSalesPhoneInputs();
     document.getElementById('editing-sales-id').value = salesId;
-    const fields = fullSalesString.split(';');
+    const fields = fullSalesString.split('\x1C');
     form.elements['sales-name'].value = fields[1] || '';
     const genderSelect = form.elements['sales-gender'];
     const genderValueFromBackend = fields[2];
@@ -393,7 +409,7 @@ function populateSalesForm(salesId, fullSalesString) {
     form.elements['sales-birth_day'].value = fields[5] || '';
     form.elements['sales-email'].value = fields[6] || '';
     const salesPhonesStr = fields[7] || '';
-    const salesPhones = salesPhonesStr.split(',').filter(p => p.trim());
+    const salesPhones = salesPhonesStr.split('\x1D').filter(p => p.trim());
     const phoneContainer = document.getElementById('sales-phone-inputs-container');
     while (phoneContainer.children.length > 1) {
         phoneContainer.removeChild(phoneContainer.lastChild);
@@ -420,10 +436,11 @@ function populateSalesForm(salesId, fullSalesString) {
     }
     updateSalesPhoneRemoveButtonsVisibility(phoneContainer);
     const clientIdsStr = fields[8] || '';
-    const selectedClientIds = clientIdsStr.split(',').filter(id => id.trim());
+    const selectedClientIds = clientIdsStr.split('\x1D').filter(id => id.trim());
     loadClientCheckboxes(selectedClientIds);
     updateHoverTargets();
 }
+
 function submitSales() {
     const form = document.getElementById('sales-form');
     const salesData = {
@@ -441,18 +458,18 @@ function submitSales() {
         const phone = input.value.trim();
         if (phone) salesPhones.push(phone);
     });
-    const salesPhonesStr = salesPhones.join(',');
+    const salesPhonesStr = salesPhones.join('\x1D');
     let assignedClientIds = [];
     const clientCheckboxes = form.querySelectorAll('#sales-client-selection input[name="assigned_clients"]:checked');
     clientCheckboxes.forEach(checkbox => {
         assignedClientIds.push(checkbox.value);
     });
-    const clientIDsStr = assignedClientIds.join(',');
+    const clientIDsStr = assignedClientIds.join('\x1D');
     const finalSalesString = [
         salesData.id, salesData.name, salesData.gender, salesData.birth_year,
         salesData.birth_month, salesData.birth_day, salesData.email,
         salesPhonesStr, clientIDsStr
-    ].join(';');
+    ].join('\x1C');
     fetch('/api/add_sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -461,9 +478,9 @@ function submitSales() {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                throw new Error(data.error);
+                showCustomAlert(data.error, 'error');
             }
-            showCustomAlert(data.output || '添加业务员成功！', 'success');
+            showCustomAlert(data.output, 'success');
             resetAndPrepareSalesAddForm();
             showView('sales-list-view', 'sales-section');
         })
@@ -471,6 +488,7 @@ function submitSales() {
             showCustomAlert('添加业务员失败: ' + (error.message || '未知错误'), 'error');
         });
 }
+
 function submitSalesUpdate() {
     const form = document.getElementById('sales-form');
     const salesId = document.getElementById('editing-sales-id').value;
@@ -489,18 +507,18 @@ function submitSalesUpdate() {
         const phone = input.value.trim();
         if (phone) salesPhones.push(phone);
     });
-    const salesPhonesStr = salesPhones.join(',');
+    const salesPhonesStr = salesPhones.join('\x1D');
     let assignedClientIds = [];
     const clientCheckboxes = form.querySelectorAll('#sales-client-selection input[name="assigned_clients"]:checked');
     clientCheckboxes.forEach(checkbox => {
         assignedClientIds.push(checkbox.value);
     });
-    const clientIDsStr = assignedClientIds.join(',');
+    const clientIDsStr = assignedClientIds.join('\x1D');
     const finalSalesString = [
         salesData.id, salesData.name, salesData.gender, salesData.birth_year,
         salesData.birth_month, salesData.birth_day, salesData.email,
         salesPhonesStr, clientIDsStr
-    ].join(';');
+    ].join('\x1C');
     fetch('/api/update_sales', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -508,8 +526,10 @@ function submitSalesUpdate() {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            showCustomAlert(data.output || '业务员信息已更新！', 'success');
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            showCustomAlert(data.output, 'success');
             setAppLockedState(false);
             resetAndPrepareSalesAddForm();
             showView('sales-list-view', 'sales-section');
@@ -518,6 +538,7 @@ function submitSalesUpdate() {
             showCustomAlert('更新业务员失败: ' + (error.message || '未知错误'), 'error');
         });
 }
+
 function cancelSalesUpdate() {
     showCustomConfirm(
         "未保存的更改将会丢失。",
@@ -529,6 +550,7 @@ function cancelSalesUpdate() {
         }
     );
 }
+
 function deleteSales(salesId) {
     showCustomConfirm(
         `业务员 ID 为 ${salesId} 的记录将被永久删除，此操作无法撤销。`,
@@ -538,9 +560,9 @@ function deleteSales(salesId) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        showCustomAlert('删除业务员失败：' + data.error, 'error');
+                        showCustomAlert(data.error, 'error');
                     } else {
-                        showCustomAlert(data.output || `业务员 ${salesId} 已删除。`, 'success');
+                        showCustomAlert(data.output, 'success');
                         fetchSalesData();
                     }
                 })

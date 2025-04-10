@@ -9,16 +9,15 @@ Communication *parseCommunicationFromString(char *inputString, bool newID)
 {
     if (!inputString || strlen(inputString) == 0)
     {
+        fprintf(stderr, "请输入信息\n");
         return NULL;
     }
-
     Communication *newComm = (Communication *)malloc(sizeof(Communication));
     if (!newComm)
     {
         return NULL;
     }
     memset(newComm, 0, sizeof(Communication));
-
     char idStr[50] = {0};
     char clientIdStr[50] = {0};
     char contactIdStr[50] = {0};
@@ -30,25 +29,19 @@ Communication *parseCommunicationFromString(char *inputString, bool newID)
     char minuteStr[50] = {0};
     char secondStr[50] = {0};
     char durationStr[50] = {0};
-
-    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]",
-                         idStr, clientIdStr, contactIdStr, salesIdStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr, durationStr, newComm->content);
-
+    int scanned = sscanf(inputString, "%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\n]", idStr, clientIdStr, contactIdStr, salesIdStr, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr, durationStr, newComm->content);
     if (scanned < 12)
     {
         fprintf(stderr, "输入错误请重新输入\n");
         free(newComm);
         return NULL;
     }
-
-    // 验证 idStr
     newComm->id = newID ? uidGenerate() : stoi(idStr);
     newComm->client_id = stoi(clientIdStr);
     newComm->contact_id = stoi(contactIdStr);
     newComm->sales_id = stoi(salesIdStr);
 
-    // 验证 timeStr
-    if (isTimeValid(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr))
+    if (!isTimeValid(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr))
     {
         fprintf(stderr, "通话时刻输入格式错误请重新输入\n");
         free(newComm);
@@ -61,8 +54,7 @@ Communication *parseCommunicationFromString(char *inputString, bool newID)
     newComm->minute = stoi(minuteStr);
     newComm->second = stoi(secondStr);
 
-    // 验证 durationStr
-    if (isPositiveNumberValid(durationStr))
+    if (!isPositiveNumberValid(durationStr))
     {
         fprintf(stderr, "通话时间输入格式错误请重新输入\n");
         free(newComm);
@@ -78,10 +70,10 @@ Communication *addCommunication(Communication *head, Communication *newCommunica
 {
     if (newCommunication == NULL)
         return head;
-    if (head != NULL)
+    if (head)
     {
         Communication *current = head;
-        while (current->next != NULL)
+        while (current->next)
             current = current->next;
         current->next = newCommunication;
     }
@@ -97,26 +89,27 @@ Communication *modifyCommunication(Communication *head, Communication *newCommun
         return newCommunication;
     Communication *current = head;
     Communication *prev = NULL;
-    while (current != NULL)
+    while (current)
     {
         if (current->id == newCommunication->id)
         {
-            if (current == head)
+            newCommunication->next = current->next;
+            if (!prev)
             {
-                newCommunication->next = current->next;
+                head = newCommunication;
             }
             else
             {
                 prev->next = newCommunication;
                 newCommunication->next = current->next;
             }
-            printf("通话记录 ID %d 信息已更新。\n", newCommunication->id);
-            free(current);
+            printf("通话记录 ID %d 信息已更新\n", newCommunication->id);
             return head;
         }
         prev = current;
         current = current->next;
     }
+    fprintf(stderr, "未找到该通话记录\n");
     return head;
 }
 
@@ -235,42 +228,37 @@ Communication *mergeSortCommunication(Communication *head, int cnt, int a[])
 
 void displayCommunication(Communication *head, const char *pattern, int *sortKeys, int sortKeyCount, int filter_sales_id, const char *searchClientId, const char *searchContactId, const char *searchSalesId, const char *searchDuration, const char *searchContent)
 {
-    if (sortKeyCount > 0 && sortKeys != NULL)
+    if (sortKeyCount > 0 && sortKeys)
     {
         head = mergeSortCommunication(head, sortKeyCount, sortKeys);
     }
     Communication *current = head;
-    char text[15000]; // For general KMP
+    char text[15000];
     char tmp[200];
-    char lowerFieldBuffer[1024]; // For specific text field KMP
-    char numericStrBuffer[50];   // For number field KMP/conversion
+    char lowerFieldBuffer[1024];
+    char numericStrBuffer[50];
 
-    int match_count = 0; // 初始化计数器
+    int match_count = 0;
 
     while (current)
     {
         bool should_display = true;
 
-        // ---- 业务员过滤 ----
         if (filter_sales_id > 0 && current->sales_id != filter_sales_id)
         {
             should_display = false;
         }
 
-        // ---- 特定字段搜索 ----
-        // Check Client ID (Exact Match String)
         if (should_display && searchClientId && strlen(searchClientId) > 0)
         {
             snprintf(numericStrBuffer, sizeof(numericStrBuffer), "%d", current->client_id);
-            // 使用 strcmp 进行精确匹配
+
             if (strcmp(numericStrBuffer, searchClientId) != 0)
             {
                 should_display = false;
             }
-            // 如果需要包含搜索，用 KMP:
-            // if (kmp(numericStrBuffer, searchClientId) < 0) { should_display = false; }
         }
-        // Check Contact ID (Exact Match String)
+
         if (should_display && searchContactId && strlen(searchContactId) > 0)
         {
             snprintf(numericStrBuffer, sizeof(numericStrBuffer), "%d", current->contact_id);
@@ -278,9 +266,8 @@ void displayCommunication(Communication *head, const char *pattern, int *sortKey
             {
                 should_display = false;
             }
-            // if (kmp(numericStrBuffer, searchContactId) < 0) { should_display = false; }
         }
-        // Check Sales ID (Exact Match String)
+
         if (should_display && searchSalesId && strlen(searchSalesId) > 0)
         {
             snprintf(numericStrBuffer, sizeof(numericStrBuffer), "%d", current->sales_id);
@@ -288,9 +275,8 @@ void displayCommunication(Communication *head, const char *pattern, int *sortKey
             {
                 should_display = false;
             }
-            // if (kmp(numericStrBuffer, searchSalesId) < 0) { should_display = false; }
         }
-        // Check Content (Contains)
+
         if (should_display && searchContent && strlen(searchContent) > 0)
         {
             scpy(lowerFieldBuffer, current->content, sizeof(lowerFieldBuffer));
@@ -300,7 +286,7 @@ void displayCommunication(Communication *head, const char *pattern, int *sortKey
                 should_display = false;
             }
         }
-        // Check Duration (Range or Contains)
+
         if (should_display && searchDuration && strlen(searchDuration) > 0)
         {
             char op[3] = "";
@@ -366,7 +352,6 @@ void displayCommunication(Communication *head, const char *pattern, int *sortKey
             }
         }
 
-        // ---- 通用搜索 ----
         if (should_display && pattern && strlen(pattern) > 0)
         {
             text[0] = '\0';
@@ -402,9 +387,9 @@ void displayCommunication(Communication *head, const char *pattern, int *sortKey
 
         if (should_display)
         {
-            match_count++; // 增加计数
-            // 打印行数据
-            printf("%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%s\n",
+            match_count++;
+
+            printf("%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%d\x1C%s\n",
                    current->id, current->client_id, current->contact_id, current->sales_id,
                    current->year, current->month, current->day,
                    current->hour, current->minute, current->second,
@@ -412,5 +397,17 @@ void displayCommunication(Communication *head, const char *pattern, int *sortKey
         }
         current = current->next;
     }
-    printf("%d\n", match_count); // 打印总数
+    printf("%d\n", match_count);
+}
+
+void freeCommunicationList(Communication *head)
+{
+    Communication *current = head;
+    Communication *next_node;
+    while (current)
+    {
+        next_node = current->next;
+        free(current);
+        current = next_node;
+    }
 }

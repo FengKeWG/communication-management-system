@@ -15,7 +15,7 @@ User *parseUserFromString(char *userString, bool newID, bool hashPasswordOnParse
     char idStr[50] = {0};
     char password[256] = {0};
     char salesIdStr[50] = {0};
-    int scanned = sscanf(userString, "%[^;];%[^;];%[^;];%[^;];%[^\n]", idStr, newUser->username, password, newUser->role, salesIdStr);
+    int scanned = sscanf(userString, "%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\n]", idStr, newUser->username, password, newUser->role, salesIdStr);
     if (scanned >= 4)
     {
         newUser->id = newID ? uidGenerate() : stoi(idStr);
@@ -28,7 +28,7 @@ User *parseUserFromString(char *userString, bool newID, bool hashPasswordOnParse
         }
         else if (newID)
         {
-            fprintf(stderr, "错误: 添加新用户 %s 时必须提供密码。\n", newUser->username);
+            fprintf(stderr, "添加新用户 %s 时必须提供密码\n", newUser->username);
             free(newUser);
             return NULL;
         }
@@ -40,7 +40,7 @@ User *parseUserFromString(char *userString, bool newID, bool hashPasswordOnParse
                 newUser->sales_id = 0;
             else
             {
-                fprintf(stderr, "警告: 用户 %s 角色为 sales 但未提供 sales_id。\n", newUser->username);
+                fprintf(stderr, "用户 %s 角色为 sales 但未提供 sales_id\n", newUser->username);
                 free(newUser);
                 return NULL;
             }
@@ -50,7 +50,7 @@ User *parseUserFromString(char *userString, bool newID, bool hashPasswordOnParse
     }
     else
     {
-        fprintf(stderr, "错误: 解析用户数据失败，格式不正确: %s\n", userString);
+        fprintf(stderr, "解析用户数据失败，格式不正确: %s\n", userString);
         free(newUser);
         return NULL;
     }
@@ -67,6 +67,7 @@ User *authenticateUser(User *userList, char *username, char *password)
             return current;
         current = current->next;
     }
+    fprintf(stderr, "用户名或密码错误\n");
     return NULL;
 }
 
@@ -116,32 +117,31 @@ User *deleteUser(User *head, int id)
     return head;
 }
 
-User *modifyUser(User *head, User *updatedUser)
+User *modifyUser(User *head, User *newUser)
 {
-    if (!head || !updatedUser)
+    if (!head || !newUser)
         return head;
     User *current = head;
     User *prev = NULL;
     while (current != NULL)
     {
-        if (current->id == updatedUser->id)
+        if (current->id == newUser->id)
         {
-            scpy(current->username, updatedUser->username, sizeof(current->username));
-            scpy(current->role, updatedUser->role, sizeof(current->role));
-            current->sales_id = updatedUser->sales_id;
-            if (strlen(updatedUser->password_hash) > 0 && strcmp(updatedUser->password_hash, current->password_hash) != 0)
+            scpy(current->username, newUser->username, sizeof(current->username));
+            scpy(current->role, newUser->role, sizeof(current->role));
+            current->sales_id = newUser->sales_id;
+            if (strlen(newUser->password_hash) > 0 && strcmp(newUser->password_hash, current->password_hash) != 0)
             {
-                scpy(current->password_hash, updatedUser->password_hash, sizeof(current->password_hash));
-                printf("用户 %s 的密码已更新。\n", current->username);
+                scpy(current->password_hash, newUser->password_hash, sizeof(current->password_hash));
+                printf("用户 %s 的密码已更新\n", current->username);
             }
-            free(updatedUser);
             return head;
         }
         prev = current;
         current = current->next;
     }
-    fprintf(stderr, "错误: 未找到要修改的用户 ID: %d\n", updatedUser->id);
-    free(updatedUser);
+    fprintf(stderr, "未找到要修改的用户 ID: %d\n", newUser->id);
+    free(newUser);
     return head;
 }
 
@@ -244,32 +244,42 @@ void displayUsers(User *head, const char *pattern, int *sortKeys, int sortKeyCou
         strncat(text, current->role, sizeof(text) - strlen(text) - 1);
         toLower(text);
         if (strlen(pattern) == 0 || kmp(text, pattern) >= 0)
-            printf("%d;%s;%s;%s;%d\n", current->id, current->username, "***", current->role, current->sales_id);
+            printf("%d\x1C%s\x1C%s\x1C%s\x1C%d\n", current->id, current->username, "***", current->role, current->sales_id);
         current = current->next;
     }
 }
 
-int changeUserPassword(User *head, const char *username, const char *oldPassword, const char *newPassword)
+int changeUserPassword(User *head, const char *username, const char *oldPassword, const char *newPassword, const char *confirmPassword)
 {
-    if (!head || !username || !oldPassword || !newPassword)
+    if (!head || !username || !oldPassword || !newPassword || !confirmPassword)
     {
-        fprintf(stderr, "函数接收到无效参数。\n");
+        fprintf(stderr, "changeUserPassword: 函数接收到无效参数\n");
         return -1;
     }
+
+    if (strcmp(newPassword, confirmPassword) != 0)
+    {
+        fprintf(stderr, "用户 '%s' 的新密码与确认密码不匹配\n", username);
+        return -6;
+    }
+
     if (strlen(newPassword) == 0)
     {
-        fprintf(stderr, "新密码不能为空。\n");
-        return 3;
+        fprintf(stderr, "新密码不能为空\n");
+        return -2;
     }
     if (strlen(newPassword) < 6)
     {
-        fprintf(stderr, "新密码长度不能少于6位。\n");
-        return 4;
+        fprintf(stderr, "新密码长度不能少于6位\n");
+        return -3;
     }
+
     User *current = head;
     char oldPasswordHash[65];
     char newPasswordHash[65];
+
     hashPassword(oldPassword, oldPasswordHash);
+
     while (current)
     {
         if (strcmp(current->username, username) == 0)
@@ -277,20 +287,25 @@ int changeUserPassword(User *head, const char *username, const char *oldPassword
             if (strcmp(current->password_hash, oldPasswordHash) == 0)
             {
                 hashPassword(newPassword, newPasswordHash);
+                if (strcmp(current->password_hash, newPasswordHash) == 0)
+                {
+                    fprintf(stderr, "用户 '%s' 的新密码不能与旧密码相同\n", username);
+                    return -7;
+                }
                 scpy(current->password_hash, newPasswordHash, sizeof(current->password_hash));
-                printf("用户 '%s' 的密码已成功修改。\n", username);
+                printf("用户 '%s' 的密码已成功修改\n", username);
                 return 0;
             }
             else
             {
-                fprintf(stderr, "用户 '%s' 的旧密码不正确。\n", username);
-                return 2;
+                fprintf(stderr, "用户 '%s' 的旧密码不正确\n", username);
+                return -4;
             }
         }
         current = current->next;
     }
-    fprintf(stderr, "未找到用户 '%s'。\n", username);
-    return 1;
+    fprintf(stderr, "未找到用户 '%s'\n", username);
+    return -5;
 }
 
 User *findUserById(User *head, int id)
@@ -308,8 +323,7 @@ User *findUserById(User *head, int id)
 int verifySalesIdentity(User *userList, Sales *salesList, const char *username, const char *name, int birth_year, int birth_month, int birth_day, const char *email)
 {
     if (!userList || !salesList || !username || !name || !email)
-        return -1; // 基本参数检查
-
+        return -1;
     User *user = NULL;
     User *current_user = userList;
     while (current_user)
@@ -321,72 +335,39 @@ int verifySalesIdentity(User *userList, Sales *salesList, const char *username, 
         }
         current_user = current_user->next;
     }
-
     if (!user)
     {
-        fprintf(stderr, "验证错误: 用户 '%s' 不存在。\n", username);
-        return 1; // 用户不存在
+        fprintf(stderr, "用户名 '%s' 未找到\n", username);
+        return -2;
     }
-
     if (strcmp(user->role, "sales") != 0)
     {
-        fprintf(stderr, "验证错误: 用户 '%s' 不是业务员角色。\n", username);
-        return 2; // 非业务员角色
+        fprintf(stderr, "用户 '%s' 不是业务员\n", username);
+        return -3;
     }
-
-    if (user->sales_id <= 0)
-    {
-        fprintf(stderr, "验证错误: 用户 '%s' 的 sales_id 无效 (%d)。\n", username, user->sales_id);
-        return 7; // sales_id 无效
-    }
-
-    // 使用 sales_manager.c 中的查找函数 (确保已实现 findSalesById)
     Sales *sales = findSalesById(salesList, user->sales_id);
     if (!sales)
     {
-        fprintf(stderr, "验证错误: 未找到与用户 '%s' 关联的业务员记录 (Sales ID: %d)。\n", username, user->sales_id);
-        return 3; // 业务员记录不存在
+        fprintf(stderr, "身份验证失败！\n");
+        return -4;
     }
-
-    // --- 进行信息比对 ---
-    // 姓名比较 (大小写不敏感比较可能更好，但这里用精确匹配)
     if (strcmp(sales->name, name) != 0)
     {
-        fprintf(stderr, "验证失败: 姓名不匹配 (输入: %s, 记录: %s)\n", name, sales->name);
-        return 4; // 姓名不匹配
+        fprintf(stderr, "身份验证失败！\n");
+        return -4;
     }
-
-    // 生日比较
     if (sales->birth_year != birth_year || sales->birth_month != birth_month || sales->birth_day != birth_day)
     {
-        fprintf(stderr, "验证失败: 生日不匹配 (输入: %d-%d-%d, 记录: %d-%d-%d)\n", birth_year, birth_month, birth_day, sales->birth_year, sales->birth_month, sales->birth_day);
-        return 5; // 生日不匹配
+        fprintf(stderr, "身份验证失败！\n");
+        return -4;
     }
-
-    // 邮箱比较 (大小写不敏感比较可能更好)
-    // 简单的精确比较：
     if (strcmp(sales->email, email) != 0)
     {
-        fprintf(stderr, "验证失败: 邮箱不匹配 (输入: %s, 记录: %s)\n", email, sales->email);
-        return 6; // 邮箱不匹配
+        fprintf(stderr, "身份验证失败！\n");
+        return -4;
     }
-    /* // 简单的忽略大小写比较示例：
-     char email_lower[100];
-     char sales_email_lower[100];
-     scpy(email_lower, email, sizeof(email_lower));
-     scpy(sales_email_lower, sales->email, sizeof(sales_email_lower));
-     for(int i = 0; email_lower[i]; i++) email_lower[i] = tolower(email_lower[i]);
-     for(int i = 0; sales_email_lower[i]; i++) sales_email_lower[i] = tolower(sales_email_lower[i]);
-     if (strcmp(sales_email_lower, email_lower) != 0) {
-         fprintf(stderr, "验证失败: 邮箱不匹配 (输入: %s, 记录: %s)\n", email, sales->email);
-         return 6; // 邮箱不匹配
-     }
-    */
-
-    // 所有检查通过
-    printf("用户 '%s' 身份验证成功。\n", username);
-    fflush(stdout);
-    return 0; // 成功
+    printf("用户 '%s' 身份验证成功\n", username);
+    return 0;
 }
 
 int resetUserPassword(User *head, const char *username, const char *newPassword)
@@ -395,27 +376,50 @@ int resetUserPassword(User *head, const char *username, const char *newPassword)
         return -1;
     if (strlen(newPassword) == 0)
     {
-        fprintf(stderr, "错误: 新密码不能为空。\n");
-        return -1; // Or a specific code for empty password
+        fprintf(stderr, "新密码不能为空\n");
+        return -2;
     }
-
     User *current = head;
     char newPasswordHash[65];
-
     while (current)
     {
         if (strcmp(current->username, username) == 0)
         {
-            // 找到用户，直接设置新密码
             hashPassword(newPassword, newPasswordHash);
             scpy(current->password_hash, newPasswordHash, sizeof(current->password_hash));
-            printf("用户 '%s' 的密码已成功重置。\n", username);
-            fflush(stdout);
-            return 0; // 成功
+            printf("用户 '%s' 的密码已成功重置\n", username);
+            return 0;
         }
         current = current->next;
     }
+    fprintf(stderr, "未找到用户 '%s'\n", username);
+    return -3;
+}
 
-    fprintf(stderr, "错误: 未找到用户 '%s' 以重置密码。\n", username);
-    return 1; // 用户不存在
+char *getPasswordHashById(User *head, int id)
+{
+    User *current = head;
+    while (current != NULL)
+    {
+        if (current->id == id)
+        {
+            char *passwordHash = (char *)malloc(strlen(current->password_hash) + 1);
+            strcpy(passwordHash, current->password_hash);
+            return passwordHash;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+void freeUserList(User *head)
+{
+    User *current = head;
+    User *next_node;
+    while (current)
+    {
+        next_node = current->next;
+        free(current);
+        current = next_node;
+    }
 }

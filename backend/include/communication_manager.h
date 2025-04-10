@@ -9,5 +9,6 @@ Communication *modifyCommunication(Communication *head, Communication *newCommun
 void displayCommunication(Communication *head, const char *pattern, int *sortKeys, int sortKeyCount, int filter_sales_id, const char *searchClientId, const char *searchContactId, const char *searchSalesId, const char *searchDuration, const char *searchContent);
 Communication *mergeCommunicationSortedLists(Communication *list1, Communication *list2, int cnt, int a[]);
 Communication *mergeSortCommunication(Communication *head, int cnt, int a[]);
+void freeCommunicationList(Communication *head);
 
 #endif

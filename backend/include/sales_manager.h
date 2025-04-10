@@ -13,5 +13,6 @@ void displaySales(Sales *head, const char *pattern, int *sortKeys, int sortKeyCo
 void displaySalesIdsAndNames(Sales *head);
 void displayUnlinkedSales(Sales *salesHead, User *userHead);
 Sales *findSalesById(Sales *head, int id);
+void freeSalesList(Sales *head);
 
 #endif

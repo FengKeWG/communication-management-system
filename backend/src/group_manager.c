@@ -6,7 +6,6 @@
 #include "../include/client_manager.h"
 #include "../include/utils.h"
 
-// 解析分组字符串 "id;name;client_id1,client_id2,..."
 Group *parseGroupFromString(char *inputString, bool newID)
 {
     if (!inputString || strlen(inputString) == 0)
@@ -14,66 +13,44 @@ Group *parseGroupFromString(char *inputString, bool newID)
         fprintf(stderr, "请输入分组信息\n");
         return NULL;
     }
-
     Group *newGroup = (Group *)malloc(sizeof(Group));
     if (!newGroup)
     {
         return NULL;
     }
-    memset(newGroup, 0, sizeof(Group)); // 初始化
-
+    memset(newGroup, 0, sizeof(Group));
     char idStr[50] = {0};
-    char clientIDsStr[10000] = {0}; // 用于存储用逗号分隔的 Client IDs
-
-    // 使用 sscanf 解析输入字符串
-    int scanned = sscanf(inputString, "%[^;];%[^;];%[^\n]", idStr, newGroup->name, clientIDsStr);
-
-    if (scanned < 2) // 至少需要 ID 和 Name 两个字段
+    char clientIDsStr[10000] = {0};
+    int scanned = sscanf(inputString, "%[^\x1C]\x1C%[^\x1C]\x1C%[^\n]", idStr, newGroup->name, clientIDsStr);
+    if (scanned < 2)
     {
         fprintf(stderr, "输入格式错误请重新输入\n");
         free(newGroup);
         return NULL;
     }
-
-    // 验证 idStr
     newGroup->id = newID ? uidGenerate() : stoi(idStr);
-
-    // 验证 group name
-    if (isStrValid(newGroup->name))
-    {
-        fprintf(stderr, "输入格式错误请重新输入\n");
-        free(newGroup);
-        return NULL;
-    }
-
-    // 解析 Client IDs
     newGroup->client_count = 0;
     if (strlen(clientIDsStr) > 0)
     {
-        char *clientIdToken = strtok(clientIDsStr, ",");
+        char *clientIdToken = strtok(clientIDsStr, "\x1D");
         while (clientIdToken && newGroup->client_count < 100)
         {
             int clientId = stoi(clientIdToken);
             newGroup->client_ids[newGroup->client_count] = clientId;
             newGroup->client_count++;
-            clientIdToken = strtok(NULL, ",");
+            clientIdToken = strtok(NULL, "\x1D");
         }
     }
-
     newGroup->next = NULL;
     return newGroup;
 }
 
-// 添加分组到链表尾部
 Group *addGroup(Group *head, Group *newGroup)
 {
     if (!newGroup)
         return head;
     if (!head)
-    {
-        printf("分组 '%s' 添加成功！\n", newGroup->name);
         return newGroup;
-    }
     Group *current = head;
     while (current->next)
     {
@@ -84,74 +61,64 @@ Group *addGroup(Group *head, Group *newGroup)
     return head;
 }
 
-// 根据 ID 删除分组
 Group *deleteGroup(Group *head, int id)
 {
     Group *current = head;
     Group *prev = NULL;
-
     while (current && current->id != id)
     {
         prev = current;
         current = current->next;
     }
-
     if (!current)
-    { // 未找到
+    {
         fprintf(stderr, "未找到要删除的分组 ID: %d\n", id);
         return head;
     }
-
     if (!prev)
-    { // 删除的是头节点
+    {
         head = current->next;
     }
     else
     {
         prev->next = current->next;
     }
-    printf("分组 ID %d (%s) 已删除。\n", current->id, current->name);
+    printf("分组 ID %d (%s) 已删除\n", current->id, current->name);
     free(current);
     return head;
 }
 
-// 修改分组信息（替换旧节点）
-Group *modifyGroup(Group *head, Group *updatedGroup)
+Group *modifyGroup(Group *head, Group *newGroup)
 {
-    if (!head || !updatedGroup)
+    if (!head || !newGroup)
         return head;
-
     Group *current = head;
     Group *prev = NULL;
-
-    while (current != NULL)
+    while (current)
     {
-        if (current->id == updatedGroup->id)
+        if (current->id == newGroup->id)
         {
-            updatedGroup->next = current->next; // 链接后续节点
-            if (prev == NULL)
-            { // 更新的是头节点
-                head = updatedGroup;
+            newGroup->next = current->next;
+            if (!prev)
+            {
+                head = newGroup;
             }
             else
             {
-                prev->next = updatedGroup; // 前一个节点指向新节点
+                prev->next = newGroup;
+                newGroup->next = current->next;
             }
-            printf("分组 ID %d (%s) 信息已更新。\n", updatedGroup->id, updatedGroup->name);
-            free(current); // 释放旧节点内存
+            printf("分组 ID %d (%s) 信息已更新\n", newGroup->id, newGroup->name);
             return head;
         }
         prev = current;
         current = current->next;
     }
-
-    // 如果循环结束还没找到
-    fprintf(stderr, "未找到要修改的分组 ID: %d\n", updatedGroup->id);
-    free(updatedGroup); // 释放未使用的 updatedGroup 内存
+    fprintf(stderr, "未找到要修改的分组 ID: %d\n", newGroup->id);
+    free(newGroup);
     return head;
 }
 
-// 根据 ID 查找分组
 Group *findGroupById(Group *head, int id)
 {
     Group *current = head;
@@ -166,7 +133,6 @@ Group *findGroupById(Group *head, int id)
     return NULL;
 }
 
-// --- 排序函数 (如果需要) ---
 int cmpGroup(Group *a, Group *b, int num)
 {
     switch (num)
@@ -176,7 +142,7 @@ int cmpGroup(Group *a, Group *b, int num)
     case 2:
         return strcmp(a->name, b->name);
     case 3:
-        return a->client_count - b->client_count; // 按客户数量排序
+        return a->client_count - b->client_count;
     case -1:
         return b->id - a->id;
     case -2:
@@ -188,9 +154,6 @@ int cmpGroup(Group *a, Group *b, int num)
     }
 }
 
-// 归并排序相关函数 (mergeGroupSortedLists, splitGroupList, mergeSortGroup) - 与其他模块类似
-// ... (此处省略，可以从 client_manager.c 或 sales_manager.c 复制并修改类型为 Group) ...
-// 示例:
 Group *mergeGroupSortedLists(Group *list1, Group *list2, int cnt, int a[])
 {
     if (!list1)
@@ -198,7 +161,7 @@ Group *mergeGroupSortedLists(Group *list1, Group *list2, int cnt, int a[])
     if (!list2)
         return list1;
     Group *sortedList = NULL;
-    bool decided = false; // 标志是否已决定当前节点
+    bool decided = false;
     for (int i = 0; i < cnt && !decided; i++)
     {
         int cmp_res = cmpGroup(list1, list2, a[i]);
@@ -214,9 +177,8 @@ Group *mergeGroupSortedLists(Group *list1, Group *list2, int cnt, int a[])
             sortedList->next = mergeGroupSortedLists(list1, list2->next, cnt, a);
             decided = true;
         }
-        // 如果 cmp_res == 0，则继续比较下一个排序键
     }
-    // 如果所有排序键都相等，或者没有排序键，默认 list1 在前
+
     if (!decided)
     {
         sortedList = list1;
@@ -235,10 +197,10 @@ void splitGroupList(Group *head, Group **front, Group **back)
     }
     Group *slow = head;
     Group *fast = head->next;
-    while (fast != NULL)
+    while (fast)
     {
         fast = fast->next;
-        if (fast != NULL)
+        if (fast)
         {
             slow = slow->next;
             fast = fast->next;
@@ -246,7 +208,7 @@ void splitGroupList(Group *head, Group **front, Group **back)
     }
     *front = head;
     *back = slow->next;
-    slow->next = NULL; // 断开链表
+    slow->next = NULL;
 }
 
 Group *mergeSortGroup(Group *head, int cnt, int a[])
@@ -261,26 +223,23 @@ Group *mergeSortGroup(Group *head, int cnt, int a[])
     return mergeGroupSortedLists(front, back, cnt, a);
 }
 
-// 显示分组列表
 void displayGroups(Group *head, const char *pattern, int *sortKeys, int sortKeyCount, const char *searchName, const char *searchClientCount)
 {
-    if (sortKeyCount > 0 && sortKeys != NULL)
+    if (sortKeyCount > 0 && sortKeys)
     {
         head = mergeSortGroup(head, sortKeyCount, sortKeys);
     }
     Group *current = head;
-    char searchableText[1024];   // For general KMP
-    char lowerFieldBuffer[1024]; // For name KMP
-    char numericStrBuffer[50];   // For client count KMP/conversion
+    char searchableText[1024];
+    char lowerFieldBuffer[1024];
+    char numericStrBuffer[50];
 
-    int match_count = 0; // 初始化计数器
+    int match_count = 0;
 
     while (current)
     {
         bool should_display = true;
 
-        // ---- 特定字段搜索 ----
-        // Check Name (Contains)
         if (should_display && searchName && strlen(searchName) > 0)
         {
             scpy(lowerFieldBuffer, current->name, sizeof(lowerFieldBuffer));
@@ -290,7 +249,7 @@ void displayGroups(Group *head, const char *pattern, int *sortKeys, int sortKeyC
                 should_display = false;
             }
         }
-        // Check Client Count (Range or Contains)
+
         if (should_display && searchClientCount && strlen(searchClientCount) > 0)
         {
             char op[3] = "";
@@ -356,32 +315,42 @@ void displayGroups(Group *head, const char *pattern, int *sortKeys, int sortKeyC
             }
         }
 
-        // ---- 通用搜索 (ID 或 Name) ----
         if (should_display && pattern && strlen(pattern) > 0)
         {
             searchableText[0] = '\0';
             snprintf(searchableText, sizeof(searchableText), "%d %s", current->id, current->name);
             toLower(searchableText);
             if (kmp(searchableText, pattern) < 0)
-            { // 使用 pattern (通用搜索词)
+            {
                 should_display = false;
             }
         }
 
         if (should_display)
         {
-            match_count++; // 增加计数
-            // 输出格式: id;name;client_count;client_id1,client_id2,...
-            printf("%d;%s;%d;", current->id, current->name, current->client_count);
+            match_count++;
+            printf("%d\x1C%s\x1C%d\x1C", current->id, current->name, current->client_count);
             for (int i = 0; i < current->client_count; i++)
             {
                 printf("%d", current->client_ids[i]);
                 if (i < current->client_count - 1)
-                    printf(",");
+                    printf("\x1D");
             }
             printf("\n");
         }
         current = current->next;
     }
-    printf("%d\n", match_count); // 打印总数
+    printf("%d\n", match_count);
+}
+
+void freeGroupList(Group *head)
+{
+    Group *current = head;
+    Group *next_node;
+    while (current)
+    {
+        next_node = current->next;
+        free(current);
+        current = next_node;
+    }
 }

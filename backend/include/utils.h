@@ -15,13 +15,12 @@ int kmp(const char *s, const char *p);
 void toLower(char *s);
 int stoi(char *str);
 char *scpy(char *dest, const char *src, size_t dest_size);
-int isPhoneNumberValid(const char *phone_number);
-int isEmailValid(const char *email);
-int isBirthDayValid(const char *year_str, const char *month_str, const char *day_str);
-int isStrValid(const char *str);
-int isPositiveNumberValid(const char *number_str);
-int isPasswordValid(const char *password);
-int isTimeValid(const char *year_str, const char *month_str, const char *day_str,
-                const char *hour_str, const char *minute_str, const char *second_str);
-int judgeGender(const char *str);
+bool isPhoneNumberValid(const char *phone_number);
+bool isEmailValid(const char *email);
+bool isBirthDayValid(const char *year_str, const char *month_str, const char *day_str);
+bool isStrValid(const char *str);
+bool isPositiveNumberValid(const char *number_str);
+bool isPasswordValid(const char *password);
+bool isTimeValid(const char *year_str, const char *month_str, const char *day_str, const char *hour_str, const char *minute_str, const char *second_str);
+bool isGenderValid(const char *str);
 #endif

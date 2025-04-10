@@ -42,111 +42,98 @@ def index():
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.json
-    if not data or "username" not in data or "password" not in data:
-        return (
-            jsonify({"error": "请求数据无效，需要用户名和密码"}),
-            400,
-        )
     username = data["username"]
     password = data["password"]
     command = ["./main", "login", username, password]
     output, error = run_c_backend(command)
     if error:
-        error_message = f"认证失败: {error}" if error else "用户名或密码错误"
-        print(f"Login failed for {username}: {error_message}")
-        return (
-            jsonify({"error": error_message}),
-            401,
-        )
-    elif output:
-        parts = output.strip().split()
-        if len(parts) == 3:
-            username, role, sales_id_str = parts
-            try:
-                sales_id = int(sales_id_str)
-            except ValueError:
-                print(
-                    f"Login successful for {username}, but failed to parse sales_id: {sales_id_str}"
-                )
-                sales_id = 0
-                return jsonify({"error": "后端返回的 sales_id 格式错误"}), 500
-            access_token = f"token_for_{username}_{role}_{sales_id}"
-            print(f"Login successful: User={username}, Role={role}, SalesID={sales_id}")
-            return jsonify(
-                {
-                    "access_token": access_token,
-                    "role": role,
-                    "username": username,
-                    "sales_id": sales_id,
-                }
-            )
-        else:
-            print(
-                f"Login successful for {username}, but backend output format error: {output}"
-            )
-            return (
-                jsonify({"error": "后端返回格式错误"}),
-                500,
-            )
+        return jsonify({"error": error}), 400
     else:
-        print(
-            f"Login attempt for {username} resulted in no output and no error from backend."
+        parts = output.strip().split()
+        username, role, sales_id_str = parts
+        sales_id = int(sales_id_str)
+        access_token = f"token_for_{username}_{role}_{sales_id}"
+        return jsonify(
+            {
+                "access_token": access_token,
+                "role": role,
+                "username": username,
+                "sales_id": sales_id,
+            }
         )
-        return (
-            jsonify({"error": "登录时发生未知后端错误"}),
-            500,
-        )
+
+
+@app.route("/api/forgot_password/verify", methods=["POST"])
+def handle_verification_api():
+    data = request.json
+    username = data.get("username")
+    name = data.get("name")
+    birth_year = data.get("birth_year")
+    birth_month = data.get("birth_month")
+    birth_day = data.get("birth_day")
+    email = data.get("email")
+    command = [
+        "./main",
+        "verify_sales_identity",
+        str(username),
+        str(name),
+        str(birth_year),
+        str(birth_month),
+        str(birth_day),
+        str(email),
+    ]
+    output, error = run_c_backend(command)
+    if error:
+        return jsonify({"error": error}), 400
+    else:
+        return jsonify({"message": "验证成功"})
+
+
+@app.route("/api/forgot_password/reset", methods=["POST"])
+def handle_password_reset_api():
+    data = request.json
+    username = data["username"]
+    new_password = data["new_password"]
+    command = ["./main", "reset_password", username, new_password]
+    output, error = run_c_backend(command)
+    if error:
+        return jsonify({"error": error}), 400
+    else:
+        return jsonify({"output": output})
 
 
 @app.route("/api/add_user", methods=["POST"])
 def add_user():
     data = request.json
-    if not data or "userData" not in data:
-        return (
-            jsonify({"error": "请求数据无效，需要 userData"}),
-            400,
-        )
     user_data_string = data["userData"]
     command = ["./main", "add_user", user_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"添加用户失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "用户添加成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/delete_user/<user_id>", methods=["DELETE"])
 def delete_user(user_id):
-    try:
-        int(user_id)
-    except ValueError:
-        return (
-            jsonify({"error": "无效的用户 ID 格式"}),
-            400,
-        )
     command = ["./main", "delete_user", str(user_id)]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"删除用户失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or f"用户 {user_id} 删除成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/update_user", methods=["PUT"])
 def update_user():
     data = request.get_json()
-    if not data or "userData" not in data:
-        return (
-            jsonify({"error": "请求数据无效，需要 userData"}),
-            400,
-        )
     user_data_string = data["userData"]
     command = ["./main", "update_user", user_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"更新用户失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "用户信息更新成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/fetch_users", methods=["GET"])
@@ -160,63 +147,43 @@ def get_users():
         command.extend(sort_args)
     output, error = run_c_backend(command)
     if error:
-        return (
-            jsonify({"error": f"获取用户列表失败: {error}"}),
-            400,
-        )
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or ""})
+        return jsonify({"output": output})
 
 
 @app.route("/api/add_client", methods=["POST"])
 def add_client():
     data = request.json
-    if not data or "clientData" not in data:
-        return (
-            jsonify({"error": "请求数据无效，需要 clientData"}),
-            400,
-        )
     client_data_string = data["clientData"]
     command = ["./main", "add_client", client_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"添加客户失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "客户添加成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/delete_client/<client_id>", methods=["DELETE"])
 def delete_client(client_id):
-    try:
-        int(client_id)
-    except ValueError:
-        return (
-            jsonify({"error": "无效的客户 ID 格式"}),
-            400,
-        )
     command = ["./main", "delete_client", str(client_id)]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"删除客户失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or f"客户 {client_id} 删除成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/update_client", methods=["PUT"])
 def update_client():
     data = request.get_json()
-    if not data or "clientData" not in data:
-        return (
-            jsonify({"error": "请求数据无效，需要 clientData"}),
-            400,
-        )
     client_data_string = data["clientData"]
     command = ["./main", "update_client", client_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"更新客户失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "客户信息更新成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/fetch_clients", methods=["GET"])
@@ -230,38 +197,27 @@ def get_clients():
     search_contact_level = request.args.get("contact_level", "").strip()
     search_email = request.args.get("email", "").strip()
     search_contact_count = request.args.get("contact_count", "").strip()
+    filter_sales_id_str = request.args.get("filter_sales_id", "").strip()
     sort_param_string = request.args.get("sort", "")
-    filter_sales_id = request.args.get("filter_sales_id", None)
     command = ["./main", "get_clients"]
+    command.append(filter_sales_id_str)
     command.append(search_term)
+    command.append(search_name)
+    command.append(search_region)
+    command.append(search_address)
+    command.append(search_legal_person)
+    command.append(search_size)
+    command.append(search_contact_level)
+    command.append(search_email)
+    command.append(search_contact_count)
     if sort_param_string:
         sort_args = sort_param_string.split(",")
-        command.extend(sort_args)
-    if filter_sales_id:
-        command.append(f"filter_sales_id={filter_sales_id}")
-    if search_name:
-        command.append(f"name={search_name}")
-    if search_region:
-        command.append(f"region={search_region}")
-    if search_address:
-        command.append(f"address={search_address}")
-    if search_legal_person:
-        command.append(f"legal_person={search_legal_person}")
-    if search_size:
-        command.append(f"size={search_size}")
-    if search_contact_level:
-        command.append(f"contact_level={search_contact_level}")
-    if search_email:
-        command.append(f"email={search_email}")
-    if search_contact_count:
-        command.append(f"contact_count={search_contact_count}")
-    print("Executing C command:", " ".join(command))
+        valid_sort_args = [arg for arg in sort_args if arg.strip()]
+        if valid_sort_args:
+            command.extend(valid_sort_args)
     output, error = run_c_backend(command)
     if error:
-        return (
-            jsonify({"error": f"获取客户列表失败: {error}"}),
-            400,
-        )
+        return jsonify({"error": error}), 400
     else:
         table_data = []
         result_count = -1
@@ -282,52 +238,41 @@ def get_clients():
                     result_count = len(table_data)
         if not lines and result_count == -1:
             result_count = 0
-        return jsonify(
-            {
-                "output": "\n".join(table_data),
-                "count": result_count,
-            }
-        )
+        return jsonify({"output": "\n".join(table_data), "count": result_count})
 
 
 @app.route("/api/add_sales", methods=["POST"])
 def add_sales():
     data = request.json
-    if not data or "salesData" not in data:
-        return jsonify({"error": "请求数据无效，需要 salesData"}), 400
     sales_data_string = data["salesData"]
     command = ["./main", "add_sales", sales_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"添加业务员失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "业务员添加成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/delete_sales/<sales_id>", methods=["DELETE"])
 def delete_sales(sales_id):
-    if not sales_id.isdigit():
-        return jsonify({"error": "无效的业务员 ID 格式"}), 400
     command = ["./main", "delete_sales", sales_id]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"删除业务员失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or f"业务员 {sales_id} 删除成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/update_sales", methods=["PUT"])
 def update_sales():
     data = request.get_json()
-    if not data or "salesData" not in data:
-        return jsonify({"error": "请求数据无效，需要 salesData"}), 400
     sales_data_string = data["salesData"]
     command = ["./main", "update_sales", sales_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"更新业务员失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "业务员信息更新成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/fetch_sales", methods=["GET"])
@@ -339,23 +284,17 @@ def get_sales():
     sort_param_string = request.args.get("sort", "")
     command = ["./main", "get_sales"]
     command.append(search_term)
+    command.append(search_name)
+    command.append(search_email)
+    command.append(search_client_count)
     if sort_param_string:
         sort_args = sort_param_string.split(",")
-        valid_sort_args = [s for s in sort_args if s.strip("-").isdigit()]
+        valid_sort_args = [arg for arg in sort_args if arg.strip()]
         if valid_sort_args:
             command.extend(valid_sort_args)
-        elif sort_args:
-            print(f"警告: 无效的业务员排序参数 '{sort_param_string}', 已忽略。")
-    if search_name:
-        command.append(f"name={search_name}")
-    if search_email:
-        command.append(f"email={search_email}")
-    if search_client_count:
-        command.append(f"client_count={search_client_count}")
-    print("Executing C command:", " ".join(command))
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"获取业务员列表失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
         table_data = []
         result_count = -1
@@ -384,26 +323,19 @@ def display_client_ids_names():
     command = ["./main", "display_client_ids_names"]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"获取客户ID和名称列表失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
         return jsonify({"output": output})
 
 
 @app.route("/api/clients/<client_id>/contacts", methods=["GET"])
 def get_client_contacts(client_id):
-    try:
-        int(client_id)
-    except ValueError:
-        return jsonify({"error": "无效的客户 ID 格式"}), 400
     command = ["./main", "display_client_contacts", str(client_id)]
     output, error = run_c_backend(command)
     if error:
-        return (
-            jsonify({"error": f"获取客户 {client_id} 的联络人列表失败: {error}"}),
-            500,
-        )
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or ""})
+        return jsonify({"output": output})
 
 
 @app.route("/api/fetch_sales_ids_names", methods=["GET"])
@@ -411,37 +343,33 @@ def get_sales_ids_names():
     command = ["./main", "display_sales_ids_names"]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"获取业务员ID和名称列表失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or ""})
+        return jsonify({"output": output})
 
 
 @app.route("/api/add_communication", methods=["POST"])
 def add_communication():
     data = request.json
-    if not data or "communicationData" not in data:
-        return jsonify({"error": "请求数据无效，需要 communicationData"}), 400
     comm_data_string = data["communicationData"]
     command = ["./main", "add_communication", comm_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"添加通话记录失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "通话记录添加成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/update_communication", methods=["PUT"])
 def update_communication():
     data = request.get_json()
-    if not data or "communicationData" not in data:
-        return jsonify({"error": "请求数据无效，需要 communicationData"}), 400
     comm_data_string = data["communicationData"]
     command = ["./main", "update_communication", comm_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"更新通话记录失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "通话记录更新成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/fetch_communications", methods=["GET"])
@@ -453,30 +381,23 @@ def get_communications():
     search_duration = request.args.get("duration", "").strip()
     search_content = request.args.get("content", "").strip()
     sort_param_string = request.args.get("sort", "")
-    filter_sales_id = request.args.get("filter_sales_id", None)
+    filter_sales_id_str = request.args.get("filter_sales_id", "").strip()
     command = ["./main", "get_communications"]
+    command.append(filter_sales_id_str)
     command.append(search_term)
+    command.append(search_client_id)
+    command.append(search_contact_id)
+    command.append(search_sales_id)
+    command.append(search_duration)
+    command.append(search_content)
     if sort_param_string:
         sort_args = sort_param_string.split(",")
-        valid_sort_args = [s for s in sort_args if s.strip("-").isdigit()]
+        valid_sort_args = [arg for arg in sort_args if arg.strip()]
         if valid_sort_args:
             command.extend(valid_sort_args)
-    if filter_sales_id:
-        command.append(f"filter_sales_id={filter_sales_id}")
-    if search_client_id:
-        command.append(f"client_id={search_client_id}")
-    if search_contact_id:
-        command.append(f"contact_id={search_contact_id}")
-    if search_sales_id:
-        command.append(f"sales_id={search_sales_id}")
-    if search_duration:
-        command.append(f"duration={search_duration}")
-    if search_content:
-        command.append(f"content={search_content}")
-    print("Executing C command:", " ".join(command))
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"获取通话记录列表失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
         table_data = []
         result_count = -1
@@ -505,44 +426,43 @@ def get_unlinked_sales():
     command = ["./main", "display_unlinked_sales"]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"获取未关联业务员列表失败: {error}"}), 500
+        return jsonify({"error": error}), 500
     else:
-        return jsonify({"output": output or ""})
+        return jsonify({"output": output})
 
 
 @app.route("/api/change_password", methods=["POST"])
 def change_password():
     data = request.json
-    if (
-        not data
-        or "username" not in data
-        or "old_password" not in data
-        or "new_password" not in data
-    ):
-        return jsonify({"error": "请求无效，需要用户名、旧密码和新密码"}), 400
     username = data["username"]
     old_password = data["old_password"]
     new_password = data["new_password"]
-    command = ["./main", "change_password", username, old_password, new_password]
+    confirm_new_password = data.get("confirm_new_password")
+    command = [
+        "./main",
+        "change_password",
+        username,
+        old_password,
+        new_password,
+        confirm_new_password,
+    ]
     output, error = run_c_backend(command)
     if error:
         return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "操作成功完成"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/add_group", methods=["POST"])
 def add_group():
     data = request.json
-    if not data or "groupData" not in data:
-        return jsonify({"error": "请求数据无效，需要 groupData"}), 400
     group_data_string = data["groupData"]
     command = ["./main", "add_group", group_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"添加分组失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "分组添加成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/fetch_groups", methods=["GET"])
@@ -553,21 +473,16 @@ def get_groups():
     sort_param_string = request.args.get("sort", "")
     command = ["./main", "get_groups"]
     command.append(search_term)
+    command.append(search_name)
+    command.append(search_client_count)
     if sort_param_string:
         sort_args = sort_param_string.split(",")
         valid_sort_args = [s for s in sort_args if s.strip("-").isdigit()]
         if valid_sort_args:
             command.extend(valid_sort_args)
-        elif sort_args:
-            print(f"警告: 无效的分组排序参数 '{sort_param_string}', 已忽略。")
-    if search_name:
-        command.append(f"name={search_name}")
-    if search_client_count:
-        command.append(f"client_count={search_client_count}")
-    print("Executing C command:", " ".join(command))
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"获取分组列表失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
         table_data = []
         result_count = -1
@@ -595,77 +510,57 @@ def get_groups():
 def update_group():
     data = request.get_json()
     if not data or "groupData" not in data:
-        return jsonify({"error": "请求数据无效，需要 groupData"}), 400
+        return jsonify({"error": "请求无效，需要 groupData"}), 400
     group_data_string = data["groupData"]
     command = ["./main", "update_group", group_data_string]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"更新分组失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or "分组信息更新成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/delete_group/<group_id>", methods=["DELETE"])
 def delete_group(group_id):
-    if not group_id.isdigit() or int(group_id) <= 0:
-        return jsonify({"error": "无效的分组 ID 格式"}), 400
     command = ["./main", "delete_group", group_id]
     output, error = run_c_backend(command)
     if error:
-        return jsonify({"error": f"删除分组失败: {error}"}), 400
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"output": output or f"分组 {group_id} 删除成功"})
+        return jsonify({"output": output})
 
 
 @app.route("/api/backups", methods=["GET"])
 def list_backups():
-    """获取备份列表"""
     command = ["./main", "list_backups"]
-    output, error = run_c_backend(command)  # run_c_backend 假设已定义
-
+    output, error = run_c_backend(command)
     if error:
-        # 如果 C 后端 list_backups 返回非 0，run_c_backend 应该会捕获 stderr 或退出码
-        print(f"Error listing backups from C backend: {error}")
-        # 返回具体的错误信息给前端
-        return jsonify({"error": f"获取备份列表失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
         backup_list = []
-        if output:  # 确保 output 不是 None 或空字符串
+        if output:
             lines = output.strip().split("\n")
             for line in lines:
-                if line.strip():  # 跳过可能的空行
-                    parts = line.split("|", 1)  # 按第一个 '|' 分割
+                if line.strip():
+                    parts = line.split("|", 1)
                     if len(parts) == 2:
                         backup_list.append(
                             {
                                 "filename": parts[0].strip(),
-                                "timestamp": parts[1].strip(),  # C 后端已格式化
+                                "timestamp": parts[1].strip(),
                             }
                         )
-                    else:
-                        # 如果格式不对，记录一个错误，但可能仍包含文件名
-                        print(f"Warning: Unexpected format from list_backups: {line}")
-                        backup_list.append(
-                            {
-                                "filename": line.strip(),
-                                "timestamp": "格式错误",  # 或其他指示符
-                            }
-                        )
-        # 返回包含对象列表的 JSON
         return jsonify({"backups": backup_list})
 
 
 @app.route("/api/backups", methods=["POST"])
 def create_backup_endpoint():
-    """创建新的备份"""
     command = ["./main", "create_backup"]
     output, error = run_c_backend(command)
     if error:
-        print(f"Error creating backup: {error}")
-        return jsonify({"error": f"创建备份失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
-        # 成功消息由 C 后端打印到 stdout
-        return jsonify({"message": output.strip() or "备份任务已启动"})
+        return jsonify({"message": output})
 
 
 @app.route("/api/backups/<backup_name>", methods=["DELETE"])
@@ -673,13 +568,9 @@ def delete_backup_endpoint(backup_name):
     command = ["./main", "delete_backup", backup_name]
     output, error = run_c_backend(command)
     if error:
-        print(f"Error deleting backup '{backup_name}': {error}")
-        return (
-            jsonify({"error": f"删除备份 '{backup_name}' 失败: {error}"}),
-            500,  # 或者 404 如果 C 返回文件不存在的特定错误
-        )
+        return jsonify({"error": error}), 400
     else:
-        return jsonify({"message": output.strip() or f"备份 '{backup_name}' 删除成功"})
+        return jsonify({"message": output})
 
 
 @app.route("/api/backups/<backup_name>/restore", methods=["POST"])
@@ -687,14 +578,10 @@ def restore_backup_endpoint(backup_name):
     command = ["./main", "restore_backup", backup_name]
     output, error = run_c_backend(command)
     if error:
-        print(f"Error restoring backup '{backup_name}': {error}")
-        return jsonify({"error": f"恢复备份 '{backup_name}' 失败: {error}"}), 500
+        return jsonify({"error": error}), 400
     else:
-        return jsonify(
-            {"message": output.strip() or f"从备份 '{backup_name}' 恢复任务已启动"}
-        )
+        return jsonify({"message": output})
 
 
 if __name__ == "__main__":
-    print("Flask 服务器在 http://0.0.0.0:5000 开启")
     app.run(debug=True, host="0.0.0.0", port=5000)

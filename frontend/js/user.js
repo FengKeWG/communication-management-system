@@ -1,9 +1,11 @@
 let currentUserSortParams = [];
 let currentUserSearchTerm = '';
 const userIndexToSortKeyRevised = { 0: 1, 1: 2, 2: 3, 3: 4 };
+
 const userRoleSelect = document.getElementById('user-role');
 const salesLinkSection = document.getElementById('user-sales-link-section');
 const salesSelection = document.getElementById('user-sales-selection');
+
 if (userRoleSelect && salesLinkSection && salesSelection) {
     userRoleSelect.addEventListener('change', function () {
         const isSalesRole = (this.value === 'sales');
@@ -14,25 +16,24 @@ if (userRoleSelect && salesLinkSection && salesSelection) {
             salesSelection.value = "0";
         }
     });
-} else {
-    console.warn("User form role select or sales link section not found.");
 }
+
 function loadUnlinkedSalespersons(selectedSalesId = null) {
     if (!salesSelection) return;
     const currentEditingUserId = document.getElementById('editing-user-id').value;
     salesSelection.innerHTML = '<option value="0">加载中...</option>';
     fetch('/api/fetch_unlinked_sales')
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to load unlinked salespersons');
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             salesSelection.innerHTML = '<option value="0">-- 选择业务员 --</option>';
             let foundSelected = false;
-            if (data.output) {
-                const salesList = data.output.split(';');
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            else {
+                const salesList = data.output.split('\x1C');
                 salesList.forEach(item => {
-                    const parts = item.split(',');
+                    const parts = item.split('\x1D');
                     if (parts.length === 2) {
                         const id = parts[0].trim();
                         const name = parts[1].trim();
@@ -50,7 +51,6 @@ function loadUnlinkedSalespersons(selectedSalesId = null) {
                 });
             }
             if (selectedSalesId && selectedSalesId !== "0" && !foundSelected && currentEditingUserId) {
-                console.warn(`User ${currentEditingUserId} is linked to Sales ID ${selectedSalesId}, which is already linked or unavailable.`);
                 const option = document.createElement('option');
                 option.value = selectedSalesId;
                 option.textContent = `当前关联: ID ${selectedSalesId} (已关联)`;
@@ -73,18 +73,21 @@ function loadUnlinkedSalespersons(selectedSalesId = null) {
             showCustomAlert("加载未关联业务员列表失败", "error");
         });
 }
+
 function fetchUserData() {
     const contentDiv = document.getElementById('user-list-content');
     const clearBtn = document.getElementById('userClearSearchButton');
     contentDiv.innerHTML = '<p>正在加载用户列表...</p>';
     let queryParams = [];
     if (currentUserSearchTerm) { queryParams.push(`query=${encodeURIComponent(currentUserSearchTerm)}`); }
-    if (currentUserSortParams.length > 0) { queryParams.push(`sort=${encodeURIComponent(currentUserSortParams.join(','))}`); }
+    if (currentUserSortParams.length > 0) { queryParams.push(`sort=${encodeURIComponent(currentUserSortParams.join('\x1D'))}`); }
     const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
     fetch(`/api/fetch_users${queryString}`)
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
             generateUserTable(data.output || "");
             if (clearBtn) clearBtn.style.display = currentUserSearchTerm ? 'inline-block' : 'none';
         })
@@ -93,6 +96,7 @@ function fetchUserData() {
             showCustomAlert(`获取用户列表失败: ${error.message || error}`, 'error');
         });
 }
+
 function generateUserTable(output) {
     const lines = output.trim().split('\n').filter(line => line.trim() !== '');
     const container = document.getElementById('user-list-content');
@@ -121,13 +125,13 @@ function generateUserTable(output) {
     });
     tableHTML += '</tr></thead><tbody>';
     lines.forEach(line => {
-        const fields = line.split(';');
+        const fields = line.split('\x1C');
         if (fields.length < 5 || !fields[0]) return;
         const userId = fields[0];
         const username = fields[1] || '';
         const userRole = fields[3] || '';
         const salesId = fields[4] || '0';
-        const userDataForEdit = escape(`${userId};${username};;${userRole};${salesId}`);
+        const userDataForEdit = escape(line);
         tableHTML += `<tr data-id="${userId}" data-user-string="${userDataForEdit}">`;
         tableHTML += `<td>${userId}</td>`;
         tableHTML += `<td>${username}</td>`;
@@ -152,6 +156,7 @@ function generateUserTable(output) {
     container.innerHTML = tableHTML;
     updateHoverTargets();
 }
+
 function handleUserSortClick(event) {
     const header = event.currentTarget;
     const columnIndex = parseInt(header.dataset.sortIndex, 10);
@@ -170,13 +175,16 @@ function handleUserSortClick(event) {
     }
     fetchUserData();
 }
+
 function handleUserSearchInputKey(event) {
     if (event.key === 'Enter') performUserSearch();
 }
+
 function performUserSearch() {
     currentUserSearchTerm = document.getElementById('userSearchInput').value.trim();
     fetchUserData();
 }
+
 function clearUserSearch() {
     const searchInput = document.getElementById('userSearchInput');
     if (searchInput) searchInput.value = '';
@@ -185,6 +193,7 @@ function clearUserSearch() {
     const clearBtn = document.getElementById('userClearSearchButton');
     if (clearBtn) clearBtn.style.display = 'none';
 }
+
 function resetAndPrepareUserAddForm() {
     setUserFormReadOnly(false);
     const form = document.getElementById('user-form');
@@ -210,6 +219,7 @@ function resetAndPrepareUserAddForm() {
     }
     setAppLockedState(false);
 }
+
 function setUserFormReadOnly(isReadOnly) {
     const form = document.getElementById('user-form');
     const formView = document.getElementById('add-user-view');
@@ -217,6 +227,7 @@ function setUserFormReadOnly(isReadOnly) {
     else formView.classList.remove('form-view-mode');
     form.querySelectorAll('input:not([type="hidden"]), select').forEach(el => el.disabled = isReadOnly);
 }
+
 function submitUser() {
     const form = document.getElementById('user-form');
     const usernameInput = form.querySelector('#user-username');
@@ -237,7 +248,7 @@ function submitUser() {
             return;
         }
     }
-    const finalUserString = `0;${username};${password};${role};${salesId}`;
+    const finalUserString = `0\x1C${username}\x1C${password}\x1C${role}\x1C${salesId}`;
     fetch('/api/add_user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -246,9 +257,9 @@ function submitUser() {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                throw new Error(data.error);
+                showCustomAlert(data.error, 'error');
             }
-            showCustomAlert(data.output || '添加用户成功！', 'success');
+            showCustomAlert(data.output, 'success');
             resetAndPrepareUserAddForm();
             showView('user-list-view', 'user-section');
         })
@@ -257,6 +268,7 @@ function submitUser() {
             showCustomAlert('添加用户失败: ' + errorMsg, 'error');
         });
 }
+
 function viewUserDetails(userId) {
     const row = document.querySelector(`#user-list-content tr[data-id="${userId}"]`);
     if (!row) { showCustomAlert("无法加载用户数据。", 'error'); return; }
@@ -288,6 +300,7 @@ function viewUserDetails(userId) {
     }
     window.scrollTo(0, 0);
 }
+
 function editUserSetup(userId) {
     const row = document.querySelector(`#user-list-content tr[data-id="${userId}"]`);
     if (!row) { showCustomAlert("无法加载用户数据。", 'error'); return; }
@@ -312,13 +325,13 @@ function editUserSetup(userId) {
     setUserFormReadOnly(false);
     window.scrollTo(0, 0);
 }
+
 function populateUserForm(userId, userDataString) {
     const form = document.getElementById('user-form');
     form.reset();
     document.getElementById('editing-user-id').value = userId;
-    const fields = userDataString.split(';');
+    const fields = userDataString.split('\x1C');
     if (fields.length < 5) {
-        console.error("PopulateUserForm: Invalid userDataString format", userDataString);
         showCustomAlert("加载用户数据格式错误", "error");
         return;
     }
@@ -328,8 +341,6 @@ function populateUserForm(userId, userDataString) {
     form.elements['user-password'].value = '';
     if (userRoleSelect) {
         userRoleSelect.dispatchEvent(new Event('change'));
-    } else {
-        console.warn("populateUserForm: userRoleSelect not found");
     }
     if (fields[3] === 'sales' && salesId !== '0') {
         loadUnlinkedSalespersons(salesId);
@@ -337,6 +348,7 @@ function populateUserForm(userId, userDataString) {
         salesSelection.value = "0";
     }
 }
+
 function submitUserUpdate() {
     const form = document.getElementById('user-form');
     const userId = document.getElementById('editing-user-id').value;
@@ -363,8 +375,10 @@ function submitUserUpdate() {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            showCustomAlert(data.output || '用户信息已更新！', 'success');
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            showCustomAlert(data.output, 'success');
             setAppLockedState(false);
             resetAndPrepareUserAddForm();
             showView('user-list-view', 'user-section');
@@ -377,6 +391,7 @@ function submitUserUpdate() {
     const tempHidden = document.getElementById('hidden-editing-sales-id');
     if (tempHidden) tempHidden.remove();
 }
+
 function cancelUserUpdate() {
     showCustomConfirm(
         "未保存的更改将会丢失。",
@@ -388,6 +403,7 @@ function cancelUserUpdate() {
         }
     );
 }
+
 function deleteUser(userId) {
     showCustomConfirm(
         `用户 ID 为 ${userId} 的账号将被永久删除，此操作无法撤销。`,
@@ -397,9 +413,9 @@ function deleteUser(userId) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        showCustomAlert('删除用户失败：' + data.error, 'error');
+                        showCustomAlert(data.error, 'error');
                     } else {
-                        showCustomAlert(data.output || `用户 ${userId} 已删除。`, 'success');
+                        showCustomAlert(data.output, 'success');
                         fetchUserData();
                     }
                 })

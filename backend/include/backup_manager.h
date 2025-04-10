@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-int create_backup();
-int list_backups();
-int delete_backup(const char *backup_filename);
-int restore_backup(const char *backup_filename);
+int createBackup();
+int listBackups();
+int deleteBackup(const char *backup_filename);
+int restoreBackup(const char *backup_filename);
 
 #endif

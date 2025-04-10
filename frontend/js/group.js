@@ -2,11 +2,8 @@ let currentGroupSortParams = [];
 let currentGroupGeneralSearch = '';
 let currentGroupNameSearch = '';
 let currentGroupClientCountSearch = '';
-const groupIndexToSortKey = {
-    0: 1,
-    1: 2,
-    2: 3
-};
+const groupIndexToSortKey = { 0: 1, 1: 2, 2: 3 };
+
 function fetchGroupData() {
     const contentDiv = document.getElementById('group-list-content');
     const clearBtn = document.getElementById('groupClearSearchButton');
@@ -20,10 +17,12 @@ function fetchGroupData() {
     if (currentGroupSortParams.length > 0) { queryParams.push(`sort=${encodeURIComponent(currentGroupSortParams.join(','))}`); }
     const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
     fetch(`/api/fetch_groups${queryString}`)
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            generateGroupTable(data.output || "", data.count);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            generateGroupTable(data.output, data.count);
             const hasSearchTerms = currentGroupGeneralSearch || currentGroupNameSearch || currentGroupClientCountSearch;
             if (clearBtn) { clearBtn.style.display = hasSearchTerms ? 'inline-block' : 'none'; }
             updateHoverTargets();
@@ -34,6 +33,7 @@ function fetchGroupData() {
             if (resultCountDiv) resultCountDiv.style.display = 'none';
         });
 }
+
 function generateGroupTable(output, totalCount) {
     const lines = output.trim().split('\n').filter(line => line.trim() !== '');
     const container = document.getElementById('group-list-content');
@@ -71,7 +71,7 @@ function generateGroupTable(output, totalCount) {
     });
     tableHTML += '</tr></thead><tbody>';
     lines.forEach(line => {
-        const fields = line.split(';');
+        const fields = line.split('\x1C');
         if (fields.length < 3) return;
         const groupId = fields[0];
         const groupName = fields[1] || 'N/A';
@@ -82,7 +82,7 @@ function generateGroupTable(output, totalCount) {
         tableHTML += `<td>${groupId}</td>`;
         tableHTML += `<td>${groupName}</td>`;
         tableHTML += `<td>${clientCount}</td>`;
-        const clientIdsDisplay = clientIdsStr.split(',').filter(id => id.trim()).join(', ');
+        const clientIdsDisplay = clientIdsStr.split('\x1D').filter(id => id.trim()).join(', ');
         tableHTML += `<td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientIdsDisplay || '无'}">${clientIdsDisplay || '-'}</td>`;
         tableHTML += `<td class="action-cell" style="white-space: nowrap;"></td>`;
         tableHTML += '</tr>';
@@ -112,22 +112,25 @@ function generateGroupTable(output, totalCount) {
     });
     updateHoverTargets();
 }
+
 function loadClientsForGroupSelection(selectedClientIds = [], isReadOnly = false) {
     const container = document.getElementById('group-client-selection');
     container.innerHTML = '<p>正在加载客户列表...</p>';
     fetch('/api/display_client_ids_names')
         .then(response => response.ok ? response.json() : Promise.reject('加载客户列表失败'))
         .then(data => {
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
             container.innerHTML = '';
-            const clientsOutput = data.output || "";
+            const clientsOutput = data.output;
             if (!clientsOutput) {
                 container.innerHTML = '<p>没有可供选择的客户。</p>';
                 return;
             }
-            const clients = clientsOutput.split(';')
+            const clients = clientsOutput.split('\x1D')
                 .map(item => {
-                    const parts = item.split(',');
+                    const parts = item.split('\x1C');
                     if (parts.length >= 2 && parts[0].trim()) {
                         return { id: parts[0].trim(), name: parts[1] || '未知名称' };
                     }
@@ -178,6 +181,7 @@ function loadClientsForGroupSelection(selectedClientIds = [], isReadOnly = false
             showCustomAlert(`加载客户列表出错: ${error.message || error}`, 'error');
         });
 }
+
 function resetAndPrepareGroupAddForm() {
     setGroupFormReadOnly(false);
     const form = document.getElementById('group-form');
@@ -195,6 +199,7 @@ function resetAndPrepareGroupAddForm() {
     loadClientsForGroupSelection([], false);
     document.getElementById('add-group-view').classList.remove('form-view-mode');
 }
+
 function setGroupFormReadOnly(isReadOnly) {
     const form = document.getElementById('group-form');
     const formView = document.getElementById('add-group-view');
@@ -219,20 +224,22 @@ function setGroupFormReadOnly(isReadOnly) {
         }
     });
 }
+
 function populateGroupForm(groupId, fullGroupString) {
     setGroupFormReadOnly(false);
     const form = document.getElementById('group-form');
     form.reset();
-    const fields = fullGroupString.split(';');
+    const fields = fullGroupString.split('\x1C');
     const groupName = fields[1] || '';
     const clientIdsStr = fields[3] || '';
-    const selectedClientIds = clientIdsStr.split(',')
+    const selectedClientIds = clientIdsStr.split('\x1D')
         .map(id => parseInt(id.trim(), 10))
         .filter(id => !isNaN(id) && id > 0);
     document.getElementById('editing-group-id').value = groupId;
     document.getElementById('group-name').value = groupName;
     loadClientsForGroupSelection(selectedClientIds, false);
 }
+
 function submitGroup() {
     const form = document.getElementById('group-form');
     const groupName = form.elements['group-name'].value.trim();
@@ -242,8 +249,8 @@ function submitGroup() {
     }
     const selectedCheckboxes = form.querySelectorAll('input[name="group_clients"]:checked');
     const selectedClientIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-    const clientIdsString = selectedClientIds.join(',');
-    const groupDataString = `0;${groupName};${clientIdsString}`;
+    const clientIdsString = selectedClientIds.join('\x1D');
+    const groupDataString = `0\x1C${groupName}\x1C${clientIdsString}`;
     fetch('/api/add_group', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -251,8 +258,10 @@ function submitGroup() {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            showCustomAlert(data.output || '添加分组成功！', 'success');
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            showCustomAlert(data.output, 'success');
             resetAndPrepareGroupAddForm();
             showView('group-list-view', 'group-section');
         })
@@ -260,14 +269,15 @@ function submitGroup() {
             showCustomAlert('添加分组失败: ' + (error.message || '未知错误'), 'error');
         });
 }
+
 function viewGroupDetails(groupId) {
     const row = document.querySelector(`#group-list-content tr[data-id="${groupId}"]`);
     if (!row) { showCustomAlert("无法加载分组数据。", 'error'); return; }
     const fullGroupString = unescape(row.dataset.fullGroupString);
     if (!fullGroupString) { showCustomAlert("无法加载详细数据。", 'error'); return; }
     setAppLockedState(true);
-    const fields = fullGroupString.split(';');
-    const selectedClientIds = (fields[3] || '').split(',')
+    const fields = fullGroupString.split('\x1C');
+    const selectedClientIds = (fields[3] || '').split('\x1D')
         .map(id => parseInt(id.trim(), 10))
         .filter(id => !isNaN(id) && id > 0);
     const form = document.getElementById('group-form');
@@ -298,6 +308,7 @@ function viewGroupDetails(groupId) {
     o(returnBtn);
     window.scrollTo(0, 0);
 }
+
 function editGroupSetup(groupId) {
     const row = document.querySelector(`#group-list-content tr[data-id="${groupId}"]`);
     if (!row) { showCustomAlert("无法加载分组数据。", 'error'); return; }
@@ -319,6 +330,7 @@ function editGroupSetup(groupId) {
     setGroupFormReadOnly(false);
     window.scrollTo(0, 0);
 }
+
 function submitGroupUpdate() {
     const form = document.getElementById('group-form');
     const groupId = document.getElementById('editing-group-id').value;
@@ -329,7 +341,7 @@ function submitGroupUpdate() {
     }
     const selectedCheckboxes = form.querySelectorAll('input[name="group_clients"]:checked');
     const selectedClientIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-    const clientIdsString = selectedClientIds.join(',');
+    const clientIdsString = selectedClientIds.join('\x1D');
     const groupDataString = `${groupId};${groupName};${clientIdsString}`;
     fetch('/api/update_group', {
         method: 'PUT',
@@ -338,8 +350,10 @@ function submitGroupUpdate() {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            showCustomAlert(data.output || '分组信息已更新！', 'success');
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            showCustomAlert(data.output, 'success');
             setAppLockedState(false);
             resetAndPrepareGroupAddForm();
             showView('group-list-view', 'group-section');
@@ -348,6 +362,7 @@ function submitGroupUpdate() {
             showCustomAlert('更新分组失败: ' + (error.message || '未知错误'), 'error');
         });
 }
+
 function cancelGroupUpdate() {
     showCustomConfirm(
         "未保存的更改将会丢失。",
@@ -359,6 +374,7 @@ function cancelGroupUpdate() {
         }
     );
 }
+
 function deleteGroup(groupId) {
     const row = document.querySelector(`#group-list-content tr[data-id="${groupId}"]`);
     const groupName = row ? row.cells[1].textContent : `ID ${groupId}`;
@@ -370,9 +386,9 @@ function deleteGroup(groupId) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        showCustomAlert('删除分组失败：' + data.error, 'error');
+                        showCustomAlert(data.error, 'error');
                     } else {
-                        showCustomAlert(data.output || `分组 "${groupName}" 已删除。`, 'success');
+                        showCustomAlert(data.output, 'success');
                         fetchGroupData();
                     }
                 })
@@ -382,17 +398,20 @@ function deleteGroup(groupId) {
         }
     );
 }
+
 function handleGroupSearchInputKey(event) {
     if (event.key === 'Enter') {
         performGroupSearch();
     }
 }
+
 function performGroupSearch() {
     currentGroupGeneralSearch = document.getElementById('groupSearchInput').value.trim();
     currentGroupNameSearch = document.getElementById('groupNameSearchInput').value.trim();
     currentGroupClientCountSearch = document.getElementById('groupClientCountSearchInput').value.trim();
     fetchGroupData();
 }
+
 function clearGroupSearch() {
     const inputs = ['groupSearchInput', 'groupNameSearchInput', 'groupClientCountSearchInput'];
     inputs.forEach(id => {
@@ -410,6 +429,7 @@ function clearGroupSearch() {
     const clearBtn = document.getElementById('groupClearSearchButton');
     if (clearBtn) clearBtn.style.display = 'none';
 }
+
 function handleGroupSortClick(event) {
     const header = event.currentTarget;
     const columnIndex = parseInt(header.dataset.sortIndex, 10);

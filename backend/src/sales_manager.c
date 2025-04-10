@@ -11,43 +11,34 @@ Sales *parseSalesFromString(char *inputString, bool newID)
     {
         return NULL;
     }
-
     Sales *newSales = (Sales *)malloc(sizeof(Sales));
     if (!newSales)
     {
         return NULL;
     }
     memset(newSales, 0, sizeof(Sales));
-
     char idStr[50] = {0};
     char birthYearStr[50] = {0};
     char birthMonthStr[50] = {0};
     char birthDayStr[50] = {0};
     char phonesStr[4096] = {0};
     char clientIDsStr[4096] = {0};
-
-    int scanned = sscanf(inputString, "%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^;];%[^\n]",
+    int scanned = sscanf(inputString, "%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\n]",
                          idStr, newSales->name, newSales->gender, birthYearStr, birthMonthStr, birthDayStr, newSales->email, phonesStr, clientIDsStr);
-
-    if (scanned < 7) // 至少需要扫描出7个字段
+    if (scanned < 7)
     {
         fprintf(stderr, "输入错误请重新输入\n");
         free(newSales);
         return NULL;
     }
-
     newSales->id = newID ? uidGenerate() : stoi(idStr);
-
-    // 验证 gender
-    if (judgeGender(newSales->gender) == -1)
+    if (isGenderValid(newSales->gender) == -1)
     {
         fprintf(stderr, "性别输入错误，请重新输入\n");
         free(newSales);
         return NULL;
     }
-
-    // 验证 birthStr
-    if (isBirthDayValid(birthYearStr, birthMonthStr, birthDayStr))
+    if (!isBirthDayValid(birthYearStr, birthMonthStr, birthDayStr))
     {
         fprintf(stderr, "出生日期输入错误\n");
         free(newSales);
@@ -56,38 +47,34 @@ Sales *parseSalesFromString(char *inputString, bool newID)
     newSales->birth_year = stoi(birthYearStr);
     newSales->birth_month = stoi(birthMonthStr);
     newSales->birth_day = stoi(birthDayStr);
-
     newSales->phone_count = 0;
     if (scanned >= 8 && strlen(phonesStr) > 0)
     {
-        char *phone_token = strtok(phonesStr, ",");
+        char *phone_token = strtok(phonesStr, "\x1D");
         while (phone_token && newSales->phone_count < 100)
         {
-            if (isPhoneNumberValid(phone_token))
+            if (!isPhoneNumberValid(phone_token))
             {
                 fprintf(stderr, "手机号输入格式错误请重新输入");
                 free(newSales);
                 return NULL;
             }
-
             scpy(newSales->phones[newSales->phone_count], phone_token, sizeof(newSales->phones[0]));
             newSales->phone_count++;
-            phone_token = strtok(NULL, ",");
+            phone_token = strtok(NULL, "\x1D");
         }
     }
-
     newSales->client_count = 0;
     if (scanned >= 9 && strlen(clientIDsStr) > 0)
     {
-        char *clientId_token = strtok(clientIDsStr, ",");
+        char *clientId_token = strtok(clientIDsStr, "\x1D");
         while (clientId_token && newSales->client_count < 100)
         {
             newSales->client_ids[newSales->client_count] = stoi(clientId_token);
             newSales->client_count++;
-            clientId_token = strtok(NULL, ",");
+            clientId_token = strtok(NULL, "\x1D");
         }
     }
-
     newSales->next = NULL;
     return newSales;
 }
@@ -96,10 +83,10 @@ Sales *addSales(Sales *head, Sales *newSale)
 {
     if (newSale == NULL)
         return head;
-    if (head != NULL)
+    if (head)
     {
         Sales *current = head;
-        while (current->next != NULL)
+        while (current->next)
             current = current->next;
         current->next = newSale;
     }
@@ -131,7 +118,7 @@ Sales *deleteSales(Sales *head, int id)
     {
         prev->next = current->next;
     }
-    printf("业务员 ID %d (%s) 已删除。\n", current->id, current->name);
+    printf("业务员 ID %d (%s) 已删除\n", current->id, current->name);
     free(current);
     return head;
 }
@@ -142,19 +129,21 @@ Sales *modifySales(Sales *head, Sales *newSale)
         return newSale;
     Sales *current = head;
     Sales *prev = NULL;
-    while (current != NULL)
+    while (current)
     {
         if (current->id == newSale->id)
         {
-            if (current == head)
-                newSale->next = current->next;
+            newSale->next = current->next;
+            if (!prev)
+            {
+                head = newSale;
+            }
             else
             {
                 prev->next = newSale;
                 newSale->next = current->next;
             }
-            printf("业务员 ID %d (%s) 信息已更新。\n", newSale->id, newSale->name);
-            free(current);
+            printf("业务员 ID %d (%s) 信息已更新\n", newSale->id, newSale->name);
             return head;
         }
         prev = current;
@@ -266,7 +255,7 @@ Sales *mergeSortSales(Sales *head, int cnt, int a[])
 
 void displaySales(Sales *head, const char *pattern, int *sortKeys, int sortKeyCount, const char *searchName, const char *searchEmail, const char *searchClientCount)
 {
-    if (sortKeyCount > 0 && sortKeys != NULL)
+    if (sortKeyCount > 0 && sortKeys)
     {
         head = mergeSortSales(head, sortKeyCount, sortKeys);
     }
@@ -381,15 +370,15 @@ void displaySales(Sales *head, const char *pattern, int *sortKeys, int sortKeyCo
         if (should_display)
         {
             match_count++;
-            printf("%d;%s;%s;%d;%d;%d;%s;",
+            printf("%d\x1C%s\x1C%s\x1C%d\x1C%d\x1C%d\x1C%s\x1C",
                    current->id, current->name, current->gender,
                    current->birth_year, current->birth_month, current->birth_day,
                    current->email);
             for (int i = 0; i < current->phone_count; i++)
                 printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
-            printf(";");
+            printf("\x1C");
             for (int i = 0; i < current->client_count; i++)
-                printf("%d%s", current->client_ids[i], (i == current->client_count - 1) ? "" : ",");
+                printf("%d%s", current->client_ids[i], (i == current->client_count - 1) ? "" : "\x1D");
             printf("\n");
         }
         current = current->next;
@@ -400,11 +389,11 @@ void displaySales(Sales *head, const char *pattern, int *sortKeys, int sortKeyCo
 void displaySalesIdsAndNames(Sales *head)
 {
     Sales *current = head;
-    while (current != NULL)
+    while (current)
     {
         printf("%d,%s", current->id, current->name);
         if (current->next)
-            printf(";");
+            printf("\x1C");
         current = current->next;
     }
     printf("\n");
@@ -442,8 +431,8 @@ void displayUnlinkedSales(Sales *salesHead, User *userHead)
         if (!linked)
         {
             if (!first)
-                printf(";");
-            printf("%d,%s", currentSales->id, currentSales->name);
+                printf("\x1C");
+            printf("%d\x1D%s", currentSales->id, currentSales->name);
             first = false;
         }
         currentSales = currentSales->next;

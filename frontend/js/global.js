@@ -47,6 +47,7 @@ function o(t) {
         init();
     }();
 })(jQuery);
+
 function showMainSection(sectionIdToShow) {
     const container = document.querySelector('.content-container');
     if (!container) return;
@@ -95,6 +96,7 @@ function showMainSection(sectionIdToShow) {
     });
     updateHoverTargets();
 }
+
 function showView(viewIdToShow, parentSectionId) {
     const parentSection = document.getElementById(parentSectionId);
     if (!parentSection) return;
@@ -166,11 +168,13 @@ function showView(viewIdToShow, parentSectionId) {
     }
     updateHoverTargets();
 }
+
 function updateHoverTargets() {
     document.querySelectorAll('.hover-target').forEach(el => {
         o(el);
     });
 }
+
 function setAppLockedState(isLocked) {
     const body = document.body;
     const secondaryBtns = document.querySelectorAll('.secondary-nav-btn');
@@ -186,6 +190,7 @@ function setAppLockedState(isLocked) {
     }
     updateHoverTargets();
 }
+
 function showCustomAlert(message, type = 'info', duration = 4000) {
     const container = document.getElementById('custom-alert-container');
     if (!container) {
@@ -216,6 +221,7 @@ function showCustomAlert(message, type = 'info', duration = 4000) {
     if (duration > 0) closeTimeout = setTimeout(closeAlert, duration);
     updateHoverTargets();
 }
+
 let confirmCallback = null;
 function showCustomConfirm(message, title = '确认操作', onConfirm, onCancel) {
     const overlay = document.getElementById('custom-confirm-overlay');
@@ -235,11 +241,13 @@ function showCustomConfirm(message, title = '确认操作', onConfirm, onCancel)
     overlay.classList.add('show');
     updateHoverTargets();
 }
+
 function closeCustomConfirm() {
     const overlay = document.getElementById('custom-confirm-overlay');
     if (overlay) overlay.classList.remove('show');
     confirmCallback = null;
 }
+
 function displayUserInfo() {
     const username = sessionStorage.getItem("username");
     const role = sessionStorage.getItem("role");
@@ -267,6 +275,7 @@ function displayUserInfo() {
         }, 2000);
     }
 }
+
 function applyActionPermissions() {
     const role = sessionStorage.getItem("role");
     const isSales = (role === 'sales');
@@ -302,6 +311,7 @@ function applyActionPermissions() {
     }
     updateHoverTargets();
 }
+
 function applyMenuPermissions() {
     const role = sessionStorage.getItem("role");
     if (!role) return;
@@ -349,6 +359,7 @@ function applyMenuPermissions() {
         if (contentContainer) contentContainer.innerHTML = '<p style="padding: 20px; text-align: center;">您没有访问任何模块的权限。</p>';
     }
 }
+
 function logout() {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('role');
@@ -361,6 +372,7 @@ function logout() {
     showCustomAlert('您已成功登出。', 'info', 2000);
     setTimeout(() => window.location.href = '/index.html', 1500);
 }
+
 document.addEventListener('DOMContentLoaded', () => {
     const token = sessionStorage.getItem('token');
     if (!token) {
@@ -462,6 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
 function showChangePasswordModal() {
     const modal = document.getElementById('change-password-modal');
     if (modal) {
@@ -472,12 +485,14 @@ function showChangePasswordModal() {
         updateHoverTargets();
     }
 }
+
 function closeChangePasswordModal() {
     const modal = document.getElementById('change-password-modal');
     if (modal) {
         modal.classList.remove('show');
     }
 }
+
 function submitPasswordChange() {
     const oldPassword = document.getElementById('old-password').value;
     const newPassword = document.getElementById('new-password').value;
@@ -513,30 +528,26 @@ function submitPasswordChange() {
         body: JSON.stringify({
             username: username,
             old_password: oldPassword,
-            new_password: newPassword
+            new_password: newPassword,
+            confirm_new_password: confirmNewPassword
         })
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || `服务器错误，状态码: ${response.status}`);
-                });
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            showCustomAlert(data.output || "密码修改成功！", 'success');
-            closeChangePasswordModal();
+            if (data.error) {
+                if (errorP) {
+                    errorP.textContent = data.error;
+                    errorP.style.display = 'block';
+                } else {
+                    showCustomAlert(data.error, 'error');
+                }
+            } else {
+                showCustomAlert(data.output, 'success');
+                closeChangePasswordModal();
+            }
         })
         .catch(error => {
-            console.error("密码修改失败:", error);
-            const message = error.message || "发生未知错误";
-            if (errorP) {
-                errorP.textContent = message;
-                errorP.style.display = 'block';
-            } else {
-                showCustomAlert(message, 'error');
-            }
+            console.error(error);
         })
         .finally(() => {
             if (submitBtn) {

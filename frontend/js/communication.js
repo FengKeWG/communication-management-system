@@ -5,15 +5,8 @@ let currentCommContactIdSearch = '';
 let currentCommSalesIdSearch = '';
 let currentCommDurationSearch = '';
 let currentCommContentSearch = '';
-const communicationIndexToSortKey = {
-    0: 1,
-    1: 2,
-    2: 3,
-    3: 4,
-    4: 5,
-    5: 8,
-    6: 11
-};
+const communicationIndexToSortKey = { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 8, 6: 11 };
+
 function fetchCommunicationData() {
     const contentDiv = document.getElementById('communication-list-content');
     const clearBtn = document.getElementById('communicationClearSearchButton');
@@ -35,10 +28,12 @@ function fetchCommunicationData() {
     }
     const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
     fetch(`/api/fetch_communications${queryString}`)
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            generateCommunicationTable(data.output || "", data.count);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
+            generateCommunicationTable(data.output, data.count);
             const hasSearchTerms = currentCommunicationGeneralSearch || currentCommClientIdSearch || currentCommContactIdSearch || currentCommSalesIdSearch || currentCommDurationSearch || currentCommContentSearch;
             if (clearBtn) clearBtn.style.display = hasSearchTerms ? 'inline-block' : 'none';
         })
@@ -48,6 +43,7 @@ function fetchCommunicationData() {
             if (resultCountDiv) resultCountDiv.style.display = 'none';
         });
 }
+
 function generateCommunicationTable(output, totalCount) {
     const lines = output.trim().split('\n').filter(line => line.trim() !== '');
     const container = document.getElementById('communication-list-content');
@@ -65,7 +61,7 @@ function generateCommunicationTable(output, totalCount) {
         }
     }
     if (lines.length === 0 && (typeof totalCount === 'undefined' || totalCount === 0)) {
-        container.innerHTML = '<div class="table-responsive"><table class="data-table"><tbody><tr><td colspan="9">没有找到通话记录数据。</td></tr></tbody></table></div>';
+        container.innerHTML = '<div class="table-responsive"><table class="data-table"><tbody><tr><td colspan="9">没有找到通话记录数据</td></tr></tbody></table></div>';
         return;
     }
     const displayHeaders = ['ID', '客户ID', '联络人ID', '业务员ID', '日期', '时间', '时长(分)', '内容摘要', '操作'];
@@ -88,7 +84,7 @@ function generateCommunicationTable(output, totalCount) {
     });
     tableHTML += '</tr></thead><tbody>';
     lines.forEach(line => {
-        const fields = line.split(';');
+        const fields = line.split('\x1C');
         if (fields.length < 12) return;
         const commId = fields[0];
         const fullDataEscaped = escape(line);
@@ -145,11 +141,13 @@ function handleCommunicationSortClick(event) {
     }
     fetchCommunicationData();
 }
+
 function handleCommunicationSearchInputKey(event) {
     if (event.key === 'Enter') {
         performCommunicationSearch();
     }
 }
+
 function performCommunicationSearch() {
     currentCommunicationGeneralSearch = document.getElementById('communicationSearchInput').value.trim();
     currentCommClientIdSearch = document.getElementById('commClientIdSearchInput').value.trim();
@@ -159,6 +157,7 @@ function performCommunicationSearch() {
     currentCommContentSearch = document.getElementById('commContentSearchInput').value.trim();
     fetchCommunicationData();
 }
+
 function clearCommunicationSearch() {
     const inputs = [
         'communicationSearchInput', 'commClientIdSearchInput', 'commContactIdSearchInput',
@@ -182,6 +181,7 @@ function clearCommunicationSearch() {
     const clearBtn = document.getElementById('communicationClearSearchButton');
     if (clearBtn) clearBtn.style.display = 'none';
 }
+
 function resetAndPrepareCommunicationAddForm() {
     setCommunicationFormReadOnly(false);
     const form = document.getElementById('communication-form');
@@ -216,22 +216,25 @@ function resetAndPrepareCommunicationAddForm() {
     setAppLockedState(false);
     updateHoverTargets();
 }
+
 function loadClientsForCommunicationSelector(selectedClientId = null, selectedContactId = null) {
     const container = document.getElementById('communication-client-contact-selector');
     container.innerHTML = '<p>正在加载客户列表...</p>';
     fetch('/api/display_client_ids_names')
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
             container.innerHTML = '';
             const clientList = data.output || "";
             if (!clientList) {
-                container.innerHTML = '<p>未能加载客户列表或没有客户。</p>';
+                container.innerHTML = '<p>未能加载客户列表或没有客户</p>';
                 return;
             }
-            const clients = clientList.split(';');
+            const clients = clientList.split('\x1C');
             clients.forEach(clientStr => {
-                const parts = clientStr.split(',');
+                const parts = clientStr.split('\x1D');
                 if (parts.length === 2) {
                     const clientId = parts[0].trim();
                     const clientName = parts[1].trim();
@@ -341,18 +344,20 @@ function loadClientsForCommunicationForm(selectedClientId = null) {
     const container = document.getElementById('communication-client-selection');
     container.innerHTML = '<p>正在加载客户列表...</p>';
     fetch('/api/display_client_ids_names')
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
             container.innerHTML = '';
             const clientList = data.output || "";
             if (!clientList) {
-                container.innerHTML = '<p>未能加载客户列表或没有客户。</p>';
+                container.innerHTML = '<p>未能加载客户列表或没有客户</p>';
                 return;
             }
-            const clients = clientList.split(';');
+            const clients = clientList.split('\x1C');
             clients.forEach(clientStr => {
-                const parts = clientStr.split(',');
+                const parts = clientStr.split('\x1D');
                 if (parts.length === 2) {
                     const clientId = parts[0].trim();
                     const clientName = parts[1].trim();
@@ -408,6 +413,7 @@ function loadClientsForCommunicationForm(selectedClientId = null) {
             showCustomAlert(`加载客户列表失败: ${error.message || error}`, 'error');
         });
 }
+
 function loadContactsForClient(clientId, panelElement, selectedContactId = null) {
     if (!panelElement) return;
     panelElement.innerHTML = '<p style="text-align:center; margin: 10px 0;">加载中...</p>';
@@ -417,9 +423,9 @@ function loadContactsForClient(clientId, panelElement, selectedContactId = null)
             if (data.error) throw new Error(data.error);
             panelElement.innerHTML = '';
             const contactList = data.output || "";
-            const contacts = contactList.split(';')
+            const contacts = contactList.split('\x1C')
                 .map(contactStr => {
-                    const parts = contactStr.split(',');
+                    const parts = contactStr.split('\x1D');
                     if (parts.length === 2) {
                         const id = parts[0].trim();
                         const name = parts[1].trim();
@@ -444,9 +450,6 @@ function loadContactsForClient(clientId, panelElement, selectedContactId = null)
                 const radioId = `comm-contact-${clientId}-${contact.id}`;
                 const label = document.createElement('label');
                 label.htmlFor = radioId;
-                if (selectedContactId && contact.id === selectedContactId) {
-                    label.classList.add('selected');
-                }
                 const radio = document.createElement('input');
                 radio.type = 'radio';
                 radio.id = radioId;
@@ -461,6 +464,10 @@ function loadContactsForClient(clientId, panelElement, selectedContactId = null)
                 label.appendChild(customRadio);
                 label.appendChild(nameSpan);
                 radioGroup.appendChild(label);
+                if (radio.checked) {
+                    document.getElementById('selected-contact-id').value = contact.id;
+                    label.classList.add('selected');
+                }
                 radio.addEventListener('change', function () {
                     if (this.checked) {
                         document.getElementById('selected-contact-id').value = this.value;
@@ -484,28 +491,32 @@ function loadContactsForClient(clientId, panelElement, selectedContactId = null)
             showCustomAlert(`加载客户 ${clientId} 的联络人失败: ${error.message || error}`, 'error');
         });
 }
+
 function clearContactSelection() {
     const wrapper = document.getElementById('communication-contact-selection-wrapper');
     const container = document.getElementById('communication-contact-selection');
-    container.innerHTML = '<p>请先选择客户以加载联络人。</p>';
+    container.innerHTML = '<p>请先选择客户以加载联络人</p>';
     wrapper.style.display = 'none';
 }
+
 function loadSalespersonsForCommunicationForm(selectedSalesId = null) {
     const container = document.getElementById('communication-sales-selection');
     container.innerHTML = '<p>正在加载业务员列表...</p>';
     fetch('/api/fetch_sales_ids_names')
-        .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
+        .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            }
             container.innerHTML = '';
             const salesList = data.output || "";
             if (!salesList) {
-                container.innerHTML = '<p>未能加载业务员列表或没有业务员。</p>';
+                container.innerHTML = '<p>未能加载业务员列表或没有业务员</p>';
                 return;
             }
-            const salespersons = salesList.split(';');
+            const salespersons = salesList.split('\x1C');
             salespersons.forEach(salesStr => {
-                const parts = salesStr.split(',');
+                const parts = salesStr.split('\x1D');
                 if (parts.length === 2) {
                     const salesId = parts[0].trim();
                     const salesName = parts[1].trim();
@@ -556,6 +567,7 @@ function loadSalespersonsForCommunicationForm(selectedSalesId = null) {
             showCustomAlert(`加载业务员列表失败: ${error.message || error}`, 'error');
         });
 }
+
 function submitCommunication() {
     const form = document.getElementById('communication-form');
     const clientId = document.getElementById('selected-client-id').value;
@@ -572,12 +584,12 @@ function submitCommunication() {
     const duration = form.elements['duration'].value.trim();
     const content = form.elements['content'].value.trim();
     if (!clientId) {
-        showCustomAlert('请选择一个客户。', 'warning');
+        showCustomAlert('请选择一个客户', 'warning');
         document.getElementById('communication-client-contact-selector').scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
     if (!contactId) {
-        showCustomAlert('请为选定的客户选择一个联络人。', 'warning');
+        showCustomAlert('请为选定的客户选择一个联络人', 'warning');
         const expandedCard = document.querySelector('.client-selector-card.expanded');
         if (expandedCard) {
             expandedCard.querySelector('.contact-selection-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -589,30 +601,30 @@ function submitCommunication() {
     if (role === 'sales') {
         selectedSalesId = loggedInSalesId;
         if (!selectedSalesId || selectedSalesId === '0' || selectedSalesId === '-1') {
-            showCustomAlert('错误：无法获取当前业务员信息，无法添加记录。', 'error');
+            showCustomAlert('无法获取当前业务员信息，无法添加记录', 'error');
             return;
         }
     } else if (role === 'manager') {
         const salesSelectionContainer = document.getElementById('communication-sales-selection');
         const selectedSalesCheckbox = salesSelectionContainer.querySelector('input[name="comm_selected_sales"]:checked');
         if (!selectedSalesCheckbox) {
-            showCustomAlert('请选择一个业务员。', 'warning');
+            showCustomAlert('请选择一个业务员', 'warning');
             salesSelectionContainer.parentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
         selectedSalesId = selectedSalesCheckbox.value;
     } else {
-        showCustomAlert('错误：未知用户角色，无法添加记录。', 'error');
+        showCustomAlert('未知用户角色，无法添加记录', 'error');
         return;
     }
     if (!year || !month || !day || !hour || !minute || !second || !duration || !content) {
-        showCustomAlert('请填写所有通话信息字段。', 'warning');
+        showCustomAlert('请填写所有通话信息字段', 'warning');
         return;
     }
     if (isNaN(parseInt(year)) || isNaN(parseInt(month)) || isNaN(parseInt(day)) ||
         isNaN(parseInt(hour)) || isNaN(parseInt(minute)) || isNaN(parseInt(second)) ||
         isNaN(parseInt(duration))) {
-        showCustomAlert('日期、时间和时长必须是有效的数字。', 'warning');
+        showCustomAlert('日期、时间和时长必须是有效的数字', 'warning');
         return;
     }
     const commData = {
@@ -629,7 +641,7 @@ function submitCommunication() {
         commData.id, commData.client_id, commData.contact_id, commData.sales_id,
         commData.year, commData.month, commData.day, commData.hour, commData.minute, commData.second,
         commData.duration, commData.content
-    ].join(';');
+    ].join('\x1C');
     console.log("Submitting new communication:", finalCommString);
     fetch('/api/add_communication', {
         method: 'POST',
@@ -653,14 +665,14 @@ function submitCommunication() {
 function editCommunicationSetup(commId) {
     const row = document.querySelector(`#communication-list-content tr[data-id="${commId}"]`);
     if (!row || !row.dataset.fullCommString) {
-        showCustomAlert("无法加载通话记录数据。", 'error');
+        showCustomAlert("无法加载通话记录数据", 'error');
         return;
     }
     const fullCommString = unescape(row.dataset.fullCommString);
     setAppLockedState(true)
-    const fields = fullCommString.split(';');
+    const fields = fullCommString.split('\x1C');
     if (fields.length < 12) {
-        showCustomAlert("通话记录数据格式不完整。", 'error');
+        showCustomAlert("通话记录数据格式不完整", 'error');
         setAppLockedState(false);
         return;
     }
@@ -718,9 +730,9 @@ function populateCommunicationForm(commId, fullCommString) {
     const form = document.getElementById('communication-form');
     form.reset();
     document.getElementById('editing-communication-id').value = commId;
-    const fields = fullCommString.split(';');
+    const fields = fullCommString.split('\x1C');
     if (fields.length < 12) {
-        showCustomAlert("通话记录数据格式不完整。", 'error');
+        showCustomAlert("通话记录数据格式不完整", 'error');
         setAppLockedState(false);
         return;
     }
@@ -742,6 +754,7 @@ function populateCommunicationForm(commId, fullCommString) {
     loadSalespersonsForCommunicationForm(commData.sales_id);
     updateHoverTargets();
 }
+
 function submitCommunicationUpdate() {
     const form = document.getElementById('communication-form');
     const commId = document.getElementById('editing-communication-id').value;
@@ -750,15 +763,22 @@ function submitCommunicationUpdate() {
     const role = sessionStorage.getItem("role");
     let selectedSalesId = null;
     const year = form.elements['year'].value.trim();
+    const month = form.elements['month'].value.trim();
+    const day = form.elements['day'].value.trim();
+    const hour = form.elements['hour'].value.trim();
+    const minute = form.elements['minute'].value.trim();
+    const second = form.elements['second'].value.trim();
+    const duration = form.elements['duration'].value.trim();
+    const content = form.elements['content'].value.trim();
     if (!clientId || !contactId) {
-        showCustomAlert('请确保客户和联络人都已选择。', 'warning');
+        showCustomAlert('请确保客户和联络人都已选择', 'warning');
         return;
     }
     if (role === 'manager') {
         const salesSelectionContainer = document.getElementById('communication-sales-selection');
         const selectedSalesCheckbox = salesSelectionContainer.querySelector('input[name="comm_selected_sales"]:checked');
         if (!selectedSalesCheckbox) {
-            showCustomAlert('请选择一个业务员。', 'warning');
+            showCustomAlert('请选择一个业务员', 'warning');
             salesSelectionContainer.parentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
@@ -766,40 +786,40 @@ function submitCommunicationUpdate() {
     } else if (role === 'sales') {
         const row = document.querySelector(`#communication-list-content tr[data-id="${commId}"]`);
         if (row && row.dataset.fullCommString) {
-            const originalFields = unescape(row.dataset.fullCommString).split(';');
+            const originalFields = unescape(row.dataset.fullCommString).split('\x1C');
             if (originalFields.length >= 4) {
                 selectedSalesId = originalFields[3];
             }
         }
         if (!selectedSalesId) {
             selectedSalesId = sessionStorage.getItem("sales_id");
-            console.warn("Could not retrieve original sales_id for communication update, using logged-in user's sales_id as fallback.");
         }
         if (!selectedSalesId || selectedSalesId === '0' || selectedSalesId === '-1') {
-            showCustomAlert('错误：无法确定关联的业务员信息。', 'error');
+            showCustomAlert('无法确定关联的业务员信息', 'error');
             return;
         }
     } else {
-        showCustomAlert('错误：未知用户角色，无法更新记录。', 'error');
+        showCustomAlert('未知用户角色，无法更新记录', 'error');
         return;
     }
-    if (!year || !month || !day || !hour || !minute || !second || !duration || !content) { /* 警告 */ return; }
-    if (isNaN(parseInt(year)) || isNaN(parseInt(month)) || isNaN(parseInt(day)) ||
-        isNaN(parseInt(hour)) || isNaN(parseInt(minute)) || isNaN(parseInt(second)) ||
-        isNaN(parseInt(duration))) { /* 警告 */ return; }
-    const commData = {
-        id: commId,
-        client_id: clientId,
-        contact_id: contactId,
-        sales_id: selectedSalesId,
-        content: content
-    };
+    if (!year || !month || !day || !hour || !minute || !second || !duration || !content) {
+        showCustomAlert('请填写完整所有信息', 'error');
+        return;
+    }
     const finalCommString = [
-        commData.id, commData.client_id, commData.contact_id, commData.sales_id,
-        commData.year, commData.month, commData.day, commData.hour, commData.minute, commData.second,
-        commData.duration, commData.content
-    ].join(';');
-    console.log("Submitting communication update:", finalCommString);
+        commId,
+        clientId,
+        contactId,
+        selectedSalesId,
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        duration,
+        content
+    ].join('\x1C');
     fetch('/api/update_communication', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -807,11 +827,14 @@ function submitCommunicationUpdate() {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.error) throw new Error(data.error);
-            showCustomAlert(data.output || '通话记录已更新！', 'success');
-            setAppLockedState(false);
-            resetAndPrepareCommunicationAddForm();
-            showView('communication-list-view', 'communication-section');
+            if (data.error) {
+                showCustomAlert(data.error, 'error');
+            } else {
+                showCustomAlert(data.output, 'success');
+                setAppLockedState(false);
+                resetAndPrepareCommunicationAddForm();
+                showView('communication-list-view', 'communication-section');
+            }
         })
         .catch(error => {
             showCustomAlert('更新通话记录失败: ' + (error.message || '未知错误'), 'error');
@@ -820,9 +843,10 @@ function submitCommunicationUpdate() {
     const tempHiddenContact = document.getElementById('hidden-edit-contact-id');
     if (tempHiddenContact) tempHiddenContact.remove();
 }
+
 function cancelCommunicationUpdate() {
     showCustomConfirm(
-        "未保存的更改将会丢失。",
+        "未保存的更改将会丢失",
         "确定要取消编辑吗？",
         () => {
             setAppLockedState(false);
@@ -833,15 +857,16 @@ function cancelCommunicationUpdate() {
         }
     );
 }
+
 function viewCommunicationDetails(commId) {
     const row = document.querySelector(`#communication-list-content tr[data-id="${commId}"]`);
-    if (!row) { showCustomAlert("无法加载通话记录数据。", 'error'); return; }
+    if (!row) { showCustomAlert("无法加载通话记录数据", 'error'); return; }
     const fullCommString = unescape(row.dataset.fullCommString);
-    if (!fullCommString) { showCustomAlert("无法加载详细数据。", 'error'); return; }
+    if (!fullCommString) { showCustomAlert("无法加载详细数据", 'error'); return; }
     setAppLockedState(true);
-    const fields = fullCommString.split(';');
+    const fields = fullCommString.split('\x1C');
     if (fields.length < 12) {
-        showCustomAlert("通话记录数据格式不完整。", 'error');
+        showCustomAlert("通话记录数据格式不完整", 'error');
         setAppLockedState(false); return;
     }
     const commData = {
@@ -913,46 +938,28 @@ function viewCommunicationDetails(commId) {
     }, 300);
     window.scrollTo(0, 0);
 }
+
 async function fetchSalesIdsAndNames() {
     try {
         const response = await fetch('/api/fetch_sales');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        if (data.error) throw new Error(data.error);
+        if (data.error) {
+            showCustomAlert(data.error, 'error');
+        }
         const salesListOutput = data.output || "";
         if (!salesListOutput) return [];
         const sales = salesListOutput.split('\n')
             .map(line => {
-                const fields = line.split(';');
+                const fields = line.split('\x1C');
                 if (fields.length >= 2) return { id: fields[0], name: fields[1] };
-                const parts = line.split(',');
+                const parts = line.split('\x1D');
                 if (parts.length === 2) return { id: parts[0], name: parts[1] };
                 return null;
             })
             .filter(s => s !== null);
         return sales;
     } catch (error) {
-        console.error("Failed to fetch sales IDs and names:", error);
         showCustomAlert(`获取业务员列表时出错: ${error.message}`, 'error');
         return [];
     }
 }
-/*
-async function loadSalespersonsForCommunicationForm(selectedSalesId = null) {
-    const container = document.getElementById('communication-sales-selection');
-    container.innerHTML = '<p>正在加载业务员列表...</p>';
-    try {
-        const salespersons = await fetchSalesIdsAndNames(); 
-        container.innerHTML = ''; 
-        if (salespersons.length === 0) {
-            container.innerHTML = '<p>未能加载业务员列表或没有业务员。</p>';
-            return;
-        }
-        salespersons.forEach(sales => {
-        });
-        updateHoverTargets();
-    } catch(error) {
-         container.innerHTML = `<p style="color: red;">加载业务员列表失败.</p>`;
-    }
-}
-    */

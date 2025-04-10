@@ -28,7 +28,7 @@ typedef struct Client
     int phone_count;
     char phones[100][100];
     int contact_count;
-    Contact contacts[100]; // 联络员Z
+    Contact contacts[100]; // 联络员
     struct Client *next;
 } Client;
 
