@@ -5,7 +5,7 @@
 #include "user_manager.h"
 #include "utils.c"
 
-User *parseUserFromString(char *userString, bool newID, bool hashPasswordOnParse)
+User *parseUserFromString(char *inputString, bool newID, bool hashPasswordOnParse)
 {
     User *newUser = (User *)malloc(sizeof(User));
     if (!newUser)
@@ -15,45 +15,42 @@ User *parseUserFromString(char *userString, bool newID, bool hashPasswordOnParse
     char idStr[50] = {0};
     char password[256] = {0};
     char salesIdStr[50] = {0};
-    int scanned = sscanf(userString, "%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\n]", idStr, newUser->username, password, newUser->role, salesIdStr);
-    if (scanned >= 4)
+    int scanned = sscanf(inputString, "%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\x1C]\x1C%[^\n]", idStr, newUser->username, password, newUser->role, salesIdStr);
+    if (scanned < 3)
     {
-        newUser->id = newID ? uidGenerate() : stoi(idStr);
-        if (strlen(password) > 0)
-        {
-            if (hashPasswordOnParse)
-                hashPassword(password, newUser->password_hash);
-            else
-                scpy(newUser->password_hash, password, sizeof(newUser->password_hash));
-        }
-        else if (newID)
-        {
-            fprintf(stderr, "添加新用户 %s 时必须提供密码\n", newUser->username);
-            free(newUser);
-            return NULL;
-        }
-        if (scanned == 5 && strlen(salesIdStr) > 0)
-            newUser->sales_id = stoi(salesIdStr);
-        else
-        {
-            if (strcmp(newUser->role, "manager") == 0)
-                newUser->sales_id = 0;
-            else
-            {
-                fprintf(stderr, "用户 %s 角色为 sales 但未提供 sales_id\n", newUser->username);
-                free(newUser);
-                return NULL;
-            }
-        }
-        newUser->next = NULL;
-        return newUser;
-    }
-    else
-    {
-        fprintf(stderr, "解析用户数据失败，格式不正确: %s\n", userString);
+        fprintf(stderr, "解析用户数据失败，格式不正确: %s\n", inputString);
         free(newUser);
         return NULL;
     }
+    newUser->id = newID ? uidGenerate() : stoi(idStr);
+    if (strlen(password) > 0)
+    {
+        if (hashPasswordOnParse)
+            hashPassword(password, newUser->password_hash);
+        else
+            scpy(newUser->password_hash, password, sizeof(newUser->password_hash));
+    }
+    else if (newID)
+    {
+        fprintf(stderr, "添加新用户 %s 时必须提供密码\n", newUser->username);
+        free(newUser);
+        return NULL;
+    }
+    if (strlen(salesIdStr) > 0)
+        newUser->sales_id = stoi(salesIdStr);
+    else
+    {
+        if (strcmp(newUser->role, "manager") == 0)
+            newUser->sales_id = 0;
+        else
+        {
+            fprintf(stderr, "用户 %s 角色为 sales 但未提供 sales_id\n", newUser->username);
+            free(newUser);
+            return NULL;
+        }
+    }
+    newUser->next = NULL;
+    return newUser;
 }
 
 User *authenticateUser(User *userList, char *username, char *password)

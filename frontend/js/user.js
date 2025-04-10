@@ -367,7 +367,7 @@ function submitUserUpdate() {
             return;
         }
     }
-    const finalUserString = `${userId};${username};${password};${role};${salesId}`;
+    const finalUserString = `${userId}\x1C${username}\x1C${password}\x1C${role}\x1C${salesId}`;
     fetch('/api/update_user', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -377,11 +377,12 @@ function submitUserUpdate() {
         .then(data => {
             if (data.error) {
                 showCustomAlert(data.error, 'error');
+            } else {
+                showCustomAlert(data.output, 'success');
+                setAppLockedState(false);
+                resetAndPrepareUserAddForm();
+                showView('user-list-view', 'user-section');
             }
-            showCustomAlert(data.output, 'success');
-            setAppLockedState(false);
-            resetAndPrepareUserAddForm();
-            showView('user-list-view', 'user-section');
         })
         .catch(error => {
             const errorMsg = error.message || '未知错误';

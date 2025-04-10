@@ -128,9 +128,9 @@ function loadClientsForGroupSelection(selectedClientIds = [], isReadOnly = false
                 container.innerHTML = '<p>没有可供选择的客户。</p>';
                 return;
             }
-            const clients = clientsOutput.split('\x1D')
+            const clients = clientsOutput.split('\x1C')
                 .map(item => {
-                    const parts = item.split('\x1C');
+                    const parts = item.split('\x1D');
                     if (parts.length >= 2 && parts[0].trim()) {
                         return { id: parts[0].trim(), name: parts[1] || '未知名称' };
                     }
@@ -250,7 +250,8 @@ function submitGroup() {
     const selectedCheckboxes = form.querySelectorAll('input[name="group_clients"]:checked');
     const selectedClientIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     const clientIdsString = selectedClientIds.join('\x1D');
-    const groupDataString = `0\x1C${groupName}\x1C${clientIdsString}`;
+    const groupIdToSend = document.getElementById('editing-group-id').value || '0';
+    const groupDataString = `${groupIdToSend}\x1C${groupName}\x1C${clientIdsString}`;
     fetch('/api/add_group', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -342,7 +343,7 @@ function submitGroupUpdate() {
     const selectedCheckboxes = form.querySelectorAll('input[name="group_clients"]:checked');
     const selectedClientIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     const clientIdsString = selectedClientIds.join('\x1D');
-    const groupDataString = `${groupId};${groupName};${clientIdsString}`;
+    const groupDataString = `${groupId}\x1C${groupName}\x1C${clientIdsString}`;
     fetch('/api/update_group', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
