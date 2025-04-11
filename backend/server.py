@@ -560,7 +560,7 @@ def create_backup_endpoint():
     if error:
         return jsonify({"error": error}), 400
     else:
-        return jsonify({"message": output})
+        return jsonify({"output": output})
 
 
 @app.route("/api/backups/<backup_name>", methods=["DELETE"])
@@ -570,7 +570,7 @@ def delete_backup_endpoint(backup_name):
     if error:
         return jsonify({"error": error}), 400
     else:
-        return jsonify({"message": output})
+        return jsonify({"output": output})
 
 
 @app.route("/api/backups/<backup_name>/restore", methods=["POST"])
@@ -580,7 +580,7 @@ def restore_backup_endpoint(backup_name):
     if error:
         return jsonify({"error": error}), 400
     else:
-        return jsonify({"message": output})
+        return jsonify({"output": output})
 
 
 if __name__ == "__main__":

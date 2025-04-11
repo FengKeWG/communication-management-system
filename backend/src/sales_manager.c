@@ -44,6 +44,12 @@ Sales *parseSalesFromString(char *inputString, bool newID)
         free(newSales);
         return NULL;
     }
+    if (!isEmailValid(newSales->email))
+    {
+        fprintf(stderr, "邮箱格式错误，请重新输入 %s\n", newSales->email);
+        free(newSales);
+        return NULL;
+    }
     newSales->birth_year = stoi(birthYearStr);
     newSales->birth_month = stoi(birthMonthStr);
     newSales->birth_day = stoi(birthDayStr);

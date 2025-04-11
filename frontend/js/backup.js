@@ -176,7 +176,7 @@ function restoreBackup(encodedFilename) {
                     if (data.error) {
                         showCustomAlert(data.error, 'error');
                     }
-                    showCustomAlert(data.message, 'success');
+                    showCustomAlert(data.output, 'success');
                     if (backupStatus) backupStatus.textContent = '恢复成功！建议刷新页面或重新登录以加载最新数据。';
                 })
                 .catch(error => {

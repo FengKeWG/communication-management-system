@@ -480,9 +480,11 @@ function submitSales() {
             if (data.error) {
                 showCustomAlert(data.error, 'error');
             }
-            showCustomAlert(data.output, 'success');
-            resetAndPrepareSalesAddForm();
-            showView('sales-list-view', 'sales-section');
+            else {
+                showCustomAlert(data.output, 'success');
+                resetAndPrepareSalesAddForm();
+                showView('sales-list-view', 'sales-section');
+            }
         })
         .catch(error => {
             showCustomAlert('添加业务员失败: ' + (error.message || '未知错误'), 'error');
@@ -529,10 +531,12 @@ function submitSalesUpdate() {
             if (data.error) {
                 showCustomAlert(data.error, 'error');
             }
-            showCustomAlert(data.output, 'success');
-            setAppLockedState(false);
-            resetAndPrepareSalesAddForm();
-            showView('sales-list-view', 'sales-section');
+            else {
+                showCustomAlert(data.output, 'success');
+                setAppLockedState(false);
+                resetAndPrepareSalesAddForm();
+                showView('sales-list-view', 'sales-section');
+            }
         })
         .catch(error => {
             showCustomAlert('更新业务员失败: ' + (error.message || '未知错误'), 'error');
