@@ -3,7 +3,7 @@ let currentSalesGeneralSearch = '';
 let currentSalesNameSearch = '';
 let currentSalesEmailSearch = '';
 let currentSalesClientCountSearch = '';
-const salesIndexToSortKey = { 0: 1, 1: 2, 2: 6, 6: 7 };
+const salesIndexToSortKey = { 0: 1, 1: 2, 2: 3, 3: 4, 6: 8 };
 
 function fetchSalesData() {
     const contentDiv = document.getElementById('sales-list-content');

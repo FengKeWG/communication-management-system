@@ -595,12 +595,12 @@ function populateClientForm(clientId, fullClientString) {
         newGroup.querySelector('.contact-name').value = contactFields[1] || '';
         const genderValueStored = contactFields[2] || '未知';
         const genderSelect = newGroup.querySelector('.contact-gender');
-        if (genderValueStored === '男' || genderValueStored === '1') {
-            genderSelect.value = '男';
-        } else if (genderValueStored === '女' || genderValueStored === '2') {
-            genderSelect.value = '女';
+        if (genderValueStored === '男') {
+            genderSelect.value = '1';
+        } else if (genderValueStored === '女') {
+            genderSelect.value = '2';
         } else {
-            genderSelect.value = '未知';
+            genderSelect.value = '0';
         }
         newGroup.querySelector('.contact-birth-year').value = contactFields[3] || '';
         newGroup.querySelector('.contact-birth-month').value = contactFields[4] || '';

@@ -126,16 +126,16 @@ int cmpCommunication(Communication *a, Communication *b, int num)
     case 4:
         return a->sales_id - b->sales_id;
     case 5:
-        return a->year - b->year;
-    case 6:
-        return a->month - b->month;
-    case 7:
+        if (a->year != b->year)
+            return a->year - b->year;
+        if (a->month != b->month)
+            return a->month - b->month;
         return a->day - b->day;
     case 8:
-        return a->hour - b->hour;
-    case 9:
-        return a->minute - b->minute;
-    case 10:
+        if (a->hour != b->hour)
+            return a->hour - b->hour;
+        if (a->minute != b->minute)
+            return a->minute - b->minute;
         return a->second - b->second;
     case 11:
         return a->duration - b->duration;
@@ -148,16 +148,16 @@ int cmpCommunication(Communication *a, Communication *b, int num)
     case -4:
         return b->sales_id - a->sales_id;
     case -5:
-        return b->year - a->year;
-    case -6:
-        return b->month - a->month;
-    case -7:
+        if (a->year != b->year)
+            return b->year - a->year;
+        if (a->month != b->month)
+            return b->month - a->month;
         return b->day - a->day;
     case -8:
-        return b->hour - a->hour;
-    case -9:
-        return b->minute - a->minute;
-    case -10:
+        if (a->hour != b->hour)
+            return b->hour - a->hour;
+        if (a->minute != b->minute)
+            return b->minute - a->minute;
         return b->second - a->second;
     case -11:
         return b->duration - a->duration;

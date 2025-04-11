@@ -130,7 +130,7 @@ function handleCommunicationSortClick(event) {
     if (isNaN(sortKey)) return;
     const existingIndex = currentCommunicationSortParams.findIndex(p => Math.abs(p) === sortKey);
     if (existingIndex === -1) {
-        currentCommunicationSortParams = [sortKey];
+        currentCommunicationSortParams.push(sortKey);
     } else {
         const currentValue = currentCommunicationSortParams[existingIndex];
         if (currentValue > 0) {

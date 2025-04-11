@@ -147,15 +147,11 @@ bool isEmailValid(const char *email)
     int len = strlen(email);
     if (len > 80)
         return 0;
-
     int at_index = -1;
-    int dot_after_at = 0; // 标记 @ 之后是否有 .
-
-    // 1. 一次遍历完成核心检查
+    int dot_after_at = 0;
     for (int i = 0; i < len; ++i)
     {
         char c = email[i];
-        // 检查允许的字符，不允许空格
         if (!(isalnum((unsigned char)c) || c == '.' || c == '_' || c == '-' || c == '@') || isspace((unsigned char)c))
         {
             return 0;
@@ -163,60 +159,43 @@ bool isEmailValid(const char *email)
         if (c == '@')
         {
             if (at_index != -1)
-                return 0; // 只能有一个 '@'
+                return 0;
             at_index = i;
         }
         else if (c == '.')
         {
             if (at_index != -1)
-                dot_after_at = 1; // 标记 '@' 之后有 '.'
-            // 检查连续的 '.' (允许 email..name@ 但不允许 user@domain..com)
+                dot_after_at = 1;
             if (i > 0 && email[i - 1] == '.')
                 return 0;
         }
     }
-
-    // 2. 检查 '@' 和 '.' 的位置和存在性
-    // '@' 必须存在且不在边缘
     if (at_index == -1 || at_index == 0 || at_index == len - 1)
         return 0;
-    // '@' 后必须有 '.'，且邮箱不能以 '.' 结尾
     if (!dot_after_at || email[len - 1] == '.')
         return 0;
-    // '@' 后不能直接跟 '.' (e.g., user@.com)
     if (email[at_index + 1] == '.')
         return 0;
-    // 本地部分不能以 '.' 开头或结尾
     if (email[0] == '.' || email[at_index - 1] == '.')
         return 0;
-
-    // 3. 检查域名部分（使用副本进行 strtok）
-    // 创建副本以避免修改原始 email 字符串
     char email_copy[len + 1];
     strcpy(email_copy, email);
-    email_copy[len] = '\0'; // 确保 null 结尾
-
+    email_copy[len] = '\0';
     char *domain_part_copy = email_copy + at_index + 1;
     char *token = strtok(domain_part_copy, ".");
-    // 检查第一个 token 是否为 NULL (理论上不会，因为 dot_after_at=1)
     if (!token)
         return 0;
-
     do
     {
         int token_len = strlen(token);
-        // 域名段不能为空，也不能以 '-' 开头或结尾
         if (token_len == 0 || token[0] == '-' || token[token_len - 1] == '-')
             return 0;
-        // 检查域名段的字符 (只允许字母数字和连字符)
         for (int i = 0; i < token_len; ++i)
         {
             if (!(isalnum((unsigned char)token[i]) || token[i] == '-'))
                 return 0;
         }
-    } while ((token = strtok(NULL, ".")) != NULL); // 继续处理下一个 token
-
-    // 4. 所有检查通过
+    } while ((token = strtok(NULL, ".")) != NULL);
     return 1;
 }
 

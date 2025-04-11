@@ -163,10 +163,10 @@ int cmpSales(Sales *a, Sales *b, int num)
     case 3:
         return strcmp(a->gender, b->gender);
     case 4:
-        return a->birth_year - b->birth_year;
-    case 5:
-        return a->birth_month - b->birth_month;
-    case 6:
+        if (a->birth_year != b->birth_year)
+            return a->birth_year - b->birth_year;
+        if (a->birth_month != b->birth_month)
+            return a->birth_month - b->birth_month;
         return a->birth_day - b->birth_day;
     case 7:
         return strcmp(a->email, b->email);
@@ -179,10 +179,10 @@ int cmpSales(Sales *a, Sales *b, int num)
     case -3:
         return strcmp(b->gender, a->gender);
     case -4:
-        return b->birth_year - a->birth_year;
-    case -5:
-        return b->birth_month - a->birth_month;
-    case -6:
+        if (a->birth_year != b->birth_year)
+            return b->birth_year - a->birth_year;
+        if (a->birth_month != b->birth_month)
+            return b->birth_month - a->birth_month;
         return b->birth_day - a->birth_day;
     case -7:
         return strcmp(b->email, a->email);
@@ -370,12 +370,9 @@ void displaySales(Sales *head, const char *pattern, int *sortKeys, int sortKeyCo
         if (should_display)
         {
             match_count++;
-            printf("%d\x1C%s\x1C%s\x1C%d\x1C%d\x1C%d\x1C%s\x1C",
-                   current->id, current->name, current->gender,
-                   current->birth_year, current->birth_month, current->birth_day,
-                   current->email);
+            printf("%d\x1C%s\x1C%s\x1C%d\x1C%d\x1C%d\x1C%s\x1C", current->id, current->name, current->gender, current->birth_year, current->birth_month, current->birth_day, current->email);
             for (int i = 0; i < current->phone_count; i++)
-                printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : ",");
+                printf("%s%s", current->phones[i], (i == current->phone_count - 1) ? "" : "\x1D");
             printf("\x1C");
             for (int i = 0; i < current->client_count; i++)
                 printf("%d%s", current->client_ids[i], (i == current->client_count - 1) ? "" : "\x1D");
